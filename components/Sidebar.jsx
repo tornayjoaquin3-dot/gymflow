@@ -1,7 +1,48 @@
-export default function Sidebar(){
+export default function Sidebar({ isProfesor, activeSection, setActiveSection }) {
   return (
-    <aside style={{width:250,padding:20,background:'#111827',height:'100vh'}}>
+    <aside className="sidebar">
       <h2>GymFlow</h2>
+
+      {!isProfesor && (
+        <button
+          className={activeSection === 'dashboard' ? 'activeMenu' : ''}
+          onClick={() => setActiveSection('dashboard')}
+        >
+          Dashboard
+        </button>
+      )}
+
+      <button
+        className={activeSection === 'alumnos' ? 'activeMenu' : ''}
+        onClick={() => setActiveSection('alumnos')}
+      >
+        Alumnos
+      </button>
+
+      <button
+        className={activeSection === 'rutinas' ? 'activeMenu' : ''}
+        onClick={() => setActiveSection('rutinas')}
+      >
+        Rutinas
+      </button>
+
+      {!isProfesor && (
+        <>
+          <button
+            className={activeSection === 'pagos' ? 'activeMenu' : ''}
+            onClick={() => setActiveSection('pagos')}
+          >
+            Pagos
+          </button>
+
+          <button
+            className={activeSection === 'costos' ? 'activeMenu' : ''}
+            onClick={() => setActiveSection('costos')}
+          >
+            Costos
+          </button>
+        </>
+      )}
     </aside>
   )
 }
