@@ -1,9 +1,9 @@
-import './globals.css'
-
 export const metadata = {
   title: 'GymFlow',
-  description: 'Gestión de alumnos, pagos, costos y rutinas',
+  description: 'Gestión de gimnasios',
 }
+
+import './globals.css'
 
 export default function RootLayout({ children }) {
   return (
