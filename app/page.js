@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
 import StudentsSection from '../components/StudentsSection'
+import StudentDetail from '../components/StudentDetail'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -56,15 +57,11 @@ export default function Home() {
 
   async function login(event) {
     event.preventDefault()
-
     setLoading(true)
     setError('')
 
     const { data, error: loginError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      await supabase.auth.signInWithPassword({ email, password })
 
     if (loginError) {
       setError(loginError.message)
@@ -86,23 +83,18 @@ export default function Home() {
 
     setUser(data.user)
     setProfile(profileData)
-
     await cargarDatos()
-
     setLoading(false)
   }
 
   async function logout() {
     await supabase.auth.signOut()
-
     setUser(null)
     setProfile(null)
-
     setAlumnos([])
     setPagos([])
     setCostos([])
     setRutinas([])
-
     setActiveSection('alumnos')
     setSelectedAlumnoId(null)
   }
@@ -164,7 +156,6 @@ export default function Home() {
 
   async function crearAlumno(event) {
     event.preventDefault()
-
     setError('')
 
     if (!nuevoAlumno.nombre.trim()) {
@@ -186,12 +177,7 @@ export default function Home() {
       return
     }
 
-    setNuevoAlumno({
-      nombre: '',
-      telefono: '',
-      observaciones: '',
-    })
-
+    setNuevoAlumno({ nombre: '', telefono: '', observaciones: '' })
     await cargarAlumnos()
   }
 
@@ -296,7 +282,6 @@ export default function Home() {
           .single()
 
         setProfile(profileData)
-
         await cargarDatos()
       }
     }
@@ -313,12 +298,9 @@ export default function Home() {
   }, [costos])
 
   const ganancia = totalIngresos - totalCostos
-
   const isProfesor = profile?.rol === 'profesor'
 
-  const selectedAlumno = alumnos.find(
-    (alumno) => alumno.id === selectedAlumnoId
-  )
+  const selectedAlumno = alumnos.find((alumno) => alumno.id === selectedAlumnoId)
 
   const pagosDelAlumno = pagos.filter(
     (pago) => pago.alumno_id === selectedAlumnoId
@@ -338,19 +320,13 @@ export default function Home() {
       <main className="page">
         <section className="panel loginPanel">
           <h1>GymFlow</h1>
-
           <p>Ingresá con un usuario socio o profesor.</p>
 
           <form onSubmit={login} className="form">
             <label>Email</label>
-
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} />
 
             <label>Contraseña</label>
-
             <input
               type="password"
               value={password}
@@ -380,10 +356,7 @@ export default function Home() {
         <header className="topbar">
           <div>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
-
-            <p>
-              {profile?.nombre} · {profile?.email}
-            </p>
+            <p>{profile?.nombre} · {profile?.email}</p>
           </div>
 
           <button onClick={logout}>Cerrar sesión</button>
@@ -393,23 +366,16 @@ export default function Home() {
           <div className="cards">
             <article>
               <span>Ingresos</span>
-
-              <b className="money">
-                ${totalIngresos.toLocaleString('es-AR')}
-              </b>
+              <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
             </article>
 
             <article>
               <span>Costos</span>
-
-              <b className="dangerText">
-                ${totalCostos.toLocaleString('es-AR')}
-              </b>
+              <b className="dangerText">${totalCostos.toLocaleString('es-AR')}</b>
             </article>
 
             <article>
               <span>Ganancia</span>
-
               <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
                 ${ganancia.toLocaleString('es-AR')}
               </b>
@@ -417,7 +383,6 @@ export default function Home() {
 
             <article>
               <span>Alumnos</span>
-
               <b>{alumnos.length} registrados</b>
             </article>
           </div>
@@ -448,48 +413,13 @@ export default function Home() {
         )}
 
         {activeSection === 'fichaAlumno' && selectedAlumno && (
-          <section className="section">
-            <div className="sectionHeader">
-              <h2>Ficha de {selectedAlumno.nombre}</h2>
-
-              <p>Historial completo del alumno.</p>
-            </div>
-
-            <div className="cards">
-              <article>
-                <span>Estado</span>
-
-                <b>{selectedAlumno.estado || 'activo'}</b>
-              </article>
-
-              <article>
-                <span>Total pagado</span>
-
-                <b className="money">
-                  ${totalPagadoAlumno.toLocaleString('es-AR')}
-                </b>
-              </article>
-
-              <article>
-                <span>Pagos registrados</span>
-
-                <b>{pagosDelAlumno.length}</b>
-              </article>
-
-              <article>
-                <span>Rutinas cargadas</span>
-
-                <b>{rutinasDelAlumno.length}</b>
-              </article>
-            </div>
-
-            <button
-              className="smallButton"
-              onClick={() => setActiveSection('alumnos')}
-            >
-              Volver a alumnos
-            </button>
-          </section>
+          <StudentDetail
+            selectedAlumno={selectedAlumno}
+            pagosDelAlumno={pagosDelAlumno}
+            rutinasDelAlumno={rutinasDelAlumno}
+            totalPagadoAlumno={totalPagadoAlumno}
+            setActiveSection={setActiveSection}
+          />
         )}
       </section>
     </main>
