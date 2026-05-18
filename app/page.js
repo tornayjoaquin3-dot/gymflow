@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function Home() {
@@ -8,8 +8,15 @@ export default function Home() {
   const [password, setPassword] = useState('123456')
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [alumnos, setAlumnos] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const [nuevoAlumno, setNuevoAlumno] = useState({
+    nombre: '',
+    telefono: '',
+    observaciones: '',
+  })
 
   async function login(event) {
     event.preventDefault()
@@ -41,6 +48,7 @@ export default function Home() {
 
     setUser(data.user)
     setProfile(profileData)
+    await cargarAlumnos()
     setLoading(false)
   }
 
@@ -48,7 +56,75 @@ export default function Home() {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
+    setAlumnos([])
   }
+
+  async function cargarAlumnos() {
+    const { data, error } = await supabase
+      .from('alumnos')
+      .select('*')
+      .order('creado_en', { ascending: false })
+
+    if (error) {
+      setError('No se pudieron cargar los alumnos.')
+      return
+    }
+
+    setAlumnos(data || [])
+  }
+
+  async function crearAlumno(event) {
+    event.preventDefault()
+    setError('')
+
+    if (!nuevoAlumno.nombre.trim()) {
+      setError('El nombre del alumno es obligatorio.')
+      return
+    }
+
+    const { error } = await supabase.from('alumnos').insert([
+      {
+        nombre: nuevoAlumno.nombre,
+        telefono: nuevoAlumno.telefono,
+        observaciones: nuevoAlumno.observaciones,
+        estado: 'activo',
+      },
+    ])
+
+    if (error) {
+      setError('No se pudo crear el alumno.')
+      return
+    }
+
+    setNuevoAlumno({
+      nombre: '',
+      telefono: '',
+      observaciones: '',
+    })
+
+    await cargarAlumnos()
+  }
+
+  useEffect(() => {
+    async function verificarSesion() {
+      const { data } = await supabase.auth.getSession()
+
+      if (data.session?.user) {
+        setUser(data.session.user)
+
+        const { data: profileData } = await supabase
+          .from('usuarios')
+          .select('nombre,email,rol')
+          .eq('email', data.session.user.email)
+          .single()
+
+        setProfile(profileData)
+        await cargarAlumnos()
+      }
+    }
+
+    verificarSesion()
+  }, [])
 
   if (!user) {
     return (
@@ -93,7 +169,6 @@ export default function Home() {
     <main className="app">
       <aside className="sidebar">
         <h2>GymFlow</h2>
-
         {!isProfesor && <button>Dashboard</button>}
         <button>Alumnos</button>
         <button>Rutinas</button>
@@ -105,7 +180,7 @@ export default function Home() {
           <div>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
             <p>
-              {profile.nombre} · {profile.email}
+              {profile?.nombre} · {profile?.email}
             </p>
           </div>
 
@@ -122,7 +197,7 @@ export default function Home() {
 
           <article>
             <span>Alumnos</span>
-            <b>Listado e historial</b>
+            <b>{alumnos.length} alumnos registrados</b>
           </article>
 
           <article>
@@ -137,6 +212,65 @@ export default function Home() {
             </article>
           )}
         </div>
+
+        <section className="section">
+          <div className="sectionHeader">
+            <h2>Alumnos</h2>
+            <p>Alta y seguimiento de alumnos del gimnasio.</p>
+          </div>
+
+          <form onSubmit={crearAlumno} className="studentForm">
+            <input
+              placeholder="Nombre completo"
+              value={nuevoAlumno.nombre}
+              onChange={(e) =>
+                setNuevoAlumno({ ...nuevoAlumno, nombre: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Teléfono"
+              value={nuevoAlumno.telefono}
+              onChange={(e) =>
+                setNuevoAlumno({ ...nuevoAlumno, telefono: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Observaciones"
+              value={nuevoAlumno.observaciones}
+              onChange={(e) =>
+                setNuevoAlumno({ ...nuevoAlumno, observaciones: e.target.value })
+              }
+            />
+
+            <button>Crear alumno</button>
+          </form>
+
+          {error && <div className="error">{error}</div>}
+
+          <div className="table">
+            <div className="tableHeader">
+              <span>Nombre</span>
+              <span>Teléfono</span>
+              <span>Estado</span>
+              <span>Observaciones</span>
+            </div>
+
+            {alumnos.length === 0 ? (
+              <div className="empty">Todavía no hay alumnos cargados.</div>
+            ) : (
+              alumnos.map((alumno) => (
+                <div className="tableRow" key={alumno.id}>
+                  <span>{alumno.nombre}</span>
+                  <span>{alumno.telefono || '-'}</span>
+                  <span>{alumno.estado || 'activo'}</span>
+                  <span>{alumno.observaciones || '-'}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </section>
     </main>
   )
