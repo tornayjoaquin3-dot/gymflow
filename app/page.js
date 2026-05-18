@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
+
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
+import StudentsSection from '../components/StudentsSection'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -19,6 +21,7 @@ export default function Home() {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
   const [activeSection, setActiveSection] = useState('alumnos')
   const [selectedAlumnoId, setSelectedAlumnoId] = useState(null)
 
@@ -53,13 +56,15 @@ export default function Home() {
 
   async function login(event) {
     event.preventDefault()
+
     setLoading(true)
     setError('')
 
-    const { data, error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { data, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
     if (loginError) {
       setError(loginError.message)
@@ -81,18 +86,23 @@ export default function Home() {
 
     setUser(data.user)
     setProfile(profileData)
+
     await cargarDatos()
+
     setLoading(false)
   }
 
   async function logout() {
     await supabase.auth.signOut()
+
     setUser(null)
     setProfile(null)
+
     setAlumnos([])
     setPagos([])
     setCostos([])
     setRutinas([])
+
     setActiveSection('alumnos')
     setSelectedAlumnoId(null)
   }
@@ -154,6 +164,7 @@ export default function Home() {
 
   async function crearAlumno(event) {
     event.preventDefault()
+
     setError('')
 
     if (!nuevoAlumno.nombre.trim()) {
@@ -186,12 +197,6 @@ export default function Home() {
 
   async function crearPago(event) {
     event.preventDefault()
-    setError('')
-
-    if (!nuevoPago.alumno_id || !nuevoPago.monto) {
-      setError('Seleccioná un alumno y cargá el monto.')
-      return
-    }
 
     const { error } = await supabase.from('pagos').insert([
       {
@@ -222,12 +227,6 @@ export default function Home() {
 
   async function crearCosto(event) {
     event.preventDefault()
-    setError('')
-
-    if (!nuevoCosto.descripcion.trim() || !nuevoCosto.monto) {
-      setError('Completá descripción y monto del costo.')
-      return
-    }
 
     const { error } = await supabase.from('costos').insert([
       {
@@ -256,12 +255,6 @@ export default function Home() {
 
   async function crearRutina(event) {
     event.preventDefault()
-    setError('')
-
-    if (!nuevaRutina.alumno_id || !nuevaRutina.nombre.trim()) {
-      setError('Seleccioná un alumno y cargá el nombre de la rutina.')
-      return
-    }
 
     const { error } = await supabase.from('rutinas').insert([
       {
@@ -303,6 +296,7 @@ export default function Home() {
           .single()
 
         setProfile(profileData)
+
         await cargarDatos()
       }
     }
@@ -319,9 +313,12 @@ export default function Home() {
   }, [costos])
 
   const ganancia = totalIngresos - totalCostos
+
   const isProfesor = profile?.rol === 'profesor'
 
-  const selectedAlumno = alumnos.find((alumno) => alumno.id === selectedAlumnoId)
+  const selectedAlumno = alumnos.find(
+    (alumno) => alumno.id === selectedAlumnoId
+  )
 
   const pagosDelAlumno = pagos.filter(
     (pago) => pago.alumno_id === selectedAlumnoId
@@ -341,13 +338,19 @@ export default function Home() {
       <main className="page">
         <section className="panel loginPanel">
           <h1>GymFlow</h1>
+
           <p>Ingresá con un usuario socio o profesor.</p>
 
           <form onSubmit={login} className="form">
             <label>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} />
+
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <label>Contraseña</label>
+
             <input
               type="password"
               value={password}
@@ -360,14 +363,6 @@ export default function Home() {
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
-
-          <div className="hint">
-            <b>Usuarios demo:</b>
-            <br />
-            socio@gymflow.com / 123456
-            <br />
-            profesor@gymflow.com / 123456
-          </div>
         </section>
       </main>
     )
@@ -385,6 +380,7 @@ export default function Home() {
         <header className="topbar">
           <div>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
+
             <p>
               {profile?.nombre} · {profile?.email}
             </p>
@@ -397,11 +393,15 @@ export default function Home() {
           <div className="cards">
             <article>
               <span>Ingresos</span>
-              <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
+
+              <b className="money">
+                ${totalIngresos.toLocaleString('es-AR')}
+              </b>
             </article>
 
             <article>
               <span>Costos</span>
+
               <b className="dangerText">
                 ${totalCostos.toLocaleString('es-AR')}
               </b>
@@ -409,6 +409,7 @@ export default function Home() {
 
             <article>
               <span>Ganancia</span>
+
               <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
                 ${ganancia.toLocaleString('es-AR')}
               </b>
@@ -416,6 +417,7 @@ export default function Home() {
 
             <article>
               <span>Alumnos</span>
+
               <b>{alumnos.length} registrados</b>
             </article>
           </div>
@@ -423,97 +425,46 @@ export default function Home() {
 
         {error && <div className="error">{error}</div>}
 
-       {activeSection === 'dashboard' && !isProfesor && (
-  <Dashboard
-    totalIngresos={totalIngresos}
-    totalCostos={totalCostos}
-    ganancia={ganancia}
-    alumnos={alumnos}
-    pagos={pagos}
-    costos={costos}
-  />
-)}
+        {activeSection === 'dashboard' && !isProfesor && (
+          <Dashboard
+            totalIngresos={totalIngresos}
+            totalCostos={totalCostos}
+            ganancia={ganancia}
+            alumnos={alumnos}
+            pagos={pagos}
+            costos={costos}
+          />
+        )}
 
         {activeSection === 'alumnos' && (
-          <section className="section">
-            <div className="sectionHeader">
-              <h2>Alumnos</h2>
-              <p>Alta y listado de alumnos.</p>
-            </div>
-
-            <form onSubmit={crearAlumno} className="studentForm">
-              <input
-                placeholder="Nombre completo"
-                value={nuevoAlumno.nombre}
-                onChange={(e) =>
-                  setNuevoAlumno({ ...nuevoAlumno, nombre: e.target.value })
-                }
-              />
-
-              <input
-                placeholder="Teléfono"
-                value={nuevoAlumno.telefono}
-                onChange={(e) =>
-                  setNuevoAlumno({ ...nuevoAlumno, telefono: e.target.value })
-                }
-              />
-
-              <input
-                placeholder="Observaciones"
-                value={nuevoAlumno.observaciones}
-                onChange={(e) =>
-                  setNuevoAlumno({
-                    ...nuevoAlumno,
-                    observaciones: e.target.value,
-                  })
-                }
-              />
-
-              <button>Crear alumno</button>
-            </form>
-
-            <div className="simpleList">
-              {alumnos.length === 0 ? (
-                <div className="empty">Todavía no hay alumnos cargados.</div>
-              ) : (
-                alumnos.map((alumno) => (
-                  <article key={alumno.id} className="listCard">
-                    <h3>{alumno.nombre}</h3>
-                    <p>Teléfono: {alumno.telefono || '-'}</p>
-                    <p>Estado: {alumno.estado || 'activo'}</p>
-                    <p>Observaciones: {alumno.observaciones || '-'}</p>
-
-                    <button
-                      className="smallButton"
-                      onClick={() => {
-                        setSelectedAlumnoId(alumno.id)
-                        setActiveSection('fichaAlumno')
-                      }}
-                    >
-                      Ver ficha
-                    </button>
-                  </article>
-                ))
-              )}
-            </div>
-          </section>
+          <StudentsSection
+            alumnos={alumnos}
+            nuevoAlumno={nuevoAlumno}
+            setNuevoAlumno={setNuevoAlumno}
+            crearAlumno={crearAlumno}
+            setSelectedAlumnoId={setSelectedAlumnoId}
+            setActiveSection={setActiveSection}
+          />
         )}
 
         {activeSection === 'fichaAlumno' && selectedAlumno && (
           <section className="section">
             <div className="sectionHeader">
               <h2>Ficha de {selectedAlumno.nombre}</h2>
+
               <p>Historial completo del alumno.</p>
             </div>
 
             <div className="cards">
               <article>
                 <span>Estado</span>
+
                 <b>{selectedAlumno.estado || 'activo'}</b>
               </article>
 
               <article>
                 <span>Total pagado</span>
+
                 <b className="money">
                   ${totalPagadoAlumno.toLocaleString('es-AR')}
                 </b>
@@ -521,54 +472,14 @@ export default function Home() {
 
               <article>
                 <span>Pagos registrados</span>
+
                 <b>{pagosDelAlumno.length}</b>
               </article>
 
               <article>
                 <span>Rutinas cargadas</span>
+
                 <b>{rutinasDelAlumno.length}</b>
-              </article>
-            </div>
-
-            <div className="studentDetail">
-              <article className="listCard">
-                <h3>Datos del alumno</h3>
-                <p>Teléfono: {selectedAlumno.telefono || '-'}</p>
-                <p>Estado: {selectedAlumno.estado || 'activo'}</p>
-                <p>Observaciones: {selectedAlumno.observaciones || '-'}</p>
-              </article>
-
-              <article className="listCard">
-                <h3>Pagos del alumno</h3>
-
-                {pagosDelAlumno.length === 0 ? (
-                  <p>No hay pagos registrados.</p>
-                ) : (
-                  pagosDelAlumno.map((pago) => (
-                    <div key={pago.id} className="miniItem">
-                      <b>${Number(pago.monto || 0).toLocaleString('es-AR')}</b>
-                      <span>Mes: {pago.mes || '-'}</span>
-                      <span>Plan: {pago.plan || '-'}</span>
-                      <span>Medio: {pago.medio_pago || '-'}</span>
-                    </div>
-                  ))
-                )}
-              </article>
-
-              <article className="listCard">
-                <h3>Rutinas del alumno</h3>
-
-                {rutinasDelAlumno.length === 0 ? (
-                  <p>No hay rutinas registradas.</p>
-                ) : (
-                  rutinasDelAlumno.map((rutina) => (
-                    <div key={rutina.id} className="miniItem">
-                      <b>{rutina.nombre || 'Rutina sin nombre'}</b>
-                      <span>Objetivo: {rutina.objetivo || '-'}</span>
-                      <pre>{rutina.ejercicios || '-'}</pre>
-                    </div>
-                  ))
-                )}
               </article>
             </div>
 
@@ -578,258 +489,6 @@ export default function Home() {
             >
               Volver a alumnos
             </button>
-          </section>
-        )}
-
-        {activeSection === 'rutinas' && (
-          <section className="section">
-            <div className="sectionHeader">
-              <h2>Rutinas</h2>
-              <p>Los profesores pueden crear y visualizar rutinas.</p>
-            </div>
-
-            <form onSubmit={crearRutina} className="routineForm">
-              <select
-                value={nuevaRutina.alumno_id}
-                onChange={(e) =>
-                  setNuevaRutina({
-                    ...nuevaRutina,
-                    alumno_id: e.target.value,
-                  })
-                }
-              >
-                <option value="">Seleccionar alumno</option>
-                {alumnos.map((alumno) => (
-                  <option key={alumno.id} value={alumno.id}>
-                    {alumno.nombre}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                placeholder="Nombre rutina"
-                value={nuevaRutina.nombre}
-                onChange={(e) =>
-                  setNuevaRutina({ ...nuevaRutina, nombre: e.target.value })
-                }
-              />
-
-              <input
-                placeholder="Objetivo"
-                value={nuevaRutina.objetivo}
-                onChange={(e) =>
-                  setNuevaRutina({ ...nuevaRutina, objetivo: e.target.value })
-                }
-              />
-
-              <textarea
-                placeholder="Ejercicios"
-                value={nuevaRutina.ejercicios}
-                onChange={(e) =>
-                  setNuevaRutina({
-                    ...nuevaRutina,
-                    ejercicios: e.target.value,
-                  })
-                }
-              />
-
-              <textarea
-                placeholder="Observaciones"
-                value={nuevaRutina.observaciones}
-                onChange={(e) =>
-                  setNuevaRutina({
-                    ...nuevaRutina,
-                    observaciones: e.target.value,
-                  })
-                }
-              />
-
-              <button>Crear rutina</button>
-            </form>
-
-            <div className="routineGrid">
-              {rutinas.length === 0 ? (
-                <div className="empty">Todavía no hay rutinas cargadas.</div>
-              ) : (
-                rutinas.map((rutina) => (
-                  <article className="routineCard" key={rutina.id}>
-                    <span>{rutina.alumnos?.nombre || 'Sin alumno'}</span>
-                    <h3>{rutina.nombre}</h3>
-                    <p>
-                      <b>Objetivo:</b> {rutina.objetivo || '-'}
-                    </p>
-                    <p>
-                      <b>Ejercicios:</b>
-                    </p>
-                    <pre>{rutina.ejercicios || '-'}</pre>
-                    {rutina.observaciones && (
-                      <p>
-                        <b>Observaciones:</b> {rutina.observaciones}
-                      </p>
-                    )}
-                  </article>
-                ))
-              )}
-            </div>
-          </section>
-        )}
-
-        {activeSection === 'pagos' && !isProfesor && (
-          <section className="section">
-            <div className="sectionHeader">
-              <h2>Pagos</h2>
-              <p>Registro de cuotas e ingresos.</p>
-            </div>
-
-            <form onSubmit={crearPago} className="paymentForm">
-              <select
-                value={nuevoPago.alumno_id}
-                onChange={(e) =>
-                  setNuevoPago({ ...nuevoPago, alumno_id: e.target.value })
-                }
-              >
-                <option value="">Seleccionar alumno</option>
-                {alumnos.map((alumno) => (
-                  <option key={alumno.id} value={alumno.id}>
-                    {alumno.nombre}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                placeholder="Monto"
-                type="number"
-                value={nuevoPago.monto}
-                onChange={(e) =>
-                  setNuevoPago({ ...nuevoPago, monto: e.target.value })
-                }
-              />
-
-              <select
-                value={nuevoPago.medio_pago}
-                onChange={(e) =>
-                  setNuevoPago({ ...nuevoPago, medio_pago: e.target.value })
-                }
-              >
-                <option value="efectivo">Efectivo</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="tarjeta">Tarjeta</option>
-              </select>
-
-              <input
-                placeholder="Plan"
-                value={nuevoPago.plan}
-                onChange={(e) =>
-                  setNuevoPago({ ...nuevoPago, plan: e.target.value })
-                }
-              />
-
-              <input
-                placeholder="Mes"
-                value={nuevoPago.mes}
-                onChange={(e) =>
-                  setNuevoPago({ ...nuevoPago, mes: e.target.value })
-                }
-              />
-
-              <button>Registrar pago</button>
-            </form>
-
-            <div className="simpleList">
-              {pagos.length === 0 ? (
-                <div className="empty">Todavía no hay pagos cargados.</div>
-              ) : (
-                pagos.map((pago) => (
-                  <article className="listCard" key={pago.id}>
-                    <h3>{pago.alumnos?.nombre || 'Sin alumno'}</h3>
-                    <p className="money">
-                      ${Number(pago.monto || 0).toLocaleString('es-AR')}
-                    </p>
-                    <p>Plan: {pago.plan || '-'}</p>
-                    <p>Mes: {pago.mes || '-'}</p>
-                    <p>Medio: {pago.medio_pago || '-'}</p>
-                  </article>
-                ))
-              )}
-            </div>
-          </section>
-        )}
-
-        {activeSection === 'costos' && !isProfesor && (
-          <section className="section">
-            <div className="sectionHeader">
-              <h2>Costos</h2>
-              <p>Registro de egresos del gimnasio.</p>
-            </div>
-
-            <form onSubmit={crearCosto} className="costForm">
-              <input
-                placeholder="Descripción"
-                value={nuevoCosto.descripcion}
-                onChange={(e) =>
-                  setNuevoCosto({
-                    ...nuevoCosto,
-                    descripcion: e.target.value,
-                  })
-                }
-              />
-
-              <select
-                value={nuevoCosto.categoria}
-                onChange={(e) =>
-                  setNuevoCosto({
-                    ...nuevoCosto,
-                    categoria: e.target.value,
-                  })
-                }
-              >
-                <option value="alquiler">Alquiler</option>
-                <option value="sueldos">Sueldos</option>
-                <option value="servicios">Servicios</option>
-                <option value="equipamiento">Equipamiento</option>
-                <option value="marketing">Marketing</option>
-                <option value="otros">Otros</option>
-              </select>
-
-              <input
-                placeholder="Monto"
-                type="number"
-                value={nuevoCosto.monto}
-                onChange={(e) =>
-                  setNuevoCosto({ ...nuevoCosto, monto: e.target.value })
-                }
-              />
-
-              <input
-                placeholder="Observaciones"
-                value={nuevoCosto.observaciones}
-                onChange={(e) =>
-                  setNuevoCosto({
-                    ...nuevoCosto,
-                    observaciones: e.target.value,
-                  })
-                }
-              />
-
-              <button>Registrar costo</button>
-            </form>
-
-            <div className="simpleList">
-              {costos.length === 0 ? (
-                <div className="empty">Todavía no hay costos cargados.</div>
-              ) : (
-                costos.map((costo) => (
-                  <article className="listCard" key={costo.id}>
-                    <h3>{costo.descripcion}</h3>
-                    <p className="dangerText">
-                      ${Number(costo.monto || 0).toLocaleString('es-AR')}
-                    </p>
-                    <p>Categoría: {costo.categoria || '-'}</p>
-                    <p>Observaciones: {costo.observaciones || '-'}</p>
-                  </article>
-                ))
-              )}
-            </div>
           </section>
         )}
       </section>
