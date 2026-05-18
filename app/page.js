@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
+import Dashboard from '../components/Dashboard'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -422,35 +423,16 @@ export default function Home() {
 
         {error && <div className="error">{error}</div>}
 
-        {activeSection === 'dashboard' && !isProfesor && (
-          <section className="section">
-            <div className="sectionHeader">
-              <h2>Dashboard</h2>
-              <p>Resumen económico general del gimnasio.</p>
-            </div>
-
-            <div className="cards">
-              <article>
-                <span>Total ingresos</span>
-                <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
-              </article>
-
-              <article>
-                <span>Total costos</span>
-                <b className="dangerText">
-                  ${totalCostos.toLocaleString('es-AR')}
-                </b>
-              </article>
-
-              <article>
-                <span>Resultado</span>
-                <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
-                  ${ganancia.toLocaleString('es-AR')}
-                </b>
-              </article>
-            </div>
-          </section>
-        )}
+       {activeSection === 'dashboard' && !isProfesor && (
+  <Dashboard
+    totalIngresos={totalIngresos}
+    totalCostos={totalCostos}
+    ganancia={ganancia}
+    alumnos={alumnos}
+    pagos={pagos}
+    costos={costos}
+  />
+)}
 
         {activeSection === 'alumnos' && (
           <section className="section">
