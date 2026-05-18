@@ -436,3 +436,62 @@ button{
     grid-template-columns:1fr;
   }
 }
+.routineForm{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-bottom:24px;
+}
+
+.routineForm input,
+.routineForm select,
+.routineForm textarea{
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#1f2937;
+  color:white;
+}
+
+.routineForm textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+.routineForm button{
+  border:none;
+  border-radius:10px;
+  background:#7c3aed;
+  color:white;
+  font-weight:bold;
+}
+
+.routineGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;
+}
+
+.routineCard{
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;
+  padding:18px;
+}
+
+.routineCard span{
+  opacity:0.65;
+  font-size:13px;
+}
+
+.routineCard h3{
+  margin:8px 0 12px;
+}
+
+.routineCard pre{
+  white-space:pre-wrap;
+  background:#111827;
+  padding:12px;
+  border-radius:10px;
+  font-family:Arial, sans-serif;
+}
