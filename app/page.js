@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import Sidebar from '../components/Sidebar'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -373,25 +374,11 @@ export default function Home() {
 
   return (
     <main className="app">
-      <aside className="sidebar">
-        <h2>GymFlow</h2>
-
-        {!isProfesor && (
-          <button onClick={() => setActiveSection('dashboard')}>
-            Dashboard
-          </button>
-        )}
-
-        <button onClick={() => setActiveSection('alumnos')}>Alumnos</button>
-        <button onClick={() => setActiveSection('rutinas')}>Rutinas</button>
-
-        {!isProfesor && (
-          <>
-            <button onClick={() => setActiveSection('pagos')}>Pagos</button>
-            <button onClick={() => setActiveSection('costos')}>Costos</button>
-          </>
-        )}
-      </aside>
+      <Sidebar
+        isProfesor={isProfesor}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
 
       <section className="main">
         <header className="topbar">
