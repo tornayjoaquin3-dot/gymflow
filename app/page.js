@@ -18,6 +18,7 @@ export default function Home() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [activeSection, setActiveSection] = useState('alumnos')
+  const [selectedAlumnoId, setSelectedAlumnoId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -91,6 +92,7 @@ export default function Home() {
     setCostos([])
     setRutinas([])
     setActiveSection('alumnos')
+    setSelectedAlumnoId(null)
   }
 
   async function cargarDatos() {
@@ -317,6 +319,21 @@ export default function Home() {
   const ganancia = totalIngresos - totalCostos
   const isProfesor = profile?.rol === 'profesor'
 
+  const selectedAlumno = alumnos.find((alumno) => alumno.id === selectedAlumnoId)
+
+  const pagosDelAlumno = pagos.filter(
+    (pago) => pago.alumno_id === selectedAlumnoId
+  )
+
+  const rutinasDelAlumno = rutinas.filter(
+    (rutina) => rutina.alumno_id === selectedAlumnoId
+  )
+
+  const totalPagadoAlumno = pagosDelAlumno.reduce(
+    (acc, pago) => acc + Number(pago.monto || 0),
+    0
+  )
+
   if (!user) {
     return (
       <main className="page">
@@ -418,7 +435,7 @@ export default function Home() {
 
         {error && <div className="error">{error}</div>}
 
-        {(activeSection === 'dashboard' && !isProfesor) && (
+        {activeSection === 'dashboard' && !isProfesor && (
           <section className="section">
             <div className="sectionHeader">
               <h2>Dashboard</h2>
@@ -496,10 +513,102 @@ export default function Home() {
                     <p>Teléfono: {alumno.telefono || '-'}</p>
                     <p>Estado: {alumno.estado || 'activo'}</p>
                     <p>Observaciones: {alumno.observaciones || '-'}</p>
+
+                    <button
+                      className="smallButton"
+                      onClick={() => {
+                        setSelectedAlumnoId(alumno.id)
+                        setActiveSection('fichaAlumno')
+                      }}
+                    >
+                      Ver ficha
+                    </button>
                   </article>
                 ))
               )}
             </div>
+          </section>
+        )}
+
+        {activeSection === 'fichaAlumno' && selectedAlumno && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Ficha de {selectedAlumno.nombre}</h2>
+              <p>Historial completo del alumno.</p>
+            </div>
+
+            <div className="cards">
+              <article>
+                <span>Estado</span>
+                <b>{selectedAlumno.estado || 'activo'}</b>
+              </article>
+
+              <article>
+                <span>Total pagado</span>
+                <b className="money">
+                  ${totalPagadoAlumno.toLocaleString('es-AR')}
+                </b>
+              </article>
+
+              <article>
+                <span>Pagos registrados</span>
+                <b>{pagosDelAlumno.length}</b>
+              </article>
+
+              <article>
+                <span>Rutinas cargadas</span>
+                <b>{rutinasDelAlumno.length}</b>
+              </article>
+            </div>
+
+            <div className="studentDetail">
+              <article className="listCard">
+                <h3>Datos del alumno</h3>
+                <p>Teléfono: {selectedAlumno.telefono || '-'}</p>
+                <p>Estado: {selectedAlumno.estado || 'activo'}</p>
+                <p>Observaciones: {selectedAlumno.observaciones || '-'}</p>
+              </article>
+
+              <article className="listCard">
+                <h3>Pagos del alumno</h3>
+
+                {pagosDelAlumno.length === 0 ? (
+                  <p>No hay pagos registrados.</p>
+                ) : (
+                  pagosDelAlumno.map((pago) => (
+                    <div key={pago.id} className="miniItem">
+                      <b>${Number(pago.monto || 0).toLocaleString('es-AR')}</b>
+                      <span>Mes: {pago.mes || '-'}</span>
+                      <span>Plan: {pago.plan || '-'}</span>
+                      <span>Medio: {pago.medio_pago || '-'}</span>
+                    </div>
+                  ))
+                )}
+              </article>
+
+              <article className="listCard">
+                <h3>Rutinas del alumno</h3>
+
+                {rutinasDelAlumno.length === 0 ? (
+                  <p>No hay rutinas registradas.</p>
+                ) : (
+                  rutinasDelAlumno.map((rutina) => (
+                    <div key={rutina.id} className="miniItem">
+                      <b>{rutina.nombre || 'Rutina sin nombre'}</b>
+                      <span>Objetivo: {rutina.objetivo || '-'}</span>
+                      <pre>{rutina.ejercicios || '-'}</pre>
+                    </div>
+                  ))
+                )}
+              </article>
+            </div>
+
+            <button
+              className="smallButton"
+              onClick={() => setActiveSection('alumnos')}
+            >
+              Volver a alumnos
+            </button>
           </section>
         )}
 
@@ -596,7 +705,7 @@ export default function Home() {
           </section>
         )}
 
-        {(activeSection === 'pagos' && !isProfesor) && (
+        {activeSection === 'pagos' && !isProfesor && (
           <section className="section">
             <div className="sectionHeader">
               <h2>Pagos</h2>
@@ -677,7 +786,7 @@ export default function Home() {
           </section>
         )}
 
-        {(activeSection === 'costos' && !isProfesor) && (
+        {activeSection === 'costos' && !isProfesor && (
           <section className="section">
             <div className="sectionHeader">
               <h2>Costos</h2>
