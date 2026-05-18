@@ -552,3 +552,6 @@ button{
   white-space:pre-wrap;
   font-family:Arial, sans-serif;
 }
+.sidebar button.activeMenu{
+  background:#2563eb;
+}
