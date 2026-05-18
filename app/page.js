@@ -11,10 +11,18 @@ export default function Home() {
   const [alumnos, setAlumnos] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
     telefono: '',
+    observaciones: '',
+  })
+
+  const [editAlumno, setEditAlumno] = useState({
+    nombre: '',
+    telefono: '',
+    estado: 'activo',
     observaciones: '',
   })
 
@@ -57,6 +65,7 @@ export default function Home() {
     setUser(null)
     setProfile(null)
     setAlumnos([])
+    setEditingId(null)
   }
 
   async function cargarAlumnos() {
@@ -101,6 +110,68 @@ export default function Home() {
       telefono: '',
       observaciones: '',
     })
+
+    await cargarAlumnos()
+  }
+
+  function iniciarEdicion(alumno) {
+    setEditingId(alumno.id)
+    setEditAlumno({
+      nombre: alumno.nombre || '',
+      telefono: alumno.telefono || '',
+      estado: alumno.estado || 'activo',
+      observaciones: alumno.observaciones || '',
+    })
+  }
+
+  function cancelarEdicion() {
+    setEditingId(null)
+    setEditAlumno({
+      nombre: '',
+      telefono: '',
+      estado: 'activo',
+      observaciones: '',
+    })
+  }
+
+  async function guardarEdicion(id) {
+    setError('')
+
+    if (!editAlumno.nombre.trim()) {
+      setError('El nombre del alumno es obligatorio.')
+      return
+    }
+
+    const { error } = await supabase
+      .from('alumnos')
+      .update({
+        nombre: editAlumno.nombre,
+        telefono: editAlumno.telefono,
+        estado: editAlumno.estado,
+        observaciones: editAlumno.observaciones,
+      })
+      .eq('id', id)
+
+    if (error) {
+      setError('No se pudo actualizar el alumno.')
+      return
+    }
+
+    cancelarEdicion()
+    await cargarAlumnos()
+  }
+
+  async function eliminarAlumno(id) {
+    const confirmar = window.confirm('¿Seguro que querés eliminar este alumno?')
+
+    if (!confirmar) return
+
+    const { error } = await supabase.from('alumnos').delete().eq('id', id)
+
+    if (error) {
+      setError('No se pudo eliminar el alumno.')
+      return
+    }
 
     await cargarAlumnos()
   }
@@ -216,7 +287,7 @@ export default function Home() {
         <section className="section">
           <div className="sectionHeader">
             <h2>Alumnos</h2>
-            <p>Alta y seguimiento de alumnos del gimnasio.</p>
+            <p>Alta, edición y seguimiento de alumnos del gimnasio.</p>
           </div>
 
           <form onSubmit={crearAlumno} className="studentForm">
@@ -250,24 +321,93 @@ export default function Home() {
           {error && <div className="error">{error}</div>}
 
           <div className="table">
-            <div className="tableHeader">
+            <div className="tableHeader studentTableHeader">
               <span>Nombre</span>
               <span>Teléfono</span>
               <span>Estado</span>
               <span>Observaciones</span>
+              <span>Acciones</span>
             </div>
 
             {alumnos.length === 0 ? (
               <div className="empty">Todavía no hay alumnos cargados.</div>
             ) : (
-              alumnos.map((alumno) => (
-                <div className="tableRow" key={alumno.id}>
-                  <span>{alumno.nombre}</span>
-                  <span>{alumno.telefono || '-'}</span>
-                  <span>{alumno.estado || 'activo'}</span>
-                  <span>{alumno.observaciones || '-'}</span>
-                </div>
-              ))
+              alumnos.map((alumno) => {
+                const isEditing = editingId === alumno.id
+
+                return (
+                  <div className="tableRow studentTableRow" key={alumno.id}>
+                    {isEditing ? (
+                      <>
+                        <input
+                          value={editAlumno.nombre}
+                          onChange={(e) =>
+                            setEditAlumno({ ...editAlumno, nombre: e.target.value })
+                          }
+                        />
+
+                        <input
+                          value={editAlumno.telefono}
+                          onChange={(e) =>
+                            setEditAlumno({ ...editAlumno, telefono: e.target.value })
+                          }
+                        />
+
+                        <select
+                          value={editAlumno.estado}
+                          onChange={(e) =>
+                            setEditAlumno({ ...editAlumno, estado: e.target.value })
+                          }
+                        >
+                          <option value="activo">activo</option>
+                          <option value="inactivo">inactivo</option>
+                          <option value="baja">baja</option>
+                        </select>
+
+                        <input
+                          value={editAlumno.observaciones}
+                          onChange={(e) =>
+                            setEditAlumno({
+                              ...editAlumno,
+                              observaciones: e.target.value,
+                            })
+                          }
+                        />
+
+                        <div className="actions">
+                          <button onClick={() => guardarEdicion(alumno.id)}>
+                            Guardar
+                          </button>
+                          <button className="secondary" onClick={cancelarEdicion}>
+                            Cancelar
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span>{alumno.nombre}</span>
+                        <span>{alumno.telefono || '-'}</span>
+                        <span className={`status ${alumno.estado || 'activo'}`}>
+                          {alumno.estado || 'activo'}
+                        </span>
+                        <span>{alumno.observaciones || '-'}</span>
+
+                        <div className="actions">
+                          <button onClick={() => iniciarEdicion(alumno)}>
+                            Editar
+                          </button>
+                          <button
+                            className="danger"
+                            onClick={() => eliminarAlumno(alumno.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         </section>
