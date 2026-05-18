@@ -188,3 +188,78 @@ button{
   margin-bottom:12px;
   font-size:18px;
 }
+.section{
+  margin-top:40px;
+  background:#111827;
+  border-radius:20px;
+  padding:24px;
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+.sectionHeader{
+  margin-bottom:24px;
+}
+
+.sectionHeader h2{
+  margin:0;
+}
+
+.sectionHeader p{
+  opacity:0.7;
+  margin-top:8px;
+}
+
+.studentForm{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-bottom:24px;
+}
+
+.studentForm input{
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#1f2937;
+  color:white;
+}
+
+.studentForm button{
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  font-weight:bold;
+}
+
+.table{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.tableHeader,
+.tableRow{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 2fr;
+  gap:16px;
+  padding:16px;
+  border-radius:12px;
+}
+
+.tableHeader{
+  background:#1e293b;
+  font-weight:bold;
+}
+
+.tableRow{
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+.empty{
+  padding:20px;
+  background:#0f172a;
+  border-radius:12px;
+  opacity:0.7;
+}
