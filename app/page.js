@@ -1,17 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
   const [password, setPassword] = useState('123456')
+
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+
   const [alumnos, setAlumnos] = useState([])
+  const [pagos, setPagos] = useState([])
+
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [editingId, setEditingId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -19,22 +22,25 @@ export default function Home() {
     observaciones: '',
   })
 
-  const [editAlumno, setEditAlumno] = useState({
-    nombre: '',
-    telefono: '',
-    estado: 'activo',
-    observaciones: '',
+  const [nuevoPago, setNuevoPago] = useState({
+    alumno_id: '',
+    monto: '',
+    medio_pago: 'efectivo',
+    plan: 'mensual',
+    mes: new Date().toLocaleString('es-AR', { month: 'long' }),
   })
 
   async function login(event) {
     event.preventDefault()
+
     setLoading(true)
     setError('')
 
-    const { data, error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { data, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
     if (loginError) {
       setError(loginError.message)
@@ -49,23 +55,27 @@ export default function Home() {
       .single()
 
     if (profileError) {
-      setError('El usuario existe, pero no tiene rol cargado en la tabla usuarios.')
+      setError('No se pudo cargar el perfil.')
       setLoading(false)
       return
     }
 
     setUser(data.user)
     setProfile(profileData)
+
     await cargarAlumnos()
+    await cargarPagos()
+
     setLoading(false)
   }
 
   async function logout() {
     await supabase.auth.signOut()
+
     setUser(null)
     setProfile(null)
     setAlumnos([])
-    setEditingId(null)
+    setPagos([])
   }
 
   async function cargarAlumnos() {
@@ -82,14 +92,27 @@ export default function Home() {
     setAlumnos(data || [])
   }
 
-  async function crearAlumno(event) {
-    event.preventDefault()
-    setError('')
+  async function cargarPagos() {
+    const { data, error } = await supabase
+      .from('pagos')
+      .select(`
+        *,
+        alumnos (
+          nombre
+        )
+      `)
+      .order('fecha_pago', { ascending: false })
 
-    if (!nuevoAlumno.nombre.trim()) {
-      setError('El nombre del alumno es obligatorio.')
+    if (error) {
+      setError('No se pudieron cargar los pagos.')
       return
     }
+
+    setPagos(data || [])
+  }
+
+  async function crearAlumno(event) {
+    event.preventDefault()
 
     const { error } = await supabase.from('alumnos').insert([
       {
@@ -114,66 +137,33 @@ export default function Home() {
     await cargarAlumnos()
   }
 
-  function iniciarEdicion(alumno) {
-    setEditingId(alumno.id)
-    setEditAlumno({
-      nombre: alumno.nombre || '',
-      telefono: alumno.telefono || '',
-      estado: alumno.estado || 'activo',
-      observaciones: alumno.observaciones || '',
-    })
-  }
+  async function crearPago(event) {
+    event.preventDefault()
 
-  function cancelarEdicion() {
-    setEditingId(null)
-    setEditAlumno({
-      nombre: '',
-      telefono: '',
-      estado: 'activo',
-      observaciones: '',
-    })
-  }
-
-  async function guardarEdicion(id) {
-    setError('')
-
-    if (!editAlumno.nombre.trim()) {
-      setError('El nombre del alumno es obligatorio.')
-      return
-    }
-
-    const { error } = await supabase
-      .from('alumnos')
-      .update({
-        nombre: editAlumno.nombre,
-        telefono: editAlumno.telefono,
-        estado: editAlumno.estado,
-        observaciones: editAlumno.observaciones,
-      })
-      .eq('id', id)
+    const { error } = await supabase.from('pagos').insert([
+      {
+        alumno_id: nuevoPago.alumno_id,
+        monto: Number(nuevoPago.monto),
+        medio_pago: nuevoPago.medio_pago,
+        plan: nuevoPago.plan,
+        mes: nuevoPago.mes,
+      },
+    ])
 
     if (error) {
-      setError('No se pudo actualizar el alumno.')
+      setError('No se pudo registrar el pago.')
       return
     }
 
-    cancelarEdicion()
-    await cargarAlumnos()
-  }
+    setNuevoPago({
+      alumno_id: '',
+      monto: '',
+      medio_pago: 'efectivo',
+      plan: 'mensual',
+      mes: new Date().toLocaleString('es-AR', { month: 'long' }),
+    })
 
-  async function eliminarAlumno(id) {
-    const confirmar = window.confirm('¿Seguro que querés eliminar este alumno?')
-
-    if (!confirmar) return
-
-    const { error } = await supabase.from('alumnos').delete().eq('id', id)
-
-    if (error) {
-      setError('No se pudo eliminar el alumno.')
-      return
-    }
-
-    await cargarAlumnos()
+    await cargarPagos()
   }
 
   useEffect(() => {
@@ -190,25 +180,37 @@ export default function Home() {
           .single()
 
         setProfile(profileData)
+
         await cargarAlumnos()
+        await cargarPagos()
       }
     }
 
     verificarSesion()
   }, [])
 
+  const totalIngresos = useMemo(() => {
+    return pagos.reduce((acc, pago) => acc + Number(pago.monto || 0), 0)
+  }, [pagos])
+
   if (!user) {
     return (
       <main className="page">
         <section className="panel loginPanel">
           <h1>GymFlow</h1>
+
           <p>Ingresá con un usuario socio o profesor.</p>
 
           <form onSubmit={login} className="form">
             <label>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} />
+
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <label>Contraseña</label>
+
             <input
               type="password"
               value={password}
@@ -240,9 +242,13 @@ export default function Home() {
     <main className="app">
       <aside className="sidebar">
         <h2>GymFlow</h2>
+
         {!isProfesor && <button>Dashboard</button>}
+
         <button>Alumnos</button>
+
         <button>Rutinas</button>
+
         {!isProfesor && <button>Costos</button>}
       </aside>
 
@@ -250,6 +256,7 @@ export default function Home() {
         <header className="topbar">
           <div>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
+
             <p>
               {profile?.nombre} · {profile?.email}
             </p>
@@ -261,33 +268,36 @@ export default function Home() {
         <div className="cards">
           {!isProfesor && (
             <article>
-              <span>Dashboard</span>
-              <b>Ingresos, costos y ganancia</b>
+              <span>Ingresos totales</span>
+
+              <b className="money">
+                ${totalIngresos.toLocaleString('es-AR')}
+              </b>
             </article>
           )}
 
           <article>
             <span>Alumnos</span>
-            <b>{alumnos.length} alumnos registrados</b>
+
+            <b>{alumnos.length} registrados</b>
+          </article>
+
+          <article>
+            <span>Pagos</span>
+
+            <b>{pagos.length} registrados</b>
           </article>
 
           <article>
             <span>Rutinas</span>
+
             <b>Rutinas por alumno</b>
           </article>
-
-          {!isProfesor && (
-            <article>
-              <span>Costos</span>
-              <b>Egresos del gimnasio</b>
-            </article>
-          )}
         </div>
 
         <section className="section">
           <div className="sectionHeader">
             <h2>Alumnos</h2>
-            <p>Alta, edición y seguimiento de alumnos del gimnasio.</p>
           </div>
 
           <form onSubmit={crearAlumno} className="studentForm">
@@ -295,7 +305,10 @@ export default function Home() {
               placeholder="Nombre completo"
               value={nuevoAlumno.nombre}
               onChange={(e) =>
-                setNuevoAlumno({ ...nuevoAlumno, nombre: e.target.value })
+                setNuevoAlumno({
+                  ...nuevoAlumno,
+                  nombre: e.target.value,
+                })
               }
             />
 
@@ -303,7 +316,10 @@ export default function Home() {
               placeholder="Teléfono"
               value={nuevoAlumno.telefono}
               onChange={(e) =>
-                setNuevoAlumno({ ...nuevoAlumno, telefono: e.target.value })
+                setNuevoAlumno({
+                  ...nuevoAlumno,
+                  telefono: e.target.value,
+                })
               }
             />
 
@@ -311,106 +327,128 @@ export default function Home() {
               placeholder="Observaciones"
               value={nuevoAlumno.observaciones}
               onChange={(e) =>
-                setNuevoAlumno({ ...nuevoAlumno, observaciones: e.target.value })
+                setNuevoAlumno({
+                  ...nuevoAlumno,
+                  observaciones: e.target.value,
+                })
               }
             />
 
             <button>Crear alumno</button>
           </form>
+        </section>
 
-          {error && <div className="error">{error}</div>}
-
-          <div className="table">
-            <div className="tableHeader studentTableHeader">
-              <span>Nombre</span>
-              <span>Teléfono</span>
-              <span>Estado</span>
-              <span>Observaciones</span>
-              <span>Acciones</span>
+        {!isProfesor && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Registrar pago</h2>
             </div>
 
-            {alumnos.length === 0 ? (
-              <div className="empty">Todavía no hay alumnos cargados.</div>
-            ) : (
-              alumnos.map((alumno) => {
-                const isEditing = editingId === alumno.id
+            <form onSubmit={crearPago} className="paymentForm">
+              <select
+                value={nuevoPago.alumno_id}
+                onChange={(e) =>
+                  setNuevoPago({
+                    ...nuevoPago,
+                    alumno_id: e.target.value,
+                  })
+                }
+              >
+                <option value="">Seleccionar alumno</option>
 
-                return (
-                  <div className="tableRow studentTableRow" key={alumno.id}>
-                    {isEditing ? (
-                      <>
-                        <input
-                          value={editAlumno.nombre}
-                          onChange={(e) =>
-                            setEditAlumno({ ...editAlumno, nombre: e.target.value })
-                          }
-                        />
+                {alumnos.map((alumno) => (
+                  <option key={alumno.id} value={alumno.id}>
+                    {alumno.nombre}
+                  </option>
+                ))}
+              </select>
 
-                        <input
-                          value={editAlumno.telefono}
-                          onChange={(e) =>
-                            setEditAlumno({ ...editAlumno, telefono: e.target.value })
-                          }
-                        />
+              <input
+                placeholder="Monto"
+                type="number"
+                value={nuevoPago.monto}
+                onChange={(e) =>
+                  setNuevoPago({
+                    ...nuevoPago,
+                    monto: e.target.value,
+                  })
+                }
+              />
 
-                        <select
-                          value={editAlumno.estado}
-                          onChange={(e) =>
-                            setEditAlumno({ ...editAlumno, estado: e.target.value })
-                          }
-                        >
-                          <option value="activo">activo</option>
-                          <option value="inactivo">inactivo</option>
-                          <option value="baja">baja</option>
-                        </select>
+              <select
+                value={nuevoPago.medio_pago}
+                onChange={(e) =>
+                  setNuevoPago({
+                    ...nuevoPago,
+                    medio_pago: e.target.value,
+                  })
+                }
+              >
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
 
-                        <input
-                          value={editAlumno.observaciones}
-                          onChange={(e) =>
-                            setEditAlumno({
-                              ...editAlumno,
-                              observaciones: e.target.value,
-                            })
-                          }
-                        />
+              <input
+                placeholder="Plan"
+                value={nuevoPago.plan}
+                onChange={(e) =>
+                  setNuevoPago({
+                    ...nuevoPago,
+                    plan: e.target.value,
+                  })
+                }
+              />
 
-                        <div className="actions">
-                          <button onClick={() => guardarEdicion(alumno.id)}>
-                            Guardar
-                          </button>
-                          <button className="secondary" onClick={cancelarEdicion}>
-                            Cancelar
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span>{alumno.nombre}</span>
-                        <span>{alumno.telefono || '-'}</span>
-                        <span className={`status ${alumno.estado || 'activo'}`}>
-                          {alumno.estado || 'activo'}
-                        </span>
-                        <span>{alumno.observaciones || '-'}</span>
+              <input
+                placeholder="Mes"
+                value={nuevoPago.mes}
+                onChange={(e) =>
+                  setNuevoPago({
+                    ...nuevoPago,
+                    mes: e.target.value,
+                  })
+                }
+              />
 
-                        <div className="actions">
-                          <button onClick={() => iniciarEdicion(alumno)}>
-                            Editar
-                          </button>
-                          <button
-                            className="danger"
-                            onClick={() => eliminarAlumno(alumno.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </section>
+              <button>Registrar pago</button>
+            </form>
+
+            <div className="table">
+              <div className="tableHeader paymentTableHeader">
+                <span>Alumno</span>
+                <span>Monto</span>
+                <span>Plan</span>
+                <span>Mes</span>
+                <span>Medio</span>
+                <span>Fecha</span>
+              </div>
+
+              {pagos.map((pago) => (
+                <div
+                  className="tableRow paymentTableRow"
+                  key={pago.id}
+                >
+                  <span>{pago.alumnos?.nombre}</span>
+
+                  <span className="money">
+                    ${Number(pago.monto).toLocaleString('es-AR')}
+                  </span>
+
+                  <span>{pago.plan}</span>
+
+                  <span>{pago.mes}</span>
+
+                  <span>{pago.medio_pago}</span>
+
+                  <span>
+                    {new Date(pago.fecha_pago).toLocaleDateString('es-AR')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </section>
     </main>
   )
