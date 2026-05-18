@@ -350,4 +350,46 @@ button{
     flex-direction:column;
   }
 }
+.paymentForm{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  margin-bottom:24px;
+}
 
+.paymentForm input,
+.paymentForm select{
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#1f2937;
+  color:white;
+}
+
+.paymentForm button{
+  border:none;
+  border-radius:10px;
+  background:#16a34a;
+  color:white;
+  font-weight:bold;
+}
+
+.paymentTableHeader,
+.paymentTableRow{
+  grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1.2fr;
+}
+
+.money{
+  color:#86efac;
+  font-weight:bold;
+}
+
+@media(max-width:900px){
+  .paymentTableHeader{
+    display:none;
+  }
+
+  .paymentTableRow{
+    grid-template-columns:1fr;
+  }
+}
