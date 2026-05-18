@@ -495,3 +495,25 @@ button{
   border-radius:10px;
   font-family:Arial, sans-serif;
 }
+.simpleList{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+  margin-top:20px;
+}
+
+.listCard{
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+  padding:18px;
+}
+
+.listCard h3{
+  margin:0 0 10px;
+}
+
+.listCard p{
+  margin:6px 0;
+  opacity:0.85;
+}
