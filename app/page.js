@@ -17,6 +17,7 @@ export default function Home() {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [activeSection, setActiveSection] = useState('alumnos')
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -49,15 +50,13 @@ export default function Home() {
 
   async function login(event) {
     event.preventDefault()
-
     setLoading(true)
     setError('')
 
-    const { data, error: loginError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
     if (loginError) {
       setError(loginError.message)
@@ -65,30 +64,33 @@ export default function Home() {
       return
     }
 
-    const { data: profileData } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('usuarios')
       .select('nombre,email,rol')
       .eq('email', data.user.email)
       .single()
 
+    if (profileError) {
+      setError('No se pudo cargar el perfil del usuario.')
+      setLoading(false)
+      return
+    }
+
     setUser(data.user)
     setProfile(profileData)
-
     await cargarDatos()
-
     setLoading(false)
   }
 
   async function logout() {
     await supabase.auth.signOut()
-
     setUser(null)
     setProfile(null)
-
     setAlumnos([])
     setPagos([])
     setCostos([])
     setRutinas([])
+    setActiveSection('alumnos')
   }
 
   async function cargarDatos() {
@@ -148,8 +150,14 @@ export default function Home() {
 
   async function crearAlumno(event) {
     event.preventDefault()
+    setError('')
 
-    await supabase.from('alumnos').insert([
+    if (!nuevoAlumno.nombre.trim()) {
+      setError('El nombre del alumno es obligatorio.')
+      return
+    }
+
+    const { error } = await supabase.from('alumnos').insert([
       {
         nombre: nuevoAlumno.nombre,
         telefono: nuevoAlumno.telefono,
@@ -157,6 +165,11 @@ export default function Home() {
         estado: 'activo',
       },
     ])
+
+    if (error) {
+      setError('No se pudo crear el alumno.')
+      return
+    }
 
     setNuevoAlumno({
       nombre: '',
@@ -169,8 +182,14 @@ export default function Home() {
 
   async function crearPago(event) {
     event.preventDefault()
+    setError('')
 
-    await supabase.from('pagos').insert([
+    if (!nuevoPago.alumno_id || !nuevoPago.monto) {
+      setError('Seleccioná un alumno y cargá el monto.')
+      return
+    }
+
+    const { error } = await supabase.from('pagos').insert([
       {
         alumno_id: nuevoPago.alumno_id,
         monto: Number(nuevoPago.monto),
@@ -180,6 +199,11 @@ export default function Home() {
         fecha_pago: new Date().toISOString().slice(0, 10),
       },
     ])
+
+    if (error) {
+      setError('No se pudo registrar el pago.')
+      return
+    }
 
     setNuevoPago({
       alumno_id: '',
@@ -194,8 +218,14 @@ export default function Home() {
 
   async function crearCosto(event) {
     event.preventDefault()
+    setError('')
 
-    await supabase.from('costos').insert([
+    if (!nuevoCosto.descripcion.trim() || !nuevoCosto.monto) {
+      setError('Completá descripción y monto del costo.')
+      return
+    }
+
+    const { error } = await supabase.from('costos').insert([
       {
         descripcion: nuevoCosto.descripcion,
         categoria: nuevoCosto.categoria,
@@ -204,6 +234,11 @@ export default function Home() {
         fecha: new Date().toISOString().slice(0, 10),
       },
     ])
+
+    if (error) {
+      setError('No se pudo registrar el costo.')
+      return
+    }
 
     setNuevoCosto({
       descripcion: '',
@@ -217,8 +252,14 @@ export default function Home() {
 
   async function crearRutina(event) {
     event.preventDefault()
+    setError('')
 
-    await supabase.from('rutinas').insert([
+    if (!nuevaRutina.alumno_id || !nuevaRutina.nombre.trim()) {
+      setError('Seleccioná un alumno y cargá el nombre de la rutina.')
+      return
+    }
+
+    const { error } = await supabase.from('rutinas').insert([
       {
         alumno_id: nuevaRutina.alumno_id,
         nombre: nuevaRutina.nombre,
@@ -227,6 +268,11 @@ export default function Home() {
         observaciones: nuevaRutina.observaciones,
       },
     ])
+
+    if (error) {
+      setError('No se pudo crear la rutina.')
+      return
+    }
 
     setNuevaRutina({
       alumno_id: '',
@@ -253,7 +299,6 @@ export default function Home() {
           .single()
 
         setProfile(profileData)
-
         await cargarDatos()
       }
     }
@@ -270,25 +315,20 @@ export default function Home() {
   }, [costos])
 
   const ganancia = totalIngresos - totalCostos
+  const isProfesor = profile?.rol === 'profesor'
 
   if (!user) {
     return (
       <main className="page">
         <section className="panel loginPanel">
           <h1>GymFlow</h1>
-
           <p>Ingresá con un usuario socio o profesor.</p>
 
           <form onSubmit={login} className="form">
             <label>Email</label>
-
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} />
 
             <label>Contraseña</label>
-
             <input
               type="password"
               value={password}
@@ -301,32 +341,45 @@ export default function Home() {
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
+
+          <div className="hint">
+            <b>Usuarios demo:</b>
+            <br />
+            socio@gymflow.com / 123456
+            <br />
+            profesor@gymflow.com / 123456
+          </div>
         </section>
       </main>
     )
   }
-
-  const isProfesor = profile?.rol === 'profesor'
 
   return (
     <main className="app">
       <aside className="sidebar">
         <h2>GymFlow</h2>
 
-        {!isProfesor && <button>Dashboard</button>}
+        {!isProfesor && (
+          <button onClick={() => setActiveSection('dashboard')}>
+            Dashboard
+          </button>
+        )}
 
-        <button>Alumnos</button>
+        <button onClick={() => setActiveSection('alumnos')}>Alumnos</button>
+        <button onClick={() => setActiveSection('rutinas')}>Rutinas</button>
 
-        <button>Rutinas</button>
-
-        {!isProfesor && <button>Costos</button>}
+        {!isProfesor && (
+          <>
+            <button onClick={() => setActiveSection('pagos')}>Pagos</button>
+            <button onClick={() => setActiveSection('costos')}>Costos</button>
+          </>
+        )}
       </aside>
 
       <section className="main">
         <header className="topbar">
           <div>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
-
             <p>
               {profile?.nombre} · {profile?.email}
             </p>
@@ -339,15 +392,11 @@ export default function Home() {
           <div className="cards">
             <article>
               <span>Ingresos</span>
-
-              <b className="money">
-                ${totalIngresos.toLocaleString('es-AR')}
-              </b>
+              <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
             </article>
 
             <article>
               <span>Costos</span>
-
               <b className="dangerText">
                 ${totalCostos.toLocaleString('es-AR')}
               </b>
@@ -355,156 +404,356 @@ export default function Home() {
 
             <article>
               <span>Ganancia</span>
-
               <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
                 ${ganancia.toLocaleString('es-AR')}
               </b>
             </article>
+
+            <article>
+              <span>Alumnos</span>
+              <b>{alumnos.length} registrados</b>
+            </article>
           </div>
         )}
 
-        <section className="section">
-          <div className="sectionHeader">
-            <h2>Alumnos</h2>
-          </div>
-
-          <form onSubmit={crearAlumno} className="studentForm">
-            <input
-              placeholder="Nombre completo"
-              value={nuevoAlumno.nombre}
-              onChange={(e) =>
-                setNuevoAlumno({
-                  ...nuevoAlumno,
-                  nombre: e.target.value,
-                })
-              }
-            />
-
-            <input
-              placeholder="Teléfono"
-              value={nuevoAlumno.telefono}
-              onChange={(e) =>
-                setNuevoAlumno({
-                  ...nuevoAlumno,
-                  telefono: e.target.value,
-                })
-              }
-            />
-
-            <input
-              placeholder="Observaciones"
-              value={nuevoAlumno.observaciones}
-              onChange={(e) =>
-                setNuevoAlumno({
-                  ...nuevoAlumno,
-                  observaciones: e.target.value,
-                })
-              }
-            />
-
-            <button>Crear alumno</button>
-          </form>
-        </section>
-
-        <section className="section">
-          <div className="sectionHeader">
-            <h2>Rutinas</h2>
-          </div>
-
-          <form onSubmit={crearRutina} className="routineForm">
-            <select
-              value={nuevaRutina.alumno_id}
-              onChange={(e) =>
-                setNuevaRutina({
-                  ...nuevaRutina,
-                  alumno_id: e.target.value,
-                })
-              }
-            >
-              <option value="">Seleccionar alumno</option>
-
-              {alumnos.map((alumno) => (
-                <option key={alumno.id} value={alumno.id}>
-                  {alumno.nombre}
-                </option>
-              ))}
-            </select>
-
-            <input
-              placeholder="Nombre rutina"
-              value={nuevaRutina.nombre}
-              onChange={(e) =>
-                setNuevaRutina({
-                  ...nuevaRutina,
-                  nombre: e.target.value,
-                })
-              }
-            />
-
-            <input
-              placeholder="Objetivo"
-              value={nuevaRutina.objetivo}
-              onChange={(e) =>
-                setNuevaRutina({
-                  ...nuevaRutina,
-                  objetivo: e.target.value,
-                })
-              }
-            />
-
-            <textarea
-              placeholder="Ejercicios"
-              value={nuevaRutina.ejercicios}
-              onChange={(e) =>
-                setNuevaRutina({
-                  ...nuevaRutina,
-                  ejercicios: e.target.value,
-                })
-              }
-            />
-
-            <textarea
-              placeholder="Observaciones"
-              value={nuevaRutina.observaciones}
-              onChange={(e) =>
-                setNuevaRutina({
-                  ...nuevaRutina,
-                  observaciones: e.target.value,
-                })
-              }
-            />
-
-            <button>Crear rutina</button>
-          </form>
-
-          <div className="routineGrid">
-            {rutinas.map((rutina) => (
-              <article className="routineCard" key={rutina.id}>
-                <span>{rutina.alumnos?.nombre}</span>
-
-                <h3>{rutina.nombre}</h3>
-
-                <p>
-                  <b>Objetivo:</b> {rutina.objetivo}
-                </p>
-
-                <p>
-                  <b>Ejercicios:</b>
-                </p>
-
-                <pre>{rutina.ejercicios}</pre>
-
-                {rutina.observaciones && (
-                  <p>
-                    <b>Observaciones:</b> {rutina.observaciones}
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
-        </section>
-
         {error && <div className="error">{error}</div>}
+
+        {(activeSection === 'dashboard' && !isProfesor) && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Dashboard</h2>
+              <p>Resumen económico general del gimnasio.</p>
+            </div>
+
+            <div className="cards">
+              <article>
+                <span>Total ingresos</span>
+                <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
+              </article>
+
+              <article>
+                <span>Total costos</span>
+                <b className="dangerText">
+                  ${totalCostos.toLocaleString('es-AR')}
+                </b>
+              </article>
+
+              <article>
+                <span>Resultado</span>
+                <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
+                  ${ganancia.toLocaleString('es-AR')}
+                </b>
+              </article>
+            </div>
+          </section>
+        )}
+
+        {activeSection === 'alumnos' && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Alumnos</h2>
+              <p>Alta y listado de alumnos.</p>
+            </div>
+
+            <form onSubmit={crearAlumno} className="studentForm">
+              <input
+                placeholder="Nombre completo"
+                value={nuevoAlumno.nombre}
+                onChange={(e) =>
+                  setNuevoAlumno({ ...nuevoAlumno, nombre: e.target.value })
+                }
+              />
+
+              <input
+                placeholder="Teléfono"
+                value={nuevoAlumno.telefono}
+                onChange={(e) =>
+                  setNuevoAlumno({ ...nuevoAlumno, telefono: e.target.value })
+                }
+              />
+
+              <input
+                placeholder="Observaciones"
+                value={nuevoAlumno.observaciones}
+                onChange={(e) =>
+                  setNuevoAlumno({
+                    ...nuevoAlumno,
+                    observaciones: e.target.value,
+                  })
+                }
+              />
+
+              <button>Crear alumno</button>
+            </form>
+
+            <div className="simpleList">
+              {alumnos.length === 0 ? (
+                <div className="empty">Todavía no hay alumnos cargados.</div>
+              ) : (
+                alumnos.map((alumno) => (
+                  <article key={alumno.id} className="listCard">
+                    <h3>{alumno.nombre}</h3>
+                    <p>Teléfono: {alumno.telefono || '-'}</p>
+                    <p>Estado: {alumno.estado || 'activo'}</p>
+                    <p>Observaciones: {alumno.observaciones || '-'}</p>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        )}
+
+        {activeSection === 'rutinas' && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Rutinas</h2>
+              <p>Los profesores pueden crear y visualizar rutinas.</p>
+            </div>
+
+            <form onSubmit={crearRutina} className="routineForm">
+              <select
+                value={nuevaRutina.alumno_id}
+                onChange={(e) =>
+                  setNuevaRutina({
+                    ...nuevaRutina,
+                    alumno_id: e.target.value,
+                  })
+                }
+              >
+                <option value="">Seleccionar alumno</option>
+                {alumnos.map((alumno) => (
+                  <option key={alumno.id} value={alumno.id}>
+                    {alumno.nombre}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                placeholder="Nombre rutina"
+                value={nuevaRutina.nombre}
+                onChange={(e) =>
+                  setNuevaRutina({ ...nuevaRutina, nombre: e.target.value })
+                }
+              />
+
+              <input
+                placeholder="Objetivo"
+                value={nuevaRutina.objetivo}
+                onChange={(e) =>
+                  setNuevaRutina({ ...nuevaRutina, objetivo: e.target.value })
+                }
+              />
+
+              <textarea
+                placeholder="Ejercicios"
+                value={nuevaRutina.ejercicios}
+                onChange={(e) =>
+                  setNuevaRutina({
+                    ...nuevaRutina,
+                    ejercicios: e.target.value,
+                  })
+                }
+              />
+
+              <textarea
+                placeholder="Observaciones"
+                value={nuevaRutina.observaciones}
+                onChange={(e) =>
+                  setNuevaRutina({
+                    ...nuevaRutina,
+                    observaciones: e.target.value,
+                  })
+                }
+              />
+
+              <button>Crear rutina</button>
+            </form>
+
+            <div className="routineGrid">
+              {rutinas.length === 0 ? (
+                <div className="empty">Todavía no hay rutinas cargadas.</div>
+              ) : (
+                rutinas.map((rutina) => (
+                  <article className="routineCard" key={rutina.id}>
+                    <span>{rutina.alumnos?.nombre || 'Sin alumno'}</span>
+                    <h3>{rutina.nombre}</h3>
+                    <p>
+                      <b>Objetivo:</b> {rutina.objetivo || '-'}
+                    </p>
+                    <p>
+                      <b>Ejercicios:</b>
+                    </p>
+                    <pre>{rutina.ejercicios || '-'}</pre>
+                    {rutina.observaciones && (
+                      <p>
+                        <b>Observaciones:</b> {rutina.observaciones}
+                      </p>
+                    )}
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        )}
+
+        {(activeSection === 'pagos' && !isProfesor) && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Pagos</h2>
+              <p>Registro de cuotas e ingresos.</p>
+            </div>
+
+            <form onSubmit={crearPago} className="paymentForm">
+              <select
+                value={nuevoPago.alumno_id}
+                onChange={(e) =>
+                  setNuevoPago({ ...nuevoPago, alumno_id: e.target.value })
+                }
+              >
+                <option value="">Seleccionar alumno</option>
+                {alumnos.map((alumno) => (
+                  <option key={alumno.id} value={alumno.id}>
+                    {alumno.nombre}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                placeholder="Monto"
+                type="number"
+                value={nuevoPago.monto}
+                onChange={(e) =>
+                  setNuevoPago({ ...nuevoPago, monto: e.target.value })
+                }
+              />
+
+              <select
+                value={nuevoPago.medio_pago}
+                onChange={(e) =>
+                  setNuevoPago({ ...nuevoPago, medio_pago: e.target.value })
+                }
+              >
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
+
+              <input
+                placeholder="Plan"
+                value={nuevoPago.plan}
+                onChange={(e) =>
+                  setNuevoPago({ ...nuevoPago, plan: e.target.value })
+                }
+              />
+
+              <input
+                placeholder="Mes"
+                value={nuevoPago.mes}
+                onChange={(e) =>
+                  setNuevoPago({ ...nuevoPago, mes: e.target.value })
+                }
+              />
+
+              <button>Registrar pago</button>
+            </form>
+
+            <div className="simpleList">
+              {pagos.length === 0 ? (
+                <div className="empty">Todavía no hay pagos cargados.</div>
+              ) : (
+                pagos.map((pago) => (
+                  <article className="listCard" key={pago.id}>
+                    <h3>{pago.alumnos?.nombre || 'Sin alumno'}</h3>
+                    <p className="money">
+                      ${Number(pago.monto || 0).toLocaleString('es-AR')}
+                    </p>
+                    <p>Plan: {pago.plan || '-'}</p>
+                    <p>Mes: {pago.mes || '-'}</p>
+                    <p>Medio: {pago.medio_pago || '-'}</p>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        )}
+
+        {(activeSection === 'costos' && !isProfesor) && (
+          <section className="section">
+            <div className="sectionHeader">
+              <h2>Costos</h2>
+              <p>Registro de egresos del gimnasio.</p>
+            </div>
+
+            <form onSubmit={crearCosto} className="costForm">
+              <input
+                placeholder="Descripción"
+                value={nuevoCosto.descripcion}
+                onChange={(e) =>
+                  setNuevoCosto({
+                    ...nuevoCosto,
+                    descripcion: e.target.value,
+                  })
+                }
+              />
+
+              <select
+                value={nuevoCosto.categoria}
+                onChange={(e) =>
+                  setNuevoCosto({
+                    ...nuevoCosto,
+                    categoria: e.target.value,
+                  })
+                }
+              >
+                <option value="alquiler">Alquiler</option>
+                <option value="sueldos">Sueldos</option>
+                <option value="servicios">Servicios</option>
+                <option value="equipamiento">Equipamiento</option>
+                <option value="marketing">Marketing</option>
+                <option value="otros">Otros</option>
+              </select>
+
+              <input
+                placeholder="Monto"
+                type="number"
+                value={nuevoCosto.monto}
+                onChange={(e) =>
+                  setNuevoCosto({ ...nuevoCosto, monto: e.target.value })
+                }
+              />
+
+              <input
+                placeholder="Observaciones"
+                value={nuevoCosto.observaciones}
+                onChange={(e) =>
+                  setNuevoCosto({
+                    ...nuevoCosto,
+                    observaciones: e.target.value,
+                  })
+                }
+              />
+
+              <button>Registrar costo</button>
+            </form>
+
+            <div className="simpleList">
+              {costos.length === 0 ? (
+                <div className="empty">Todavía no hay costos cargados.</div>
+              ) : (
+                costos.map((costo) => (
+                  <article className="listCard" key={costo.id}>
+                    <h3>{costo.descripcion}</h3>
+                    <p className="dangerText">
+                      ${Number(costo.monto || 0).toLocaleString('es-AR')}
+                    </p>
+                    <p>Categoría: {costo.categoria || '-'}</p>
+                    <p>Observaciones: {costo.observaciones || '-'}</p>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        )}
       </section>
     </main>
   )
