@@ -13,32 +13,6 @@ export default function Home() {
   const [alumnos, setAlumnos] = useState([])
   const [pagos, setPagos] = useState([])
   const [costos, setCostos] = useState([])
-
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const [nuevoAlumno, setNuevoAlumno] = useState({
-    nombre: '',
-    telefono: '',
-    observaciones: '',
-  })
-
-  const [nuevoPago, setNuevoPago] = useState({
-    alumno_id: '','use client'
-
-import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '../lib/supabase'
-
-export default function Home() {
-  const [email, setEmail] = useState('socio@gymflow.com')
-  const [password, setPassword] = useState('123456')
-
-  const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
-
-  const [alumnos, setAlumnos] = useState([])
-  const [pagos, setPagos] = useState([])
-  const [costos, setCostos] = useState([])
   const [rutinas, setRutinas] = useState([])
 
   const [error, setError] = useState('')
@@ -75,6 +49,7 @@ export default function Home() {
 
   async function login(event) {
     event.preventDefault()
+
     setLoading(true)
     setError('')
 
@@ -90,17 +65,11 @@ export default function Home() {
       return
     }
 
-    const { data: profileData, error: profileError } = await supabase
+    const { data: profileData } = await supabase
       .from('usuarios')
       .select('nombre,email,rol')
       .eq('email', data.user.email)
       .single()
-
-    if (profileError) {
-      setError('No se pudo cargar el perfil.')
-      setLoading(false)
-      return
-    }
 
     setUser(data.user)
     setProfile(profileData)
@@ -437,90 +406,9 @@ export default function Home() {
           </form>
         </section>
 
-        {!isProfesor && (
-          <>
-            <section className="section">
-              <div className="sectionHeader">
-                <h2>Pagos</h2>
-              </div>
-
-              <form onSubmit={crearPago} className="paymentForm">
-                <select
-                  value={nuevoPago.alumno_id}
-                  onChange={(e) =>
-                    setNuevoPago({
-                      ...nuevoPago,
-                      alumno_id: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Seleccionar alumno</option>
-
-                  {alumnos.map((alumno) => (
-                    <option key={alumno.id} value={alumno.id}>
-                      {alumno.nombre}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  placeholder="Monto"
-                  type="number"
-                  value={nuevoPago.monto}
-                  onChange={(e) =>
-                    setNuevoPago({
-                      ...nuevoPago,
-                      monto: e.target.value,
-                    })
-                  }
-                />
-
-                <button>Registrar pago</button>
-              </form>
-            </section>
-
-            <section className="section">
-              <div className="sectionHeader">
-                <h2>Costos</h2>
-              </div>
-
-              <form onSubmit={crearCosto} className="costForm">
-                <input
-                  placeholder="Descripción"
-                  value={nuevoCosto.descripcion}
-                  onChange={(e) =>
-                    setNuevoCosto({
-                      ...nuevoCosto,
-                      descripcion: e.target.value,
-                    })
-                  }
-                />
-
-                <input
-                  placeholder="Monto"
-                  type="number"
-                  value={nuevoCosto.monto}
-                  onChange={(e) =>
-                    setNuevoCosto({
-                      ...nuevoCosto,
-                      monto: e.target.value,
-                    })
-                  }
-                />
-
-                <button>Registrar costo</button>
-              </form>
-            </section>
-          </>
-        )}
-
         <section className="section">
           <div className="sectionHeader">
             <h2>Rutinas</h2>
-
-            <p>
-              Los profesores pueden crear y visualizar rutinas.
-            </p>
           </div>
 
           <form onSubmit={crearRutina} className="routineForm">
