@@ -197,6 +197,33 @@ export default function Home() {
     await cargarAlumnos()
   }
 
+  async function eliminarAlumno(id) {
+    const confirmar = window.confirm(
+      '¿Seguro que querés eliminar este alumno? También se eliminará su historial asociado si la base está configurada en cascada.'
+    )
+
+    if (!confirmar) return
+
+    setError('')
+
+    const { error } = await supabase
+      .from('alumnos')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      setError('No se pudo eliminar el alumno.')
+      return
+    }
+
+    if (selectedAlumnoId === id) {
+      setSelectedAlumnoId(null)
+      setActiveSection('alumnos')
+    }
+
+    await cargarDatos()
+  }
+
   async function crearPago(event) {
     event.preventDefault()
     setError('')
@@ -461,6 +488,7 @@ export default function Home() {
             nuevoAlumno={nuevoAlumno}
             setNuevoAlumno={setNuevoAlumno}
             crearAlumno={crearAlumno}
+            eliminarAlumno={eliminarAlumno}
             setSelectedAlumnoId={setSelectedAlumnoId}
             setActiveSection={setActiveSection}
           />
