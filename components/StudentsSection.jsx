@@ -3,6 +3,7 @@ export default function StudentsSection({
   nuevoAlumno,
   setNuevoAlumno,
   crearAlumno,
+  eliminarAlumno,
   setSelectedAlumnoId,
   setActiveSection,
 }) {
@@ -55,15 +56,24 @@ export default function StudentsSection({
               <p>Estado: {alumno.estado || 'activo'}</p>
               <p>Observaciones: {alumno.observaciones || '-'}</p>
 
-              <button
-                className="smallButton"
-                onClick={() => {
-                  setSelectedAlumnoId(alumno.id)
-                  setActiveSection('fichaAlumno')
-                }}
-              >
-                Ver ficha
-              </button>
+              <div className="buttonGroup">
+                <button
+                  className="smallButton"
+                  onClick={() => {
+                    setSelectedAlumnoId(alumno.id)
+                    setActiveSection('fichaAlumno')
+                  }}
+                >
+                  Ver ficha
+                </button>
+
+                <button
+                  className="smallButton dangerButton"
+                  onClick={() => eliminarAlumno(alumno.id)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </article>
           ))
         )}
