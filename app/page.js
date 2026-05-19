@@ -686,6 +686,7 @@ export default function Home() {
             alumnos={alumnos}
             pagos={pagos}
             costos={costos}
+            rutinas={rutinas}
           />
         )}
 

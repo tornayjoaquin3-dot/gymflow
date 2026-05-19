@@ -555,3 +555,322 @@ button{
 .sidebar button.activeMenu{
   background:#2563eb;
 }
+
+.dashboardSection{
+  margin-top:0;
+}
+
+.dashboardHero{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:32px;
+  padding-bottom:28px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.dashboardEyebrow{
+  margin:0 0 8px;
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:#93c5fd;
+  font-weight:bold;
+}
+
+.dashboardSection h2{
+  margin:0;
+  font-size:32px;
+}
+
+.dashboardSubtitle{
+  margin:10px 0 0;
+  max-width:560px;
+  opacity:0.75;
+  line-height:1.5;
+}
+
+.dashboardResultBadge{
+  min-width:220px;
+  padding:20px 24px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:linear-gradient(135deg,#111827 0%,#1e293b 100%);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.dashboardResultBadge span{
+  font-size:13px;
+  opacity:0.7;
+}
+
+.dashboardResultBadge strong{
+  font-size:28px;
+}
+
+.dashboardResultBadge.isPositive strong{
+  color:#86efac;
+}
+
+.dashboardResultBadge.isNegative strong{
+  color:#fca5a5;
+}
+
+.dashboardBlock{
+  margin-bottom:28px;
+}
+
+.dashboardBlockHeader{
+  margin-bottom:18px;
+}
+
+.dashboardBlockHeader h3{
+  margin:0;
+  font-size:20px;
+}
+
+.dashboardBlockHeader p{
+  margin:8px 0 0;
+  opacity:0.7;
+  font-size:14px;
+}
+
+.dashboardMetrics{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+
+.dashboardMetricCard{
+  background:linear-gradient(180deg,#0f172a 0%,#111827 100%);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:18px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height:130px;
+  transition:transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboardMetricCard:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,0.12);
+}
+
+.dashboardMetricCard--positive{
+  border-top:3px solid #22c55e;
+}
+
+.dashboardMetricCard--negative{
+  border-top:3px solid #ef4444;
+}
+
+.dashboardMetricCard--accent{
+  border-top:3px solid #3b82f6;
+}
+
+.dashboardMetricCard--neutral{
+  border-top:3px solid #64748b;
+}
+
+.dashboardMetricLabel{
+  font-size:13px;
+  opacity:0.65;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
+
+.dashboardMetricValue{
+  font-size:28px;
+  line-height:1.1;
+}
+
+.dashboardMetricCard--positive .dashboardMetricValue{
+  color:#86efac;
+}
+
+.dashboardMetricCard--negative .dashboardMetricValue{
+  color:#fca5a5;
+}
+
+.dashboardMetricCard--accent .dashboardMetricValue{
+  color:#93c5fd;
+}
+
+.dashboardMetricHint{
+  margin:0;
+  font-size:12px;
+  opacity:0.55;
+  line-height:1.4;
+}
+
+.dashboardColumns{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+.dashboardActivityGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
+}
+
+.dashboardActivityPanel{
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;
+  padding:18px;
+}
+
+.dashboardActivityPanel h4{
+  margin:0 0 14px;
+  font-size:16px;
+}
+
+.dashboardActivityList{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.dashboardActivityItem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,0.04);
+}
+
+.dashboardActivityItem div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+.dashboardActivityItem strong{
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.dashboardActivityItem span{
+  font-size:12px;
+  opacity:0.65;
+}
+
+.dashboardActivityItem b{
+  font-size:15px;
+  white-space:nowrap;
+}
+
+.dashboardEmpty{
+  margin:0;
+  padding:16px;
+  border-radius:12px;
+  background:#111827;
+  opacity:0.7;
+  font-size:14px;
+}
+
+.dashboardAlertsList{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.dashboardAlert{
+  padding:16px 18px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:#0f172a;
+}
+
+.dashboardAlert strong{
+  display:block;
+  margin-bottom:6px;
+  font-size:15px;
+}
+
+.dashboardAlert p{
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  opacity:0.85;
+}
+
+.dashboardAlert--ok{
+  border-color:rgba(34,197,94,0.35);
+  background:rgba(34,197,94,0.08);
+}
+
+.dashboardAlert--ok strong{
+  color:#86efac;
+}
+
+.dashboardAlert--warning{
+  border-color:rgba(234,179,8,0.35);
+  background:rgba(234,179,8,0.08);
+}
+
+.dashboardAlert--warning strong{
+  color:#fde68a;
+}
+
+.dashboardAlert--danger{
+  border-color:rgba(239,68,68,0.35);
+  background:rgba(239,68,68,0.08);
+}
+
+.dashboardAlert--danger strong{
+  color:#fca5a5;
+}
+
+.dashboardAlert--info{
+  border-color:rgba(59,130,246,0.35);
+  background:rgba(59,130,246,0.08);
+}
+
+.dashboardAlert--info strong{
+  color:#93c5fd;
+}
+
+@media(max-width:1100px){
+  .dashboardColumns{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:700px){
+  .dashboardHero{
+    flex-direction:column;
+  }
+
+  .dashboardResultBadge{
+    width:100%;
+    min-width:0;
+  }
+
+  .dashboardSection h2{
+    font-size:26px;
+  }
+
+  .dashboardMetricValue{
+    font-size:24px;
+  }
+}
