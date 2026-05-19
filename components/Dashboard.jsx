@@ -36,6 +36,13 @@ function formatMesLabel(clave) {
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
+function formatMesCorto(clave) {
+  const [year, month] = clave.split('-')
+  const fecha = new Date(Number(year), Number(month) - 1, 1)
+  const label = fecha.toLocaleDateString('es-AR', { month: 'short' })
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${year}`
+}
+
 function obtenerMesesDisponibles(pagos, costos) {
   const claves = new Set()
 
@@ -97,6 +104,30 @@ function hayPagosEnUltimosDias(pagos, dias = 7) {
   })
 }
 
+function calcularEstadoFinanciero({
+  ganancia,
+  ingresos,
+  costos,
+  tienePagosRecientes,
+}) {
+  if (ganancia <= 0 || costos > ingresos) {
+    return { nivel: 'risk', label: 'Riesgo', icon: '🔴' }
+  }
+
+  const ratio = costos > 0 ? ingresos / costos : ingresos > 0 ? 2 : 0
+
+  if (
+    ganancia > 0 &&
+    ratio >= 1.2 &&
+    tienePagosRecientes &&
+    ingresos > 0
+  ) {
+    return { nivel: 'excellent', label: 'Excelente', icon: '🟢' }
+  }
+
+  return { nivel: 'stable', label: 'Estable', icon: '🟡' }
+}
+
 export default function Dashboard({
   totalIngresos,
   totalCostos,
@@ -127,6 +158,7 @@ export default function Dashboard({
         return {
           clave,
           label: formatMesLabel(clave),
+          labelCorto: formatMesCorto(clave),
           ingresos,
           costos: costosTotal,
           ganancia: ingresos - costosTotal,
@@ -158,6 +190,14 @@ export default function Dashboard({
   const gananciaPeriodo = ingresosPeriodo - costosPeriodoTotal
   const alumnosCobradosPeriodo = contarAlumnosCobrados(pagosPeriodo)
   const esTotal = periodo === 'total'
+  const tienePagosRecientes = hayPagosEnUltimosDias(pagos)
+
+  const estadoFinanciero = calcularEstadoFinanciero({
+    ganancia: gananciaPeriodo,
+    ingresos: ingresosPeriodo,
+    costos: costosPeriodoTotal,
+    tienePagosRecientes,
+  })
 
   const estadoCuotas = useMemo(() => {
     if (esTotal) {
@@ -169,6 +209,7 @@ export default function Dashboard({
         modo: 'total',
         conPago,
         sinPago,
+        pendientes: sinPago,
         totalActivos: alumnosActivos.length,
       }
     }
@@ -186,6 +227,8 @@ export default function Dashboard({
     }
   }, [esTotal, pagos, pagosPeriodo, alumnosActivos])
 
+  const pendientesCount = estadoCuotas.pendientes?.length ?? 0
+
   const maxComparacion = useMemo(() => {
     if (resumenesMensuales.length === 0) return 1
 
@@ -195,35 +238,32 @@ export default function Dashboard({
     )
   }, [resumenesMensuales])
 
-  const alertas = []
-
-  if (!hayPagosEnUltimosDias(pagos)) {
-    alertas.push({
-      tipo: 'warning',
-      titulo: 'Sin cobros recientes',
-      mensaje:
-        'No se registraron pagos en los últimos 7 días. Revisá el seguimiento de cuotas.',
-    })
-  }
+  const alertasOperativas = []
 
   if (costosPeriodoTotal > ingresosPeriodo) {
-    alertas.push({
+    alertasOperativas.push({
       tipo: 'danger',
-      titulo: esTotal ? 'Costos superan ingresos' : 'Costos superan ingresos del período',
-      mensaje: `Los egresos (${formatMoney(costosPeriodoTotal)}) superan los ingresos (${formatMoney(ingresosPeriodo)})${esTotal ? '' : ` de ${formatMesLabel(periodo)}`}.`,
+      texto: esTotal
+        ? 'Costos superan ingresos'
+        : `Costos superan ingresos (${formatMesLabel(periodo)})`,
     })
   }
 
-  if (alumnosActivos.length === 0) {
-    alertas.push({
-      tipo: 'info',
-      titulo: 'Sin alumnos activos',
-      mensaje:
-        'No hay alumnos activos cargados. Revisá el alta en la sección Alumnos.',
+  if (pendientesCount > 0) {
+    alertasOperativas.push({
+      tipo: 'warning',
+      texto: `${pendientesCount} alumno${pendientesCount === 1 ? '' : 's'} pendiente${pendientesCount === 1 ? '' : 's'}`,
     })
   }
 
-  const metricas = [
+  if (!tienePagosRecientes) {
+    alertasOperativas.push({
+      tipo: 'warning',
+      texto: 'Sin pagos en los últimos 7 días',
+    })
+  }
+
+  const metricasFinanzas = [
     {
       label: esTotal ? 'Ingresos' : 'Ingresos del mes',
       value: formatMoney(ingresosPeriodo),
@@ -239,10 +279,23 @@ export default function Dashboard({
       value: formatMoney(gananciaPeriodo),
       tone: gananciaPeriodo >= 0 ? 'positive' : 'negative',
     },
+  ]
+
+  const metricasOperacion = [
     {
-      label: esTotal ? 'Alumnos cobrados' : 'Alumnos cobrados',
+      label: 'Alumnos activos',
+      value: alumnosActivos.length,
+      tone: 'neutral',
+    },
+    {
+      label: esTotal ? 'Con pagos' : 'Cobrados',
       value: alumnosCobradosPeriodo,
       tone: 'accent',
+    },
+    {
+      label: 'Pendientes',
+      value: pendientesCount,
+      tone: pendientesCount > 0 ? 'negative' : 'positive',
     },
   ]
 
@@ -251,7 +304,15 @@ export default function Dashboard({
       <div className="dashboardHero dashboardHero--compact">
         <div>
           <p className="dashboardEyebrow">Panel de gestión</p>
-          <h2>Dashboard</h2>
+          <div className="dashboardHeroTitleRow">
+            <h2>Dashboard</h2>
+            <span
+              className={`dashboardHealthBadge dashboardHealthBadge--${estadoFinanciero.nivel}`}
+            >
+              <span aria-hidden="true">{estadoFinanciero.icon}</span>
+              {estadoFinanciero.label}
+            </span>
+          </div>
           <p className="dashboardSubtitle">
             {esTotal
               ? 'Vista acumulada del gimnasio.'
@@ -269,7 +330,7 @@ export default function Dashboard({
         </div>
       </div>
 
-      <div className="dashboardBlock dashboardBlock--compact">
+      <div className="dashboardToolbar">
         <div className="dashboardPeriodFilters">
           <button
             type="button"
@@ -302,174 +363,217 @@ export default function Dashboard({
         )}
       </div>
 
-      <div className="dashboardMetrics dashboardMetrics--compact">
-        {metricas.map((metrica) => (
-          <article
-            key={metrica.label}
-            className={`dashboardMetricCard dashboardMetricCard--compact dashboardMetricCard--${metrica.tone}`}
-          >
-            <span className="dashboardMetricLabel">{metrica.label}</span>
-            <strong className="dashboardMetricValue">{metrica.value}</strong>
-          </article>
-        ))}
-      </div>
-
-      <div className="dashboardBlock dashboardBlock--compact">
-        <div className="dashboardBlockHeader dashboardBlockHeader--compact">
-          <h3>Estado de cuotas</h3>
-          <p>
-            {esTotal
-              ? 'Resumen de cobros por alumno activo.'
-              : `Seguimiento de cuotas en ${formatMesLabel(periodo)}.`}
-          </p>
+      <div className="dashboardZone dashboardZone--finance">
+        <div className="dashboardZoneLabel">
+          <span className="dashboardZoneIcon" aria-hidden="true" />
+          Finanzas
         </div>
 
-        {estadoCuotas.modo === 'mes' ? (
-          <>
-            <div className="dashboardDuesStats">
-              <article className="dashboardDuesStat dashboardDuesStat--ok">
-                <span>Alumnos al día</span>
-                <strong>{estadoCuotas.alDia.length}</strong>
-              </article>
-              <article className="dashboardDuesStat dashboardDuesStat--pending">
-                <span>Pendientes</span>
-                <strong>{estadoCuotas.pendientes.length}</strong>
-              </article>
+        <div className="dashboardMetrics dashboardMetrics--finance">
+          {metricasFinanzas.map((metrica) => (
+            <article
+              key={metrica.label}
+              className={`dashboardMetricCard dashboardMetricCard--compact dashboardMetricCard--${metrica.tone}`}
+            >
+              <span className="dashboardMetricLabel">{metrica.label}</span>
+              <strong className="dashboardMetricValue">{metrica.value}</strong>
+            </article>
+          ))}
+        </div>
+
+        <div className="dashboardPanel">
+          <div className="dashboardPanelHeader">
+            <h3>Comparativa mensual</h3>
+            <p>Evolución de ingresos, costos y resultado.</p>
+          </div>
+
+          {resumenesMensuales.length === 0 ? (
+            <p className="dashboardEmpty">No hay datos mensuales para comparar.</p>
+          ) : (
+            <div className="dashboardChart">
+              <div className="dashboardChartHead">
+                <span className="dashboardChartColMonth">Mes</span>
+                <span className="dashboardChartColBar">Ingresos</span>
+                <span className="dashboardChartColBar">Costos</span>
+                <span className="dashboardChartColResult">Ganancia</span>
+              </div>
+
+              {resumenesMensuales.map((mes) => (
+                <article key={mes.clave} className="dashboardChartRow">
+                  <div className="dashboardChartColMonth">
+                    <strong title={mes.label}>{mes.labelCorto}</strong>
+                  </div>
+
+                  <div className="dashboardChartColBar">
+                    <div className="dashboardChartBarWrap">
+                      <div className="dashboardChartTrack">
+                        <div
+                          className="dashboardChartBar dashboardChartBar--income"
+                          style={{
+                            width: `${(mes.ingresos / maxComparacion) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="dashboardChartValue money">
+                        {formatMoney(mes.ingresos)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="dashboardChartColBar">
+                    <div className="dashboardChartBarWrap">
+                      <div className="dashboardChartTrack">
+                        <div
+                          className="dashboardChartBar dashboardChartBar--cost"
+                          style={{
+                            width: `${(mes.costos / maxComparacion) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="dashboardChartValue dangerText">
+                        {formatMoney(mes.costos)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`dashboardChartColResult ${
+                      mes.ganancia >= 0 ? 'isPositive' : 'isNegative'
+                    }`}
+                  >
+                    <strong>{formatMoney(mes.ganancia)}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="dashboardZone dashboardZone--ops">
+        <div className="dashboardZoneLabel">
+          <span className="dashboardZoneIcon dashboardZoneIcon--ops" aria-hidden="true" />
+          Operación
+        </div>
+
+        <div className="dashboardMetrics dashboardMetrics--ops">
+          {metricasOperacion.map((metrica) => (
+            <article
+              key={metrica.label}
+              className={`dashboardMetricCard dashboardMetricCard--compact dashboardMetricCard--${metrica.tone}`}
+            >
+              <span className="dashboardMetricLabel">{metrica.label}</span>
+              <strong className="dashboardMetricValue">{metrica.value}</strong>
+            </article>
+          ))}
+        </div>
+
+        <div className="dashboardOpsGrid">
+          <div className="dashboardPanel">
+            <div className="dashboardPanelHeader">
+              <h3>Estado de cuotas</h3>
+              <p>
+                {esTotal
+                  ? 'Cobros por alumno activo.'
+                  : `Cuotas en ${formatMesLabel(periodo)}.`}
+              </p>
             </div>
 
-            {estadoCuotas.pendientes.length === 0 ? (
-              <p className="dashboardDuesMessage">
-                Todos los alumnos tienen pago registrado en este período.
-              </p>
-            ) : (
-              <ul className="dashboardDuesList">
-                {estadoCuotas.pendientes.slice(0, 8).map((alumno) => (
-                  <li key={alumno.id}>{alumno.nombre}</li>
-                ))}
-                {estadoCuotas.pendientes.length > 8 && (
-                  <li className="dashboardDuesMore">
-                    +{estadoCuotas.pendientes.length - 8} más
-                  </li>
+            {estadoCuotas.modo === 'mes' ? (
+              <>
+                <div className="dashboardDuesStats">
+                  <article className="dashboardDuesStat dashboardDuesStat--ok">
+                    <span>Al día</span>
+                    <strong>{estadoCuotas.alDia.length}</strong>
+                  </article>
+                  <article className="dashboardDuesStat dashboardDuesStat--pending">
+                    <span>Pendientes</span>
+                    <strong>{estadoCuotas.pendientes.length}</strong>
+                  </article>
+                </div>
+
+                {estadoCuotas.pendientes.length === 0 ? (
+                  <p className="dashboardDuesMessage">
+                    Todos los alumnos tienen pago registrado en este período.
+                  </p>
+                ) : (
+                  <ul className="dashboardDuesList">
+                    {estadoCuotas.pendientes.slice(0, 6).map((alumno) => (
+                      <li key={alumno.id}>{alumno.nombre}</li>
+                    ))}
+                    {estadoCuotas.pendientes.length > 6 && (
+                      <li className="dashboardDuesMore">
+                        +{estadoCuotas.pendientes.length - 6} más
+                      </li>
+                    )}
+                  </ul>
                 )}
-              </ul>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="dashboardDuesStats dashboardDuesStats--total">
-              <article className="dashboardDuesStat">
-                <span>Con pagos registrados</span>
-                <strong>{estadoCuotas.conPago.length}</strong>
-              </article>
-              <article className="dashboardDuesStat dashboardDuesStat--pending">
-                <span>Sin ningún pago</span>
-                <strong>{estadoCuotas.sinPago.length}</strong>
-              </article>
-              <article className="dashboardDuesStat">
-                <span>Alumnos activos</span>
-                <strong>{estadoCuotas.totalActivos}</strong>
-              </article>
-            </div>
-
-            {estadoCuotas.sinPago.length === 0 ? (
-              <p className="dashboardDuesMessage">
-                Todos los alumnos activos tienen al menos un pago registrado.
-              </p>
+              </>
             ) : (
               <>
-                <p className="dashboardDuesListTitle">Alumnos sin pago registrado</p>
-                <ul className="dashboardDuesList">
-                  {estadoCuotas.sinPago.slice(0, 8).map((alumno) => (
-                    <li key={alumno.id}>{alumno.nombre}</li>
-                  ))}
-                  {estadoCuotas.sinPago.length > 8 && (
-                    <li className="dashboardDuesMore">
-                      +{estadoCuotas.sinPago.length - 8} más
-                    </li>
-                  )}
-                </ul>
+                <div className="dashboardDuesStats dashboardDuesStats--total">
+                  <article className="dashboardDuesStat">
+                    <span>Con pagos</span>
+                    <strong>{estadoCuotas.conPago.length}</strong>
+                  </article>
+                  <article className="dashboardDuesStat dashboardDuesStat--pending">
+                    <span>Sin pago</span>
+                    <strong>{estadoCuotas.sinPago.length}</strong>
+                  </article>
+                  <article className="dashboardDuesStat">
+                    <span>Activos</span>
+                    <strong>{estadoCuotas.totalActivos}</strong>
+                  </article>
+                </div>
+
+                {estadoCuotas.sinPago.length === 0 ? (
+                  <p className="dashboardDuesMessage">
+                    Todos los alumnos activos tienen al menos un pago registrado.
+                  </p>
+                ) : (
+                  <>
+                    <p className="dashboardDuesListTitle">Sin pago registrado</p>
+                    <ul className="dashboardDuesList">
+                      {estadoCuotas.sinPago.slice(0, 6).map((alumno) => (
+                        <li key={alumno.id}>{alumno.nombre}</li>
+                      ))}
+                      {estadoCuotas.sinPago.length > 6 && (
+                        <li className="dashboardDuesMore">
+                          +{estadoCuotas.sinPago.length - 6} más
+                        </li>
+                      )}
+                    </ul>
+                  </>
+                )}
               </>
             )}
-          </>
-        )}
-      </div>
-
-      <div className="dashboardBlock dashboardBlock--compact">
-        <div className="dashboardBlockHeader dashboardBlockHeader--compact">
-          <h3>Comparativa mensual</h3>
-          <p>Ingresos, costos y ganancia por mes.</p>
-        </div>
-
-        {resumenesMensuales.length === 0 ? (
-          <p className="dashboardEmpty">No hay datos mensuales para comparar.</p>
-        ) : (
-          <div className="dashboardCompareList dashboardCompareList--compact">
-            {resumenesMensuales.map((mes) => (
-              <article key={mes.clave} className="dashboardCompareRow dashboardCompareRow--compact">
-                <div className="dashboardCompareMonth">
-                  <strong>{mes.label}</strong>
-                </div>
-
-                <div className="dashboardCompareBars">
-                  <div className="dashboardBarRow">
-                    <span className="dashboardBarLabel">Ing.</span>
-                    <div className="dashboardBarTrack">
-                      <div
-                        className="dashboardBar dashboardBar--income"
-                        style={{
-                          width: `${(mes.ingresos / maxComparacion) * 100}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="dashboardBarValue money">
-                      {formatMoney(mes.ingresos)}
-                    </span>
-                  </div>
-
-                  <div className="dashboardBarRow">
-                    <span className="dashboardBarLabel">Cost.</span>
-                    <div className="dashboardBarTrack">
-                      <div
-                        className="dashboardBar dashboardBar--cost"
-                        style={{
-                          width: `${(mes.costos / maxComparacion) * 100}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="dashboardBarValue dangerText">
-                      {formatMoney(mes.costos)}
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  className={`dashboardCompareResult dashboardCompareResult--compact ${
-                    mes.ganancia >= 0 ? 'isPositive' : 'isNegative'
-                  }`}
-                >
-                  <strong>{formatMoney(mes.ganancia)}</strong>
-                </div>
-              </article>
-            ))}
           </div>
-        )}
-      </div>
 
-      {alertas.length > 0 && (
-        <div className="dashboardBlock dashboardBlock--compact">
-          <ul className="dashboardAlertsList">
-            {alertas.map((alerta) => (
-              <li
-                key={alerta.titulo}
-                className={`dashboardAlert dashboardAlert--${alerta.tipo}`}
-              >
-                <strong>{alerta.titulo}</strong>
-                <p>{alerta.mensaje}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="dashboardPanel">
+            <div className="dashboardPanelHeader">
+              <h3>Alertas operativas</h3>
+              <p>Señales rápidas del día a día.</p>
+            </div>
+
+            {alertasOperativas.length === 0 ? (
+              <p className="dashboardDuesMessage">
+                Sin alertas operativas activas.
+              </p>
+            ) : (
+              <ul className="dashboardOpsAlerts">
+                {alertasOperativas.map((alerta) => (
+                  <li
+                    key={alerta.texto}
+                    className={`dashboardOpsAlert dashboardOpsAlert--${alerta.tipo}`}
+                  >
+                    {alerta.texto}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </section>
   )
 }
