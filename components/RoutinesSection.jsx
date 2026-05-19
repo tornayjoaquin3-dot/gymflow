@@ -4,6 +4,7 @@ export default function RoutinesSection({
   nuevaRutina,
   setNuevaRutina,
   crearRutina,
+  eliminarRutina,
 }) {
   return (
     <section className="section">
@@ -102,6 +103,13 @@ export default function RoutinesSection({
                   <b>Observaciones:</b> {rutina.observaciones}
                 </p>
               )}
+
+              <button
+                className="smallButton dangerButton"
+                onClick={() => eliminarRutina(rutina.id)}
+              >
+                Eliminar rutina
+              </button>
             </article>
           ))
         )}
