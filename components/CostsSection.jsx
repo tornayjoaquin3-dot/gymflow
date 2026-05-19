@@ -3,6 +3,7 @@ export default function CostsSection({
   nuevoCosto,
   setNuevoCosto,
   crearCosto,
+  eliminarCosto,
 }) {
   return (
     <section className="section">
@@ -80,6 +81,13 @@ export default function CostsSection({
 
               <p>Categoría: {costo.categoria || '-'}</p>
               <p>Observaciones: {costo.observaciones || '-'}</p>
+
+              <button
+                className="smallButton dangerButton"
+                onClick={() => eliminarCosto(costo.id)}
+              >
+                Eliminar costo
+              </button>
             </article>
           ))
         )}
