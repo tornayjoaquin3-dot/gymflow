@@ -2,7 +2,10 @@ export default function StudentsSection({
   alumnos,
   nuevoAlumno,
   setNuevoAlumno,
-  crearAlumno,
+  guardarAlumno,
+  alumnoEditandoId,
+  editarAlumno,
+  cancelarEdicionAlumno,
   eliminarAlumno,
   setSelectedAlumnoId,
   setActiveSection,
@@ -11,10 +14,15 @@ export default function StudentsSection({
     <section className="section">
       <div className="sectionHeader">
         <h2>Alumnos</h2>
-        <p>Alta y listado de alumnos.</p>
+
+        <p>
+          {alumnoEditandoId
+            ? 'Editando datos del alumno.'
+            : 'Alta y listado de alumnos.'}
+        </p>
       </div>
 
-      <form onSubmit={crearAlumno} className="studentForm">
+      <form onSubmit={guardarAlumno} className="studentForm">
         <input
           placeholder="Nombre completo"
           value={nuevoAlumno.nombre}
@@ -42,7 +50,19 @@ export default function StudentsSection({
           }
         />
 
-        <button>Crear alumno</button>
+        <button>
+          {alumnoEditandoId ? 'Guardar cambios' : 'Crear alumno'}
+        </button>
+
+        {alumnoEditandoId && (
+          <button
+            type="button"
+            className="secondaryButton"
+            onClick={cancelarEdicionAlumno}
+          >
+            Cancelar edición
+          </button>
+        )}
       </form>
 
       <div className="simpleList">
@@ -52,6 +72,7 @@ export default function StudentsSection({
           alumnos.map((alumno) => (
             <article key={alumno.id} className="listCard">
               <h3>{alumno.nombre}</h3>
+
               <p>Teléfono: {alumno.telefono || '-'}</p>
               <p>Estado: {alumno.estado || 'activo'}</p>
               <p>Observaciones: {alumno.observaciones || '-'}</p>
@@ -65,6 +86,13 @@ export default function StudentsSection({
                   }}
                 >
                   Ver ficha
+                </button>
+
+                <button
+                  className="smallButton"
+                  onClick={() => editarAlumno(alumno)}
+                >
+                  Editar
                 </button>
 
                 <button

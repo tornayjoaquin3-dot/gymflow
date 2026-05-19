@@ -28,6 +28,7 @@ export default function Home() {
 
   const [activeSection, setActiveSection] = useState('alumnos')
   const [selectedAlumnoId, setSelectedAlumnoId] = useState(null)
+  const [alumnoEditandoId, setAlumnoEditandoId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -108,6 +109,7 @@ export default function Home() {
 
     setActiveSection('alumnos')
     setSelectedAlumnoId(null)
+    setAlumnoEditandoId(null)
   }
 
   async function cargarDatos() {
@@ -165,7 +167,7 @@ export default function Home() {
     setRutinas(data || [])
   }
 
-  async function crearAlumno(event) {
+  async function guardarAlumno(event) {
     event.preventDefault()
     setError('')
 
@@ -174,18 +176,34 @@ export default function Home() {
       return
     }
 
-    const { error } = await supabase.from('alumnos').insert([
-      {
-        nombre: nuevoAlumno.nombre,
-        telefono: nuevoAlumno.telefono,
-        observaciones: nuevoAlumno.observaciones,
-        estado: 'activo',
-      },
-    ])
+    if (alumnoEditandoId) {
+      const { error } = await supabase
+        .from('alumnos')
+        .update({
+          nombre: nuevoAlumno.nombre,
+          telefono: nuevoAlumno.telefono,
+          observaciones: nuevoAlumno.observaciones,
+        })
+        .eq('id', alumnoEditandoId)
 
-    if (error) {
-      setError('No se pudo crear el alumno.')
-      return
+      if (error) {
+        setError('No se pudo actualizar el alumno.')
+        return
+      }
+    } else {
+      const { error } = await supabase.from('alumnos').insert([
+        {
+          nombre: nuevoAlumno.nombre,
+          telefono: nuevoAlumno.telefono,
+          observaciones: nuevoAlumno.observaciones,
+          estado: 'activo',
+        },
+      ])
+
+      if (error) {
+        setError('No se pudo crear el alumno.')
+        return
+      }
     }
 
     setNuevoAlumno({
@@ -194,7 +212,31 @@ export default function Home() {
       observaciones: '',
     })
 
+    setAlumnoEditandoId(null)
+
     await cargarAlumnos()
+  }
+
+  function editarAlumno(alumno) {
+    setAlumnoEditandoId(alumno.id)
+
+    setNuevoAlumno({
+      nombre: alumno.nombre || '',
+      telefono: alumno.telefono || '',
+      observaciones: alumno.observaciones || '',
+    })
+
+    setActiveSection('alumnos')
+  }
+
+  function cancelarEdicionAlumno() {
+    setAlumnoEditandoId(null)
+
+    setNuevoAlumno({
+      nombre: '',
+      telefono: '',
+      observaciones: '',
+    })
   }
 
   async function eliminarAlumno(id) {
@@ -536,7 +578,10 @@ export default function Home() {
             alumnos={alumnos}
             nuevoAlumno={nuevoAlumno}
             setNuevoAlumno={setNuevoAlumno}
-            crearAlumno={crearAlumno}
+            guardarAlumno={guardarAlumno}
+            alumnoEditandoId={alumnoEditandoId}
+            editarAlumno={editarAlumno}
+            cancelarEdicionAlumno={cancelarEdicionAlumno}
             eliminarAlumno={eliminarAlumno}
             setSelectedAlumnoId={setSelectedAlumnoId}
             setActiveSection={setActiveSection}
