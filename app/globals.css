@@ -570,6 +570,12 @@ button{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
+.dashboardHero--compact{
+  margin-bottom:20px;
+  padding-bottom:18px;
+  gap:16px;
+}
+
 .dashboardEyebrow{
   margin:0 0 8px;
   font-size:12px;
@@ -581,14 +587,15 @@ button{
 
 .dashboardSection h2{
   margin:0;
-  font-size:32px;
+  font-size:28px;
 }
 
 .dashboardSubtitle{
-  margin:10px 0 0;
+  margin:6px 0 0;
   max-width:560px;
-  opacity:0.75;
-  line-height:1.5;
+  opacity:0.7;
+  line-height:1.4;
+  font-size:14px;
 }
 
 .dashboardResultBadge{
@@ -611,6 +618,16 @@ button{
   font-size:28px;
 }
 
+.dashboardResultBadge--compact{
+  min-width:180px;
+  padding:14px 18px;
+  border-radius:14px;
+}
+
+.dashboardResultBadge--compact strong{
+  font-size:22px;
+}
+
 .dashboardResultBadge.isPositive strong{
   color:#86efac;
 }
@@ -623,13 +640,25 @@ button{
   margin-bottom:28px;
 }
 
+.dashboardBlock--compact{
+  margin-bottom:20px;
+}
+
 .dashboardBlockHeader{
   margin-bottom:18px;
+}
+
+.dashboardBlockHeader--compact{
+  margin-bottom:12px;
 }
 
 .dashboardBlockHeader h3{
   margin:0;
   font-size:20px;
+}
+
+.dashboardBlockHeader--compact h3{
+  font-size:17px;
 }
 
 .dashboardBlockHeader p{
@@ -638,10 +667,21 @@ button{
   font-size:14px;
 }
 
+.dashboardBlockHeader--compact p{
+  margin:4px 0 0;
+  font-size:13px;
+}
+
 .dashboardMetrics{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:16px;
+  margin-bottom:20px;
+}
+
+.dashboardMetrics--compact{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
 }
 
 .dashboardMetricCard{
@@ -656,9 +696,20 @@ button{
   transition:transform 0.2s ease, border-color 0.2s ease;
 }
 
+.dashboardMetricCard--compact{
+  min-height:0;
+  padding:14px 16px;
+  border-radius:14px;
+  gap:6px;
+}
+
 .dashboardMetricCard:hover{
   transform:translateY(-2px);
   border-color:rgba(255,255,255,0.12);
+}
+
+.dashboardMetricCard--compact:hover{
+  transform:none;
 }
 
 .dashboardMetricCard--positive{
@@ -684,9 +735,18 @@ button{
   letter-spacing:0.04em;
 }
 
+.dashboardMetricCard--compact .dashboardMetricLabel{
+  font-size:11px;
+  letter-spacing:0.06em;
+}
+
 .dashboardMetricValue{
   font-size:28px;
   line-height:1.1;
+}
+
+.dashboardMetricCard--compact .dashboardMetricValue{
+  font-size:22px;
 }
 
 .dashboardMetricCard--positive .dashboardMetricValue{
@@ -864,11 +924,88 @@ button{
   border:1px solid rgba(255,255,255,0.1);
   background:#0f172a;
   color:white;
-  padding:10px 16px;
+  padding:8px 14px;
   border-radius:999px;
-  font-size:14px;
+  font-size:13px;
   font-weight:bold;
   transition:0.2s ease;
+}
+
+.dashboardDuesStats{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.dashboardDuesStats--total{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+.dashboardDuesStat{
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.dashboardDuesStat span{
+  font-size:12px;
+  opacity:0.65;
+}
+
+.dashboardDuesStat strong{
+  font-size:24px;
+  line-height:1;
+}
+
+.dashboardDuesStat--ok strong{
+  color:#86efac;
+}
+
+.dashboardDuesStat--pending strong{
+  color:#fde68a;
+}
+
+.dashboardDuesMessage{
+  margin:0;
+  padding:12px 14px;
+  border-radius:10px;
+  background:#0f172a;
+  border:1px solid rgba(34,197,94,0.2);
+  color:#bbf7d0;
+  font-size:14px;
+}
+
+.dashboardDuesListTitle{
+  margin:0 0 8px;
+  font-size:13px;
+  opacity:0.7;
+}
+
+.dashboardDuesList{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.dashboardDuesList li{
+  padding:8px 12px;
+  border-radius:999px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,0.06);
+  font-size:13px;
+}
+
+.dashboardDuesMore{
+  opacity:0.7;
+  font-style:italic;
 }
 
 .dashboardPeriodBtn:hover{
@@ -887,6 +1024,10 @@ button{
   gap:14px;
 }
 
+.dashboardCompareList--compact{
+  gap:10px;
+}
+
 .dashboardCompareRow{
   display:grid;
   grid-template-columns:minmax(150px,190px) 1fr minmax(130px,160px);
@@ -896,6 +1037,13 @@ button{
   border-radius:16px;
   background:#0f172a;
   border:1px solid rgba(255,255,255,0.06);
+}
+
+.dashboardCompareRow--compact{
+  padding:12px 14px;
+  gap:14px;
+  border-radius:12px;
+  grid-template-columns:minmax(120px,150px) 1fr minmax(90px,110px);
 }
 
 .dashboardCompareMonth{
@@ -938,6 +1086,23 @@ button{
   background:#111827;
   overflow:hidden;
   border:1px solid rgba(255,255,255,0.05);
+}
+
+.dashboardCompareRow--compact .dashboardBarTrack{
+  height:7px;
+}
+
+.dashboardCompareRow--compact .dashboardBarRow{
+  grid-template-columns:42px 1fr auto;
+  gap:8px;
+}
+
+.dashboardCompareRow--compact .dashboardBarValue{
+  font-size:12px;
+}
+
+.dashboardCompareResult--compact strong{
+  font-size:15px;
 }
 
 .dashboardBar{
@@ -1047,6 +1212,16 @@ button{
   }
 }
 
+@media(max-width:900px){
+  .dashboardMetrics--compact{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .dashboardDuesStats--total{
+    grid-template-columns:1fr;
+  }
+}
+
 @media(max-width:700px){
   .dashboardHero{
     flex-direction:column;
@@ -1058,10 +1233,18 @@ button{
   }
 
   .dashboardSection h2{
-    font-size:26px;
+    font-size:24px;
   }
 
   .dashboardMetricValue{
     font-size:24px;
+  }
+
+  .dashboardMetrics--compact{
+    grid-template-columns:1fr;
+  }
+
+  .dashboardDuesStats{
+    grid-template-columns:1fr;
   }
 }
