@@ -29,6 +29,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState('alumnos')
   const [selectedAlumnoId, setSelectedAlumnoId] = useState(null)
   const [alumnoEditandoId, setAlumnoEditandoId] = useState(null)
+  const [pagoEditandoId, setPagoEditandoId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -36,13 +37,17 @@ export default function Home() {
     observaciones: '',
   })
 
-  const [nuevoPago, setNuevoPago] = useState({
-    alumno_id: '',
-    monto: '',
-    medio_pago: 'efectivo',
-    plan: 'mensual',
-    mes: new Date().toLocaleString('es-AR', { month: 'long' }),
-  })
+  function pagoVacio() {
+    return {
+      alumno_id: '',
+      monto: '',
+      medio_pago: 'efectivo',
+      plan: 'mensual',
+      mes: new Date().toLocaleString('es-AR', { month: 'long' }),
+    }
+  }
+
+  const [nuevoPago, setNuevoPago] = useState(pagoVacio)
 
   const [nuevoCosto, setNuevoCosto] = useState({
     descripcion: '',
@@ -110,6 +115,7 @@ export default function Home() {
     setActiveSection('alumnos')
     setSelectedAlumnoId(null)
     setAlumnoEditandoId(null)
+    setPagoEditandoId(null)
   }
 
   async function cargarDatos() {
@@ -263,7 +269,7 @@ export default function Home() {
     await cargarDatos()
   }
 
-  async function crearPago(event) {
+  async function guardarPago(event) {
     event.preventDefault()
     setError('')
 
@@ -272,31 +278,61 @@ export default function Home() {
       return
     }
 
-    const { error } = await supabase.from('pagos').insert([
-      {
-        alumno_id: nuevoPago.alumno_id,
-        monto: Number(nuevoPago.monto),
-        medio_pago: nuevoPago.medio_pago,
-        plan: nuevoPago.plan,
-        mes: nuevoPago.mes,
-        fecha_pago: new Date().toISOString().slice(0, 10),
-      },
-    ])
-
-    if (error) {
-      setError('No se pudo registrar el pago.')
-      return
+    const datosPago = {
+      alumno_id: nuevoPago.alumno_id,
+      monto: Number(nuevoPago.monto),
+      medio_pago: nuevoPago.medio_pago,
+      plan: nuevoPago.plan,
+      mes: nuevoPago.mes,
     }
 
-    setNuevoPago({
-      alumno_id: '',
-      monto: '',
-      medio_pago: 'efectivo',
-      plan: 'mensual',
-      mes: new Date().toLocaleString('es-AR', { month: 'long' }),
-    })
+    if (pagoEditandoId) {
+      const { error } = await supabase
+        .from('pagos')
+        .update(datosPago)
+        .eq('id', pagoEditandoId)
+
+      if (error) {
+        setError('No se pudo actualizar el pago.')
+        return
+      }
+    } else {
+      const { error } = await supabase.from('pagos').insert([
+        {
+          ...datosPago,
+          fecha_pago: new Date().toISOString().slice(0, 10),
+        },
+      ])
+
+      if (error) {
+        setError('No se pudo registrar el pago.')
+        return
+      }
+    }
+
+    setNuevoPago(pagoVacio())
+    setPagoEditandoId(null)
 
     await cargarPagos()
+  }
+
+  function editarPago(pago) {
+    setPagoEditandoId(pago.id)
+
+    setNuevoPago({
+      alumno_id: pago.alumno_id || '',
+      monto: String(pago.monto ?? ''),
+      medio_pago: pago.medio_pago || 'efectivo',
+      plan: pago.plan || 'mensual',
+      mes: pago.mes || '',
+    })
+
+    setActiveSection('pagos')
+  }
+
+  function cancelarEdicionPago() {
+    setPagoEditandoId(null)
+    setNuevoPago(pagoVacio())
   }
 
   async function eliminarPago(id) {
@@ -311,6 +347,10 @@ export default function Home() {
     if (error) {
       setError('No se pudo eliminar el pago.')
       return
+    }
+
+    if (pagoEditandoId === id) {
+      cancelarEdicionPago()
     }
 
     await cargarPagos()
@@ -604,7 +644,10 @@ export default function Home() {
             pagos={pagos}
             nuevoPago={nuevoPago}
             setNuevoPago={setNuevoPago}
-            crearPago={crearPago}
+            guardarPago={guardarPago}
+            pagoEditandoId={pagoEditandoId}
+            editarPago={editarPago}
+            cancelarEdicionPago={cancelarEdicionPago}
             eliminarPago={eliminarPago}
           />
         )}

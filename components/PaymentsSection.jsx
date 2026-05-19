@@ -3,17 +3,24 @@ export default function PaymentsSection({
   pagos,
   nuevoPago,
   setNuevoPago,
-  crearPago,
+  guardarPago,
+  pagoEditandoId,
+  editarPago,
+  cancelarEdicionPago,
   eliminarPago,
 }) {
   return (
     <section className="section">
       <div className="sectionHeader">
         <h2>Pagos</h2>
-        <p>Registro de cuotas e ingresos.</p>
+        <p>
+          {pagoEditandoId
+            ? 'Editando datos del pago.'
+            : 'Registro de cuotas e ingresos.'}
+        </p>
       </div>
 
-      <form onSubmit={crearPago} className="paymentForm">
+      <form onSubmit={guardarPago} className="paymentForm">
         <select
           value={nuevoPago.alumno_id}
           onChange={(e) =>
@@ -64,7 +71,19 @@ export default function PaymentsSection({
           }
         />
 
-        <button>Registrar pago</button>
+        <button>
+          {pagoEditandoId ? 'Guardar cambios' : 'Registrar pago'}
+        </button>
+
+        {pagoEditandoId && (
+          <button
+            type="button"
+            className="secondaryButton"
+            onClick={cancelarEdicionPago}
+          >
+            Cancelar edición
+          </button>
+        )}
       </form>
 
       <div className="simpleList">
@@ -83,12 +102,21 @@ export default function PaymentsSection({
               <p>Mes: {pago.mes || '-'}</p>
               <p>Medio: {pago.medio_pago || '-'}</p>
 
-              <button
-                className="smallButton dangerButton"
-                onClick={() => eliminarPago(pago.id)}
-              >
-                Eliminar pago
-              </button>
+              <div className="buttonGroup">
+                <button
+                  className="smallButton"
+                  onClick={() => editarPago(pago)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="smallButton dangerButton"
+                  onClick={() => eliminarPago(pago.id)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </article>
           ))
         )}
