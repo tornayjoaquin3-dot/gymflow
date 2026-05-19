@@ -9,6 +9,7 @@ import StudentsSection from '../components/StudentsSection'
 import StudentDetail from '../components/StudentDetail'
 import PaymentsSection from '../components/PaymentsSection'
 import CostsSection from '../components/CostsSection'
+import RoutinesSection from '../components/RoutinesSection'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -59,7 +60,6 @@ export default function Home() {
 
   async function login(event) {
     event.preventDefault()
-
     setLoading(true)
     setError('')
 
@@ -167,7 +167,6 @@ export default function Home() {
 
   async function crearAlumno(event) {
     event.preventDefault()
-
     setError('')
 
     if (!nuevoAlumno.nombre.trim()) {
@@ -200,7 +199,6 @@ export default function Home() {
 
   async function crearPago(event) {
     event.preventDefault()
-
     setError('')
 
     if (!nuevoPago.alumno_id || !nuevoPago.monto) {
@@ -237,6 +235,12 @@ export default function Home() {
 
   async function crearCosto(event) {
     event.preventDefault()
+    setError('')
+
+    if (!nuevoCosto.descripcion.trim() || !nuevoCosto.monto) {
+      setError('Completá descripción y monto del costo.')
+      return
+    }
 
     const { error } = await supabase.from('costos').insert([
       {
@@ -265,6 +269,12 @@ export default function Home() {
 
   async function crearRutina(event) {
     event.preventDefault()
+    setError('')
+
+    if (!nuevaRutina.alumno_id || !nuevaRutina.nombre.trim()) {
+      setError('Seleccioná un alumno y cargá el nombre de la rutina.')
+      return
+    }
 
     const { error } = await supabase.from('rutinas').insert([
       {
@@ -323,7 +333,6 @@ export default function Home() {
   }, [costos])
 
   const ganancia = totalIngresos - totalCostos
-
   const isProfesor = profile?.rol === 'profesor'
 
   const selectedAlumno = alumnos.find(
@@ -483,6 +492,16 @@ export default function Home() {
             nuevoCosto={nuevoCosto}
             setNuevoCosto={setNuevoCosto}
             crearCosto={crearCosto}
+          />
+        )}
+
+        {activeSection === 'rutinas' && (
+          <RoutinesSection
+            alumnos={alumnos}
+            rutinas={rutinas}
+            nuevaRutina={nuevaRutina}
+            setNuevaRutina={setNuevaRutina}
+            crearRutina={crearRutina}
           />
         )}
       </section>
