@@ -7,6 +7,7 @@ import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
 import StudentsSection from '../components/StudentsSection'
 import StudentDetail from '../components/StudentDetail'
+import PaymentsSection from '../components/PaymentsSection'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -183,6 +184,12 @@ export default function Home() {
 
   async function crearPago(event) {
     event.preventDefault()
+    setError('')
+
+    if (!nuevoPago.alumno_id || !nuevoPago.monto) {
+      setError('Seleccioná un alumno y cargá el monto.')
+      return
+    }
 
     const { error } = await supabase.from('pagos').insert([
       {
@@ -419,6 +426,16 @@ export default function Home() {
             rutinasDelAlumno={rutinasDelAlumno}
             totalPagadoAlumno={totalPagadoAlumno}
             setActiveSection={setActiveSection}
+          />
+        )}
+
+        {activeSection === 'pagos' && !isProfesor && (
+          <PaymentsSection
+            alumnos={alumnos}
+            pagos={pagos}
+            nuevoPago={nuevoPago}
+            setNuevoPago={setNuevoPago}
+            crearPago={crearPago}
           />
         )}
       </section>
