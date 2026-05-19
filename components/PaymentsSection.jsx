@@ -4,6 +4,7 @@ export default function PaymentsSection({
   nuevoPago,
   setNuevoPago,
   crearPago,
+  eliminarPago,
 }) {
   return (
     <section className="section">
@@ -81,6 +82,13 @@ export default function PaymentsSection({
               <p>Plan: {pago.plan || '-'}</p>
               <p>Mes: {pago.mes || '-'}</p>
               <p>Medio: {pago.medio_pago || '-'}</p>
+
+              <button
+                className="smallButton dangerButton"
+                onClick={() => eliminarPago(pago.id)}
+              >
+                Eliminar pago
+              </button>
             </article>
           ))
         )}
