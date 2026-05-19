@@ -3,17 +3,24 @@ export default function RoutinesSection({
   rutinas,
   nuevaRutina,
   setNuevaRutina,
-  crearRutina,
+  guardarRutina,
+  rutinaEditandoId,
+  editarRutina,
+  cancelarEdicionRutina,
   eliminarRutina,
 }) {
   return (
     <section className="section">
       <div className="sectionHeader">
         <h2>Rutinas</h2>
-        <p>Los profesores pueden crear y visualizar rutinas.</p>
+        <p>
+          {rutinaEditandoId
+            ? 'Editando datos de la rutina.'
+            : 'Los profesores pueden crear y visualizar rutinas.'}
+        </p>
       </div>
 
-      <form onSubmit={crearRutina} className="routineForm">
+      <form onSubmit={guardarRutina} className="routineForm">
         <select
           value={nuevaRutina.alumno_id}
           onChange={(e) =>
@@ -76,7 +83,19 @@ export default function RoutinesSection({
           }
         />
 
-        <button>Crear rutina</button>
+        <button>
+          {rutinaEditandoId ? 'Guardar cambios' : 'Crear rutina'}
+        </button>
+
+        {rutinaEditandoId && (
+          <button
+            type="button"
+            className="secondaryButton"
+            onClick={cancelarEdicionRutina}
+          >
+            Cancelar edición
+          </button>
+        )}
       </form>
 
       <div className="routineGrid">
@@ -104,12 +123,21 @@ export default function RoutinesSection({
                 </p>
               )}
 
-              <button
-                className="smallButton dangerButton"
-                onClick={() => eliminarRutina(rutina.id)}
-              >
-                Eliminar rutina
-              </button>
+              <div className="buttonGroup">
+                <button
+                  className="smallButton"
+                  onClick={() => editarRutina(rutina)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="smallButton dangerButton"
+                  onClick={() => eliminarRutina(rutina.id)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </article>
           ))
         )}

@@ -31,6 +31,7 @@ export default function Home() {
   const [alumnoEditandoId, setAlumnoEditandoId] = useState(null)
   const [pagoEditandoId, setPagoEditandoId] = useState(null)
   const [costoEditandoId, setCostoEditandoId] = useState(null)
+  const [rutinaEditandoId, setRutinaEditandoId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -61,13 +62,17 @@ export default function Home() {
 
   const [nuevoCosto, setNuevoCosto] = useState(costoVacio)
 
-  const [nuevaRutina, setNuevaRutina] = useState({
-    alumno_id: '',
-    nombre: '',
-    objetivo: '',
-    ejercicios: '',
-    observaciones: '',
-  })
+  function rutinaVacia() {
+    return {
+      alumno_id: '',
+      nombre: '',
+      objetivo: '',
+      ejercicios: '',
+      observaciones: '',
+    }
+  }
+
+  const [nuevaRutina, setNuevaRutina] = useState(rutinaVacia)
 
   async function login(event) {
     event.preventDefault()
@@ -122,6 +127,7 @@ export default function Home() {
     setAlumnoEditandoId(null)
     setPagoEditandoId(null)
     setCostoEditandoId(null)
+    setRutinaEditandoId(null)
   }
 
   async function cargarDatos() {
@@ -447,7 +453,7 @@ export default function Home() {
     await cargarCostos()
   }
 
-  async function crearRutina(event) {
+  async function guardarRutina(event) {
     event.preventDefault()
     setError('')
 
@@ -456,30 +462,56 @@ export default function Home() {
       return
     }
 
-    const { error } = await supabase.from('rutinas').insert([
-      {
-        alumno_id: nuevaRutina.alumno_id,
-        nombre: nuevaRutina.nombre,
-        objetivo: nuevaRutina.objetivo,
-        ejercicios: nuevaRutina.ejercicios,
-        observaciones: nuevaRutina.observaciones,
-      },
-    ])
-
-    if (error) {
-      setError('No se pudo crear la rutina.')
-      return
+    const datosRutina = {
+      alumno_id: nuevaRutina.alumno_id,
+      nombre: nuevaRutina.nombre,
+      objetivo: nuevaRutina.objetivo,
+      ejercicios: nuevaRutina.ejercicios,
+      observaciones: nuevaRutina.observaciones,
     }
 
-    setNuevaRutina({
-      alumno_id: '',
-      nombre: '',
-      objetivo: '',
-      ejercicios: '',
-      observaciones: '',
-    })
+    if (rutinaEditandoId) {
+      const { error } = await supabase
+        .from('rutinas')
+        .update(datosRutina)
+        .eq('id', rutinaEditandoId)
+
+      if (error) {
+        setError('No se pudo actualizar la rutina.')
+        return
+      }
+    } else {
+      const { error } = await supabase.from('rutinas').insert([datosRutina])
+
+      if (error) {
+        setError('No se pudo crear la rutina.')
+        return
+      }
+    }
+
+    setNuevaRutina(rutinaVacia())
+    setRutinaEditandoId(null)
 
     await cargarRutinas()
+  }
+
+  function editarRutina(rutina) {
+    setRutinaEditandoId(rutina.id)
+
+    setNuevaRutina({
+      alumno_id: rutina.alumno_id || '',
+      nombre: rutina.nombre || '',
+      objetivo: rutina.objetivo || '',
+      ejercicios: rutina.ejercicios || '',
+      observaciones: rutina.observaciones || '',
+    })
+
+    setActiveSection('rutinas')
+  }
+
+  function cancelarEdicionRutina() {
+    setRutinaEditandoId(null)
+    setNuevaRutina(rutinaVacia())
   }
 
   async function eliminarRutina(id) {
@@ -494,6 +526,10 @@ export default function Home() {
     if (error) {
       setError('No se pudo eliminar la rutina.')
       return
+    }
+
+    if (rutinaEditandoId === id) {
+      cancelarEdicionRutina()
     }
 
     await cargarRutinas()
@@ -711,7 +747,10 @@ export default function Home() {
             rutinas={rutinas}
             nuevaRutina={nuevaRutina}
             setNuevaRutina={setNuevaRutina}
-            crearRutina={crearRutina}
+            guardarRutina={guardarRutina}
+            rutinaEditandoId={rutinaEditandoId}
+            editarRutina={editarRutina}
+            cancelarEdicionRutina={cancelarEdicionRutina}
             eliminarRutina={eliminarRutina}
           />
         )}
