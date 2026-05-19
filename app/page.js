@@ -30,6 +30,7 @@ export default function Home() {
   const [selectedAlumnoId, setSelectedAlumnoId] = useState(null)
   const [alumnoEditandoId, setAlumnoEditandoId] = useState(null)
   const [pagoEditandoId, setPagoEditandoId] = useState(null)
+  const [costoEditandoId, setCostoEditandoId] = useState(null)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -49,12 +50,16 @@ export default function Home() {
 
   const [nuevoPago, setNuevoPago] = useState(pagoVacio)
 
-  const [nuevoCosto, setNuevoCosto] = useState({
-    descripcion: '',
-    categoria: 'alquiler',
-    monto: '',
-    observaciones: '',
-  })
+  function costoVacio() {
+    return {
+      descripcion: '',
+      categoria: 'alquiler',
+      monto: '',
+      observaciones: '',
+    }
+  }
+
+  const [nuevoCosto, setNuevoCosto] = useState(costoVacio)
 
   const [nuevaRutina, setNuevaRutina] = useState({
     alumno_id: '',
@@ -116,6 +121,7 @@ export default function Home() {
     setSelectedAlumnoId(null)
     setAlumnoEditandoId(null)
     setPagoEditandoId(null)
+    setCostoEditandoId(null)
   }
 
   async function cargarDatos() {
@@ -356,7 +362,7 @@ export default function Home() {
     await cargarPagos()
   }
 
-  async function crearCosto(event) {
+  async function guardarCosto(event) {
     event.preventDefault()
     setError('')
 
@@ -365,29 +371,59 @@ export default function Home() {
       return
     }
 
-    const { error } = await supabase.from('costos').insert([
-      {
-        descripcion: nuevoCosto.descripcion,
-        categoria: nuevoCosto.categoria,
-        monto: Number(nuevoCosto.monto),
-        observaciones: nuevoCosto.observaciones,
-        fecha: new Date().toISOString().slice(0, 10),
-      },
-    ])
-
-    if (error) {
-      setError('No se pudo registrar el costo.')
-      return
+    const datosCosto = {
+      descripcion: nuevoCosto.descripcion,
+      categoria: nuevoCosto.categoria,
+      monto: Number(nuevoCosto.monto),
+      observaciones: nuevoCosto.observaciones,
     }
 
-    setNuevoCosto({
-      descripcion: '',
-      categoria: 'alquiler',
-      monto: '',
-      observaciones: '',
-    })
+    if (costoEditandoId) {
+      const { error } = await supabase
+        .from('costos')
+        .update(datosCosto)
+        .eq('id', costoEditandoId)
+
+      if (error) {
+        setError('No se pudo actualizar el costo.')
+        return
+      }
+    } else {
+      const { error } = await supabase.from('costos').insert([
+        {
+          ...datosCosto,
+          fecha: new Date().toISOString().slice(0, 10),
+        },
+      ])
+
+      if (error) {
+        setError('No se pudo registrar el costo.')
+        return
+      }
+    }
+
+    setNuevoCosto(costoVacio())
+    setCostoEditandoId(null)
 
     await cargarCostos()
+  }
+
+  function editarCosto(costo) {
+    setCostoEditandoId(costo.id)
+
+    setNuevoCosto({
+      descripcion: costo.descripcion || '',
+      categoria: costo.categoria || 'alquiler',
+      monto: String(costo.monto ?? ''),
+      observaciones: costo.observaciones || '',
+    })
+
+    setActiveSection('costos')
+  }
+
+  function cancelarEdicionCosto() {
+    setCostoEditandoId(null)
+    setNuevoCosto(costoVacio())
   }
 
   async function eliminarCosto(id) {
@@ -402,6 +438,10 @@ export default function Home() {
     if (error) {
       setError('No se pudo eliminar el costo.')
       return
+    }
+
+    if (costoEditandoId === id) {
+      cancelarEdicionCosto()
     }
 
     await cargarCostos()
@@ -657,7 +697,10 @@ export default function Home() {
             costos={costos}
             nuevoCosto={nuevoCosto}
             setNuevoCosto={setNuevoCosto}
-            crearCosto={crearCosto}
+            guardarCosto={guardarCosto}
+            costoEditandoId={costoEditandoId}
+            editarCosto={editarCosto}
+            cancelarEdicionCosto={cancelarEdicionCosto}
             eliminarCosto={eliminarCosto}
           />
         )}

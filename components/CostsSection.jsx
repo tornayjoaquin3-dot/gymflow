@@ -2,17 +2,24 @@ export default function CostsSection({
   costos,
   nuevoCosto,
   setNuevoCosto,
-  crearCosto,
+  guardarCosto,
+  costoEditandoId,
+  editarCosto,
+  cancelarEdicionCosto,
   eliminarCosto,
 }) {
   return (
     <section className="section">
       <div className="sectionHeader">
         <h2>Costos</h2>
-        <p>Registro de egresos del gimnasio.</p>
+        <p>
+          {costoEditandoId
+            ? 'Editando datos del costo.'
+            : 'Registro de egresos del gimnasio.'}
+        </p>
       </div>
 
-      <form onSubmit={crearCosto} className="costForm">
+      <form onSubmit={guardarCosto} className="costForm">
         <input
           placeholder="Descripción"
           value={nuevoCosto.descripcion}
@@ -64,7 +71,19 @@ export default function CostsSection({
           }
         />
 
-        <button>Registrar costo</button>
+        <button>
+          {costoEditandoId ? 'Guardar cambios' : 'Registrar costo'}
+        </button>
+
+        {costoEditandoId && (
+          <button
+            type="button"
+            className="secondaryButton"
+            onClick={cancelarEdicionCosto}
+          >
+            Cancelar edición
+          </button>
+        )}
       </form>
 
       <div className="simpleList">
@@ -82,12 +101,21 @@ export default function CostsSection({
               <p>Categoría: {costo.categoria || '-'}</p>
               <p>Observaciones: {costo.observaciones || '-'}</p>
 
-              <button
-                className="smallButton dangerButton"
-                onClick={() => eliminarCosto(costo.id)}
-              >
-                Eliminar costo
-              </button>
+              <div className="buttonGroup">
+                <button
+                  className="smallButton"
+                  onClick={() => editarCosto(costo)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="smallButton dangerButton"
+                  onClick={() => eliminarCosto(costo.id)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </article>
           ))
         )}
