@@ -10,6 +10,7 @@ import StudentDetail from '../components/StudentDetail'
 import PaymentsSection from '../components/PaymentsSection'
 import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
+import ExcelImportSection from '../components/ExcelImportSection'
 
 export default function Home() {
   const [email, setEmail] = useState('socio@gymflow.com')
@@ -753,6 +754,17 @@ export default function Home() {
             editarRutina={editarRutina}
             cancelarEdicionRutina={cancelarEdicionRutina}
             eliminarRutina={eliminarRutina}
+          />
+        )}
+
+        {activeSection === 'importar' && !isProfesor && (
+          <ExcelImportSection
+            alumnos={alumnos}
+            pagos={pagos}
+            onImportComplete={async () => {
+              await cargarAlumnos()
+              await cargarPagos()
+            }}
           />
         )}
       </section>

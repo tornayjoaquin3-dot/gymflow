@@ -41,6 +41,13 @@ export default function Sidebar({ isProfesor, activeSection, setActiveSection })
           >
             Costos
           </button>
+
+          <button
+            className={activeSection === 'importar' ? 'activeMenu' : ''}
+            onClick={() => setActiveSection('importar')}
+          >
+            Importar Excel
+          </button>
         </>
       )}
     </aside>

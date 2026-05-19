@@ -556,6 +556,206 @@ button{
   background:#2563eb;
 }
 
+.excelImportSection{
+  margin-top:0;
+}
+
+.excelImportPanel{
+  display:flex;
+  align-items:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+
+.excelImportUpload{
+  flex:1;
+  min-width:260px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:16px 18px;
+  border-radius:14px;
+  border:1px dashed rgba(59,130,246,0.45);
+  background:rgba(15,23,42,0.8);
+  cursor:pointer;
+}
+
+.excelImportUpload input{
+  font-size:13px;
+  color:#e2e8f0;
+}
+
+.excelImportUploadLabel{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#93c5fd;
+}
+
+.excelImportFileName{
+  font-size:14px;
+  font-weight:600;
+}
+
+.excelImportFileHint{
+  font-size:13px;
+  opacity:0.65;
+}
+
+.excelImportClear{
+  border:none;
+  border-radius:10px;
+  padding:12px 16px;
+  background:#475569;
+  color:white;
+  font-weight:bold;
+}
+
+.excelImportRules{
+  margin-bottom:20px;
+  padding:14px 16px;
+  border-radius:12px;
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.06);
+  font-size:13px;
+  line-height:1.6;
+  opacity:0.85;
+}
+
+.excelImportRules p{
+  margin:4px 0;
+}
+
+.excelImportPreview,
+.excelImportResult{
+  margin-top:20px;
+  padding:20px;
+  border-radius:16px;
+  background:#0f172a;
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+.excelImportPreview h3,
+.excelImportResult h3{
+  margin:0 0 16px;
+  font-size:17px;
+}
+
+.excelImportStats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.excelImportStats article{
+  padding:14px;
+  border-radius:12px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+.excelImportStats span{
+  display:block;
+  font-size:11px;
+  opacity:0.65;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  margin-bottom:6px;
+}
+
+.excelImportStats strong{
+  font-size:22px;
+}
+
+.excelImportStats p{
+  margin:8px 0 0;
+  font-size:11px;
+  opacity:0.6;
+  line-height:1.4;
+}
+
+.excelImportStat--ok strong{
+  color:#86efac;
+}
+
+.excelImportListBlock{
+  margin-bottom:16px;
+}
+
+.excelImportListBlock h4{
+  margin:0 0 8px;
+  font-size:13px;
+  opacity:0.75;
+}
+
+.excelImportNameList{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.excelImportNameList li{
+  padding:6px 10px;
+  border-radius:999px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,0.06);
+  font-size:12px;
+}
+
+.excelImportMore{
+  opacity:0.7;
+  font-style:italic;
+}
+
+.excelImportWarnings{
+  margin-bottom:16px;
+  padding:12px 14px;
+  border-radius:10px;
+  background:rgba(234,179,8,0.08);
+  border:1px solid rgba(234,179,8,0.25);
+  font-size:13px;
+}
+
+.excelImportWarnings h4{
+  margin:0 0 8px;
+  font-size:13px;
+}
+
+.excelImportWarnings p{
+  margin:4px 0;
+  opacity:0.9;
+}
+
+.excelImportBtn{
+  border:none;
+  border-radius:10px;
+  padding:14px 20px;
+  background:#2563eb;
+  color:white;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.excelImportBtn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.secondaryButton{
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  background:#475569;
+  color:white;
+  font-weight:bold;
+}
+
 .dashboardSection{
   margin-top:0;
 }

@@ -53,6 +53,8 @@ export default function PaymentsSection({
           <option value="efectivo">Efectivo</option>
           <option value="transferencia">Transferencia</option>
           <option value="tarjeta">Tarjeta</option>
+          <option value="mercado_pago">Mercado Pago</option>
+          <option value="otro">Otro</option>
         </select>
 
         <input
