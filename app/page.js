@@ -206,10 +206,7 @@ export default function Home() {
 
     setError('')
 
-    const { error } = await supabase
-      .from('alumnos')
-      .delete()
-      .eq('id', id)
+    const { error } = await supabase.from('alumnos').delete().eq('id', id)
 
     if (error) {
       setError('No se pudo eliminar el alumno.')
@@ -260,6 +257,23 @@ export default function Home() {
     await cargarPagos()
   }
 
+  async function eliminarPago(id) {
+    const confirmar = window.confirm('¿Seguro que querés eliminar este pago?')
+
+    if (!confirmar) return
+
+    setError('')
+
+    const { error } = await supabase.from('pagos').delete().eq('id', id)
+
+    if (error) {
+      setError('No se pudo eliminar el pago.')
+      return
+    }
+
+    await cargarPagos()
+  }
+
   async function crearCosto(event) {
     event.preventDefault()
     setError('')
@@ -290,6 +304,23 @@ export default function Home() {
       monto: '',
       observaciones: '',
     })
+
+    await cargarCostos()
+  }
+
+  async function eliminarCosto(id) {
+    const confirmar = window.confirm('¿Seguro que querés eliminar este costo?')
+
+    if (!confirmar) return
+
+    setError('')
+
+    const { error } = await supabase.from('costos').delete().eq('id', id)
+
+    if (error) {
+      setError('No se pudo eliminar el costo.')
+      return
+    }
 
     await cargarCostos()
   }
@@ -329,6 +360,23 @@ export default function Home() {
     await cargarRutinas()
   }
 
+  async function eliminarRutina(id) {
+    const confirmar = window.confirm('¿Seguro que querés eliminar esta rutina?')
+
+    if (!confirmar) return
+
+    setError('')
+
+    const { error } = await supabase.from('rutinas').delete().eq('id', id)
+
+    if (error) {
+      setError('No se pudo eliminar la rutina.')
+      return
+    }
+
+    await cargarRutinas()
+  }
+
   useEffect(() => {
     async function verificarSesion() {
       const { data } = await supabase.auth.getSession()
@@ -360,6 +408,7 @@ export default function Home() {
   }, [costos])
 
   const ganancia = totalIngresos - totalCostos
+
   const isProfesor = profile?.rol === 'profesor'
 
   const selectedAlumno = alumnos.find(
@@ -511,6 +560,7 @@ export default function Home() {
             nuevoPago={nuevoPago}
             setNuevoPago={setNuevoPago}
             crearPago={crearPago}
+            eliminarPago={eliminarPago}
           />
         )}
 
@@ -520,6 +570,7 @@ export default function Home() {
             nuevoCosto={nuevoCosto}
             setNuevoCosto={setNuevoCosto}
             crearCosto={crearCosto}
+            eliminarCosto={eliminarCosto}
           />
         )}
 
@@ -530,6 +581,7 @@ export default function Home() {
             nuevaRutina={nuevaRutina}
             setNuevaRutina={setNuevaRutina}
             crearRutina={crearRutina}
+            eliminarRutina={eliminarRutina}
           />
         )}
       </section>
