@@ -2,24 +2,17 @@ export default function CostsSection({
   costos,
   nuevoCosto,
   setNuevoCosto,
-  guardarCosto,
-  costoEditandoId,
-  editarCosto,
-  cancelarEdicionCosto,
+  crearCosto,
   eliminarCosto,
 }) {
   return (
     <section className="section">
       <div className="sectionHeader">
         <h2>Costos</h2>
-        <p>
-          {costoEditandoId
-            ? 'Editando datos del costo.'
-            : 'Registro de egresos del gimnasio.'}
-        </p>
+        <p>Registro de egresos del gimnasio.</p>
       </div>
 
-      <form onSubmit={guardarCosto} className="costForm">
+      <form onSubmit={crearCosto} className="costForm">
         <input
           placeholder="Descripción"
           value={nuevoCosto.descripcion}
@@ -71,19 +64,7 @@ export default function CostsSection({
           }
         />
 
-        <button>
-          {costoEditandoId ? 'Guardar cambios' : 'Registrar costo'}
-        </button>
-
-        {costoEditandoId && (
-          <button
-            type="button"
-            className="secondaryButton"
-            onClick={cancelarEdicionCosto}
-          >
-            Cancelar edición
-          </button>
-        )}
+        <button>Registrar costo</button>
       </form>
 
       <div className="simpleList">
@@ -101,21 +82,12 @@ export default function CostsSection({
               <p>Categoría: {costo.categoria || '-'}</p>
               <p>Observaciones: {costo.observaciones || '-'}</p>
 
-              <div className="buttonGroup">
-                <button
-                  className="smallButton"
-                  onClick={() => editarCosto(costo)}
-                >
-                  Editar
-                </button>
-
-                <button
-                  className="smallButton dangerButton"
-                  onClick={() => eliminarCosto(costo.id)}
-                >
-                  Eliminar
-                </button>
-              </div>
+              <button
+                className="smallButton dangerButton"
+                onClick={() => eliminarCosto(costo.id)}
+              >
+                Eliminar costo
+              </button>
             </article>
           ))
         )}

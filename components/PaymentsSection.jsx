@@ -3,24 +3,17 @@ export default function PaymentsSection({
   pagos,
   nuevoPago,
   setNuevoPago,
-  guardarPago,
-  pagoEditandoId,
-  editarPago,
-  cancelarEdicionPago,
+  crearPago,
   eliminarPago,
 }) {
   return (
     <section className="section">
       <div className="sectionHeader">
         <h2>Pagos</h2>
-        <p>
-          {pagoEditandoId
-            ? 'Editando datos del pago.'
-            : 'Registro de cuotas e ingresos.'}
-        </p>
+        <p>Registro de cuotas e ingresos.</p>
       </div>
 
-      <form onSubmit={guardarPago} className="paymentForm">
+      <form onSubmit={crearPago} className="paymentForm">
         <select
           value={nuevoPago.alumno_id}
           onChange={(e) =>
@@ -53,8 +46,6 @@ export default function PaymentsSection({
           <option value="efectivo">Efectivo</option>
           <option value="transferencia">Transferencia</option>
           <option value="tarjeta">Tarjeta</option>
-          <option value="mercado_pago">Mercado Pago</option>
-          <option value="otro">Otro</option>
         </select>
 
         <input
@@ -73,19 +64,7 @@ export default function PaymentsSection({
           }
         />
 
-        <button>
-          {pagoEditandoId ? 'Guardar cambios' : 'Registrar pago'}
-        </button>
-
-        {pagoEditandoId && (
-          <button
-            type="button"
-            className="secondaryButton"
-            onClick={cancelarEdicionPago}
-          >
-            Cancelar edición
-          </button>
-        )}
+        <button>Registrar pago</button>
       </form>
 
       <div className="simpleList">
@@ -104,21 +83,12 @@ export default function PaymentsSection({
               <p>Mes: {pago.mes || '-'}</p>
               <p>Medio: {pago.medio_pago || '-'}</p>
 
-              <div className="buttonGroup">
-                <button
-                  className="smallButton"
-                  onClick={() => editarPago(pago)}
-                >
-                  Editar
-                </button>
-
-                <button
-                  className="smallButton dangerButton"
-                  onClick={() => eliminarPago(pago.id)}
-                >
-                  Eliminar
-                </button>
-              </div>
+              <button
+                className="smallButton dangerButton"
+                onClick={() => eliminarPago(pago.id)}
+              >
+                Eliminar pago
+              </button>
             </article>
           ))
         )}

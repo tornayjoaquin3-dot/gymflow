@@ -1,7 +1,12 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import {
+  getMonthKey,
+  getPaymentMonthOptions,
+  getStudentPaymentSnapshot,
+} from '../lib/student-utils'
 
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
@@ -29,10 +34,9 @@ export default function Home() {
 
   const [activeSection, setActiveSection] = useState('alumnos')
   const [selectedAlumnoId, setSelectedAlumnoId] = useState(null)
-  const [alumnoEditandoId, setAlumnoEditandoId] = useState(null)
-  const [pagoEditandoId, setPagoEditandoId] = useState(null)
-  const [costoEditandoId, setCostoEditandoId] = useState(null)
-  const [rutinaEditandoId, setRutinaEditandoId] = useState(null)
+  const [selectedPaymentMonth, setSelectedPaymentMonth] = useState(
+    getMonthKey()
+  )
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -40,48 +44,52 @@ export default function Home() {
     observaciones: '',
   })
 
-  function pagoVacio() {
-    return {
-      alumno_id: '',
-      monto: '',
-      medio_pago: 'efectivo',
-      plan: 'mensual',
-      mes: new Date().toLocaleString('es-AR', { month: 'long' }),
+  const [nuevoPago, setNuevoPago] = useState({
+    alumno_id: '',
+    monto: '',
+    medio_pago: 'efectivo',
+    plan: 'mensual',
+    mes: new Date().toLocaleString('es-AR', { month: 'long' }),
+  })
+
+  const [nuevoCosto, setNuevoCosto] = useState({
+    descripcion: '',
+    categoria: 'alquiler',
+    monto: '',
+    observaciones: '',
+  })
+
+  const [nuevaRutina, setNuevaRutina] = useState({
+    alumno_id: '',
+    nombre: '',
+    objetivo: '',
+    ejercicios: '',
+    observaciones: '',
+  })
+
+  function getSupabaseClient() {
+    if (!supabase) {
+      setError('Configurá las variables de Supabase para usar la app.')
+      return null
     }
+
+    return supabase
   }
-
-  const [nuevoPago, setNuevoPago] = useState(pagoVacio)
-
-  function costoVacio() {
-    return {
-      descripcion: '',
-      categoria: 'alquiler',
-      monto: '',
-      observaciones: '',
-    }
-  }
-
-  const [nuevoCosto, setNuevoCosto] = useState(costoVacio)
-
-  function rutinaVacia() {
-    return {
-      alumno_id: '',
-      nombre: '',
-      objetivo: '',
-      ejercicios: '',
-      observaciones: '',
-    }
-  }
-
-  const [nuevaRutina, setNuevaRutina] = useState(rutinaVacia)
 
   async function login(event) {
     event.preventDefault()
     setLoading(true)
     setError('')
 
+    const client = getSupabaseClient()
+
+    if (!client) {
+      setLoading(false)
+      return
+    }
+
     const { data, error: loginError } =
-      await supabase.auth.signInWithPassword({
+      await client.auth.signInWithPassword({
         email,
         password,
       })
@@ -92,7 +100,7 @@ export default function Home() {
       return
     }
 
-    const { data: profileData, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await client
       .from('usuarios')
       .select('nombre,email,rol')
       .eq('email', data.user.email)
@@ -113,7 +121,11 @@ export default function Home() {
   }
 
   async function logout() {
-    await supabase.auth.signOut()
+    const client = getSupabaseClient()
+
+    if (client) {
+      await client.auth.signOut()
+    }
 
     setUser(null)
     setProfile(null)
@@ -125,10 +137,6 @@ export default function Home() {
 
     setActiveSection('alumnos')
     setSelectedAlumnoId(null)
-    setAlumnoEditandoId(null)
-    setPagoEditandoId(null)
-    setCostoEditandoId(null)
-    setRutinaEditandoId(null)
   }
 
   async function cargarDatos() {
@@ -141,7 +149,11 @@ export default function Home() {
   }
 
   async function cargarAlumnos() {
-    const { data } = await supabase
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { data } = await client
       .from('alumnos')
       .select('*')
       .order('creado_en', { ascending: false })
@@ -150,7 +162,11 @@ export default function Home() {
   }
 
   async function cargarPagos() {
-    const { data } = await supabase
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { data } = await client
       .from('pagos')
       .select(`
         *,
@@ -164,7 +180,11 @@ export default function Home() {
   }
 
   async function cargarCostos() {
-    const { data } = await supabase
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { data } = await client
       .from('costos')
       .select('*')
       .order('fecha', { ascending: false })
@@ -173,7 +193,11 @@ export default function Home() {
   }
 
   async function cargarRutinas() {
-    const { data } = await supabase
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { data } = await client
       .from('rutinas')
       .select(`
         *,
@@ -186,7 +210,7 @@ export default function Home() {
     setRutinas(data || [])
   }
 
-  async function guardarAlumno(event) {
+  async function crearAlumno(event) {
     event.preventDefault()
     setError('')
 
@@ -195,34 +219,22 @@ export default function Home() {
       return
     }
 
-    if (alumnoEditandoId) {
-      const { error } = await supabase
-        .from('alumnos')
-        .update({
-          nombre: nuevoAlumno.nombre,
-          telefono: nuevoAlumno.telefono,
-          observaciones: nuevoAlumno.observaciones,
-        })
-        .eq('id', alumnoEditandoId)
+    const client = getSupabaseClient()
 
-      if (error) {
-        setError('No se pudo actualizar el alumno.')
-        return
-      }
-    } else {
-      const { error } = await supabase.from('alumnos').insert([
-        {
-          nombre: nuevoAlumno.nombre,
-          telefono: nuevoAlumno.telefono,
-          observaciones: nuevoAlumno.observaciones,
-          estado: 'activo',
-        },
-      ])
+    if (!client) return
 
-      if (error) {
-        setError('No se pudo crear el alumno.')
-        return
-      }
+    const { error } = await client.from('alumnos').insert([
+      {
+        nombre: nuevoAlumno.nombre,
+        telefono: nuevoAlumno.telefono,
+        observaciones: nuevoAlumno.observaciones,
+        estado: 'activo',
+      },
+    ])
+
+    if (error) {
+      setError('No se pudo crear el alumno.')
+      return
     }
 
     setNuevoAlumno({
@@ -231,31 +243,7 @@ export default function Home() {
       observaciones: '',
     })
 
-    setAlumnoEditandoId(null)
-
     await cargarAlumnos()
-  }
-
-  function editarAlumno(alumno) {
-    setAlumnoEditandoId(alumno.id)
-
-    setNuevoAlumno({
-      nombre: alumno.nombre || '',
-      telefono: alumno.telefono || '',
-      observaciones: alumno.observaciones || '',
-    })
-
-    setActiveSection('alumnos')
-  }
-
-  function cancelarEdicionAlumno() {
-    setAlumnoEditandoId(null)
-
-    setNuevoAlumno({
-      nombre: '',
-      telefono: '',
-      observaciones: '',
-    })
   }
 
   async function eliminarAlumno(id) {
@@ -267,7 +255,11 @@ export default function Home() {
 
     setError('')
 
-    const { error } = await supabase.from('alumnos').delete().eq('id', id)
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('alumnos').delete().eq('id', id)
 
     if (error) {
       setError('No se pudo eliminar el alumno.')
@@ -282,7 +274,7 @@ export default function Home() {
     await cargarDatos()
   }
 
-  async function guardarPago(event) {
+  async function crearPago(event) {
     event.preventDefault()
     setError('')
 
@@ -291,61 +283,35 @@ export default function Home() {
       return
     }
 
-    const datosPago = {
-      alumno_id: nuevoPago.alumno_id,
-      monto: Number(nuevoPago.monto),
-      medio_pago: nuevoPago.medio_pago,
-      plan: nuevoPago.plan,
-      mes: nuevoPago.mes,
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('pagos').insert([
+      {
+        alumno_id: nuevoPago.alumno_id,
+        monto: Number(nuevoPago.monto),
+        medio_pago: nuevoPago.medio_pago,
+        plan: nuevoPago.plan,
+        mes: nuevoPago.mes,
+        fecha_pago: new Date().toISOString().slice(0, 10),
+      },
+    ])
+
+    if (error) {
+      setError('No se pudo registrar el pago.')
+      return
     }
-
-    if (pagoEditandoId) {
-      const { error } = await supabase
-        .from('pagos')
-        .update(datosPago)
-        .eq('id', pagoEditandoId)
-
-      if (error) {
-        setError('No se pudo actualizar el pago.')
-        return
-      }
-    } else {
-      const { error } = await supabase.from('pagos').insert([
-        {
-          ...datosPago,
-          fecha_pago: new Date().toISOString().slice(0, 10),
-        },
-      ])
-
-      if (error) {
-        setError('No se pudo registrar el pago.')
-        return
-      }
-    }
-
-    setNuevoPago(pagoVacio())
-    setPagoEditandoId(null)
-
-    await cargarPagos()
-  }
-
-  function editarPago(pago) {
-    setPagoEditandoId(pago.id)
 
     setNuevoPago({
-      alumno_id: pago.alumno_id || '',
-      monto: String(pago.monto ?? ''),
-      medio_pago: pago.medio_pago || 'efectivo',
-      plan: pago.plan || 'mensual',
-      mes: pago.mes || '',
+      alumno_id: '',
+      monto: '',
+      medio_pago: 'efectivo',
+      plan: 'mensual',
+      mes: new Date().toLocaleString('es-AR', { month: 'long' }),
     })
 
-    setActiveSection('pagos')
-  }
-
-  function cancelarEdicionPago() {
-    setPagoEditandoId(null)
-    setNuevoPago(pagoVacio())
+    await cargarPagos()
   }
 
   async function eliminarPago(id) {
@@ -355,21 +321,21 @@ export default function Home() {
 
     setError('')
 
-    const { error } = await supabase.from('pagos').delete().eq('id', id)
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('pagos').delete().eq('id', id)
 
     if (error) {
       setError('No se pudo eliminar el pago.')
       return
     }
 
-    if (pagoEditandoId === id) {
-      cancelarEdicionPago()
-    }
-
     await cargarPagos()
   }
 
-  async function guardarCosto(event) {
+  async function crearCosto(event) {
     event.preventDefault()
     setError('')
 
@@ -378,59 +344,33 @@ export default function Home() {
       return
     }
 
-    const datosCosto = {
-      descripcion: nuevoCosto.descripcion,
-      categoria: nuevoCosto.categoria,
-      monto: Number(nuevoCosto.monto),
-      observaciones: nuevoCosto.observaciones,
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('costos').insert([
+      {
+        descripcion: nuevoCosto.descripcion,
+        categoria: nuevoCosto.categoria,
+        monto: Number(nuevoCosto.monto),
+        observaciones: nuevoCosto.observaciones,
+        fecha: new Date().toISOString().slice(0, 10),
+      },
+    ])
+
+    if (error) {
+      setError('No se pudo registrar el costo.')
+      return
     }
-
-    if (costoEditandoId) {
-      const { error } = await supabase
-        .from('costos')
-        .update(datosCosto)
-        .eq('id', costoEditandoId)
-
-      if (error) {
-        setError('No se pudo actualizar el costo.')
-        return
-      }
-    } else {
-      const { error } = await supabase.from('costos').insert([
-        {
-          ...datosCosto,
-          fecha: new Date().toISOString().slice(0, 10),
-        },
-      ])
-
-      if (error) {
-        setError('No se pudo registrar el costo.')
-        return
-      }
-    }
-
-    setNuevoCosto(costoVacio())
-    setCostoEditandoId(null)
-
-    await cargarCostos()
-  }
-
-  function editarCosto(costo) {
-    setCostoEditandoId(costo.id)
 
     setNuevoCosto({
-      descripcion: costo.descripcion || '',
-      categoria: costo.categoria || 'alquiler',
-      monto: String(costo.monto ?? ''),
-      observaciones: costo.observaciones || '',
+      descripcion: '',
+      categoria: 'alquiler',
+      monto: '',
+      observaciones: '',
     })
 
-    setActiveSection('costos')
-  }
-
-  function cancelarEdicionCosto() {
-    setCostoEditandoId(null)
-    setNuevoCosto(costoVacio())
+    await cargarCostos()
   }
 
   async function eliminarCosto(id) {
@@ -440,21 +380,21 @@ export default function Home() {
 
     setError('')
 
-    const { error } = await supabase.from('costos').delete().eq('id', id)
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('costos').delete().eq('id', id)
 
     if (error) {
       setError('No se pudo eliminar el costo.')
       return
     }
 
-    if (costoEditandoId === id) {
-      cancelarEdicionCosto()
-    }
-
     await cargarCostos()
   }
 
-  async function guardarRutina(event) {
+  async function crearRutina(event) {
     event.preventDefault()
     setError('')
 
@@ -463,56 +403,34 @@ export default function Home() {
       return
     }
 
-    const datosRutina = {
-      alumno_id: nuevaRutina.alumno_id,
-      nombre: nuevaRutina.nombre,
-      objetivo: nuevaRutina.objetivo,
-      ejercicios: nuevaRutina.ejercicios,
-      observaciones: nuevaRutina.observaciones,
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('rutinas').insert([
+      {
+        alumno_id: nuevaRutina.alumno_id,
+        nombre: nuevaRutina.nombre,
+        objetivo: nuevaRutina.objetivo,
+        ejercicios: nuevaRutina.ejercicios,
+        observaciones: nuevaRutina.observaciones,
+      },
+    ])
+
+    if (error) {
+      setError('No se pudo crear la rutina.')
+      return
     }
-
-    if (rutinaEditandoId) {
-      const { error } = await supabase
-        .from('rutinas')
-        .update(datosRutina)
-        .eq('id', rutinaEditandoId)
-
-      if (error) {
-        setError('No se pudo actualizar la rutina.')
-        return
-      }
-    } else {
-      const { error } = await supabase.from('rutinas').insert([datosRutina])
-
-      if (error) {
-        setError('No se pudo crear la rutina.')
-        return
-      }
-    }
-
-    setNuevaRutina(rutinaVacia())
-    setRutinaEditandoId(null)
-
-    await cargarRutinas()
-  }
-
-  function editarRutina(rutina) {
-    setRutinaEditandoId(rutina.id)
 
     setNuevaRutina({
-      alumno_id: rutina.alumno_id || '',
-      nombre: rutina.nombre || '',
-      objetivo: rutina.objetivo || '',
-      ejercicios: rutina.ejercicios || '',
-      observaciones: rutina.observaciones || '',
+      alumno_id: '',
+      nombre: '',
+      objetivo: '',
+      ejercicios: '',
+      observaciones: '',
     })
 
-    setActiveSection('rutinas')
-  }
-
-  function cancelarEdicionRutina() {
-    setRutinaEditandoId(null)
-    setNuevaRutina(rutinaVacia())
+    await cargarRutinas()
   }
 
   async function eliminarRutina(id) {
@@ -522,15 +440,15 @@ export default function Home() {
 
     setError('')
 
-    const { error } = await supabase.from('rutinas').delete().eq('id', id)
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('rutinas').delete().eq('id', id)
 
     if (error) {
       setError('No se pudo eliminar la rutina.')
       return
-    }
-
-    if (rutinaEditandoId === id) {
-      cancelarEdicionRutina()
     }
 
     await cargarRutinas()
@@ -538,6 +456,10 @@ export default function Home() {
 
   useEffect(() => {
     async function verificarSesion() {
+      if (!isSupabaseConfigured || !supabase) {
+        return
+      }
+
       const { data } = await supabase.auth.getSession()
 
       if (data.session?.user) {
@@ -574,6 +496,11 @@ export default function Home() {
     (alumno) => alumno.id === selectedAlumnoId
   )
 
+  const paymentMonthOptions = useMemo(
+    () => getPaymentMonthOptions(pagos),
+    [pagos]
+  )
+
   const pagosDelAlumno = pagos.filter(
     (pago) => pago.alumno_id === selectedAlumnoId
   )
@@ -586,6 +513,10 @@ export default function Home() {
     (acc, pago) => acc + Number(pago.monto || 0),
     0
   )
+
+  const selectedAlumnoPaymentSnapshot = selectedAlumno
+    ? getStudentPaymentSnapshot(selectedAlumno, pagos, selectedPaymentMonth)
+    : null
 
   if (!user) {
     return (
@@ -687,22 +618,24 @@ export default function Home() {
             alumnos={alumnos}
             pagos={pagos}
             costos={costos}
-            rutinas={rutinas}
           />
         )}
 
         {activeSection === 'alumnos' && (
           <StudentsSection
             alumnos={alumnos}
+            pagos={pagos}
+            rutinas={rutinas}
             nuevoAlumno={nuevoAlumno}
             setNuevoAlumno={setNuevoAlumno}
-            guardarAlumno={guardarAlumno}
-            alumnoEditandoId={alumnoEditandoId}
-            editarAlumno={editarAlumno}
-            cancelarEdicionAlumno={cancelarEdicionAlumno}
+            crearAlumno={crearAlumno}
             eliminarAlumno={eliminarAlumno}
+            selectedAlumnoId={selectedAlumnoId}
             setSelectedAlumnoId={setSelectedAlumnoId}
             setActiveSection={setActiveSection}
+            selectedPaymentMonth={selectedPaymentMonth}
+            setSelectedPaymentMonth={setSelectedPaymentMonth}
+            paymentMonthOptions={paymentMonthOptions}
           />
         )}
 
@@ -713,6 +646,8 @@ export default function Home() {
             rutinasDelAlumno={rutinasDelAlumno}
             totalPagadoAlumno={totalPagadoAlumno}
             setActiveSection={setActiveSection}
+            selectedPaymentMonth={selectedPaymentMonth}
+            paymentSnapshot={selectedAlumnoPaymentSnapshot}
           />
         )}
 
@@ -722,10 +657,7 @@ export default function Home() {
             pagos={pagos}
             nuevoPago={nuevoPago}
             setNuevoPago={setNuevoPago}
-            guardarPago={guardarPago}
-            pagoEditandoId={pagoEditandoId}
-            editarPago={editarPago}
-            cancelarEdicionPago={cancelarEdicionPago}
+            crearPago={crearPago}
             eliminarPago={eliminarPago}
           />
         )}
@@ -735,10 +667,7 @@ export default function Home() {
             costos={costos}
             nuevoCosto={nuevoCosto}
             setNuevoCosto={setNuevoCosto}
-            guardarCosto={guardarCosto}
-            costoEditandoId={costoEditandoId}
-            editarCosto={editarCosto}
-            cancelarEdicionCosto={cancelarEdicionCosto}
+            crearCosto={crearCosto}
             eliminarCosto={eliminarCosto}
           />
         )}
@@ -749,10 +678,7 @@ export default function Home() {
             rutinas={rutinas}
             nuevaRutina={nuevaRutina}
             setNuevaRutina={setNuevaRutina}
-            guardarRutina={guardarRutina}
-            rutinaEditandoId={rutinaEditandoId}
-            editarRutina={editarRutina}
-            cancelarEdicionRutina={cancelarEdicionRutina}
+            crearRutina={crearRutina}
             eliminarRutina={eliminarRutina}
           />
         )}
