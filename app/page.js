@@ -45,6 +45,7 @@ export default function Home() {
     fecha: new Date().toISOString().slice(0, 10),
     observaciones: '',
   })
+  const [editingCostoId, setEditingCostoId] = useState(null)
 
   const [nuevaRutina, setNuevaRutina] = useState({
     alumno_id: '',
@@ -61,6 +62,16 @@ export default function Home() {
     }
 
     return supabase
+  }
+
+  function resetNuevoCosto() {
+    setNuevoCosto({
+      descripcion: '',
+      categoria: 'alquiler',
+      monto: '',
+      fecha: new Date().toISOString().slice(0, 10),
+      observaciones: '',
+    })
   }
 
   async function login(event) {
@@ -374,30 +385,59 @@ export default function Home() {
 
     if (!client) return
 
-    const { error: createError } = await client.from('costos').insert([
-      {
-        descripcion: nuevoCosto.descripcion,
-        categoria: nuevoCosto.categoria,
-        monto: Number(nuevoCosto.monto),
-        fecha: nuevoCosto.fecha || new Date().toISOString().slice(0, 10),
-        observaciones: nuevoCosto.observaciones,
-      },
-    ])
+    if (editingCostoId) {
+      const { error: updateError } = await client
+        .from('costos')
+        .update({
+          descripcion: nuevoCosto.descripcion,
+          categoria: nuevoCosto.categoria,
+          monto: Number(nuevoCosto.monto),
+          fecha: nuevoCosto.fecha || null,
+          observaciones: nuevoCosto.observaciones,
+        })
+        .eq('id', editingCostoId)
 
-    if (createError) {
-      setError('No se pudo registrar el costo.')
-      return
+      if (updateError) {
+        setError('No se pudo actualizar el costo.')
+        return
+      }
+    } else {
+      const { error: createError } = await client.from('costos').insert([
+        {
+          descripcion: nuevoCosto.descripcion,
+          categoria: nuevoCosto.categoria,
+          monto: Number(nuevoCosto.monto),
+          fecha: nuevoCosto.fecha || new Date().toISOString().slice(0, 10),
+          observaciones: nuevoCosto.observaciones,
+        },
+      ])
+
+      if (createError) {
+        setError('No se pudo registrar el costo.')
+        return
+      }
     }
 
-    setNuevoCosto({
-      descripcion: '',
-      categoria: 'alquiler',
-      monto: '',
-      fecha: new Date().toISOString().slice(0, 10),
-      observaciones: '',
-    })
+    resetNuevoCosto()
+    setEditingCostoId(null)
 
     await cargarCostos()
+  }
+
+  function editarCosto(costo) {
+    setEditingCostoId(costo.id)
+    setNuevoCosto({
+      descripcion: costo.descripcion || '',
+      categoria: costo.categoria || 'otros',
+      monto: costo.monto?.toString() || '',
+      fecha: costo.fecha || '',
+      observaciones: costo.observaciones || '',
+    })
+  }
+
+  function cancelarEdicionCosto() {
+    setEditingCostoId(null)
+    resetNuevoCosto()
   }
 
   async function eliminarCosto(id) {
@@ -418,6 +458,10 @@ export default function Home() {
     if (deleteError) {
       setError('No se pudo eliminar el costo.')
       return
+    }
+
+    if (editingCostoId === id) {
+      cancelarEdicionCosto()
     }
 
     await cargarCostos()
@@ -688,6 +732,9 @@ export default function Home() {
             nuevoCosto={nuevoCosto}
             setNuevoCosto={setNuevoCosto}
             crearCosto={crearCosto}
+            editingCostoId={editingCostoId}
+            editarCosto={editarCosto}
+            cancelarEdicionCosto={cancelarEdicionCosto}
             eliminarCosto={eliminarCosto}
           />
         )}

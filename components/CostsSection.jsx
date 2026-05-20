@@ -3,6 +3,9 @@ export default function CostsSection({
   nuevoCosto,
   setNuevoCosto,
   crearCosto,
+  editingCostoId,
+  editarCosto,
+  cancelarEdicionCosto,
   eliminarCosto,
 }) {
   return (
@@ -75,7 +78,17 @@ export default function CostsSection({
           }
         />
 
-        <button>Registrar costo</button>
+        <button>{editingCostoId ? 'Guardar cambios' : 'Registrar costo'}</button>
+
+        {editingCostoId && (
+          <button
+            type="button"
+            className="smallButton"
+            onClick={cancelarEdicionCosto}
+          >
+            Cancelar edicion
+          </button>
+        )}
       </form>
 
       <div className="simpleList">
@@ -94,12 +107,21 @@ export default function CostsSection({
               <p>Fecha: {costo.fecha || 'Sin fecha'}</p>
               <p>Observaciones: {costo.observaciones || '-'}</p>
 
-              <button
-                className="smallButton dangerButton"
-                onClick={() => eliminarCosto(costo.id)}
-              >
-                Eliminar costo
-              </button>
+              <div className="buttonGroup">
+                <button
+                  className="smallButton"
+                  onClick={() => editarCosto(costo)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="smallButton dangerButton"
+                  onClick={() => eliminarCosto(costo.id)}
+                >
+                  Eliminar costo
+                </button>
+              </div>
             </article>
           ))
         )}
