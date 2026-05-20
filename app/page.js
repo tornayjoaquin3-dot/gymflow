@@ -2,10 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
-import {
-  getMonthKey,
-  getPaymentMonthOptions,
-} from '../lib/student-utils'
+import { getMonthKey, getPaymentMonthOptions } from '../lib/student-utils'
 
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
@@ -67,7 +64,7 @@ export default function Home() {
 
   function getSupabaseClient() {
     if (!supabase) {
-      setError('Configurá las variables de Supabase para usar la app.')
+      setError('Configura las variables de Supabase para usar la app.')
       return null
     }
 
@@ -86,11 +83,10 @@ export default function Home() {
       return
     }
 
-    const { data, error: loginError } =
-      await client.auth.signInWithPassword({
-        email,
-        password,
-      })
+    const { data, error: loginError } = await client.auth.signInWithPassword({
+      email,
+      password,
+    })
 
     if (loginError) {
       setError(loginError.message)
@@ -114,7 +110,6 @@ export default function Home() {
     setProfile(profileData)
 
     await cargarDatos()
-
     setLoading(false)
   }
 
@@ -127,12 +122,10 @@ export default function Home() {
 
     setUser(null)
     setProfile(null)
-
     setAlumnos([])
     setPagos([])
     setCostos([])
     setRutinas([])
-
     setActiveSection('alumnos')
     setSelectedAlumnoId(null)
   }
@@ -166,12 +159,14 @@ export default function Home() {
 
     const { data } = await client
       .from('pagos')
-      .select(`
+      .select(
+        `
         *,
         alumnos (
           nombre
         )
-      `)
+      `
+      )
       .order('fecha_pago', { ascending: false })
 
     setPagos(data || [])
@@ -197,12 +192,14 @@ export default function Home() {
 
     const { data } = await client
       .from('rutinas')
-      .select(`
+      .select(
+        `
         *,
         alumnos (
           nombre
         )
-      `)
+      `
+      )
       .order('creado_en', { ascending: false })
 
     setRutinas(data || [])
@@ -214,29 +211,29 @@ export default function Home() {
 
     if (!nuevoAlumno.nombre.trim()) {
       setError('El nombre del alumno es obligatorio.')
-      return
+      return false
     }
 
     const client = getSupabaseClient()
 
-    if (!client) return
+    if (!client) return false
 
-    const { data, error } = await client
+    const { data, error: createError } = await client
       .from('alumnos')
       .insert([
-      {
-        nombre: nuevoAlumno.nombre,
-        telefono: nuevoAlumno.telefono,
-        observaciones: nuevoAlumno.observaciones,
-        estado: 'activo',
-      },
+        {
+          nombre: nuevoAlumno.nombre,
+          telefono: nuevoAlumno.telefono,
+          observaciones: nuevoAlumno.observaciones,
+          estado: 'activo',
+        },
       ])
       .select()
       .single()
 
-    if (error) {
+    if (createError) {
       setError('No se pudo crear el alumno.')
-      return
+      return false
     }
 
     setNuevoAlumno({
@@ -251,6 +248,7 @@ export default function Home() {
     }
 
     await cargarAlumnos()
+    return true
   }
 
   async function actualizarAlumno(payload) {
@@ -258,14 +256,14 @@ export default function Home() {
 
     if (!payload?.id || !payload.nombre?.trim()) {
       setError('El nombre del alumno es obligatorio.')
-      return
+      return false
     }
 
     const client = getSupabaseClient()
 
-    if (!client) return
+    if (!client) return false
 
-    const { error } = await client
+    const { error: updateError } = await client
       .from('alumnos')
       .update({
         nombre: payload.nombre,
@@ -274,32 +272,35 @@ export default function Home() {
       })
       .eq('id', payload.id)
 
-    if (error) {
+    if (updateError) {
       setError('No se pudo actualizar el alumno.')
-      return
+      return false
     }
 
     await cargarAlumnos()
+    return true
   }
 
   async function eliminarAlumno(id) {
     const confirmar = window.confirm(
-      '¿Seguro que querés eliminar este alumno? También se eliminará su historial asociado si la base está configurada en cascada.'
+      'Seguro que quieres eliminar este alumno?'
     )
 
-    if (!confirmar) return
+    if (!confirmar) return false
 
     setError('')
-
     const client = getSupabaseClient()
 
-    if (!client) return
+    if (!client) return false
 
-    const { error } = await client.from('alumnos').delete().eq('id', id)
+    const { error: deleteError } = await client
+      .from('alumnos')
+      .delete()
+      .eq('id', id)
 
-    if (error) {
+    if (deleteError) {
       setError('No se pudo eliminar el alumno.')
-      return
+      return false
     }
 
     if (selectedAlumnoId === id) {
@@ -308,6 +309,7 @@ export default function Home() {
     }
 
     await cargarDatos()
+    return true
   }
 
   async function crearPago(event) {
@@ -315,7 +317,7 @@ export default function Home() {
     setError('')
 
     if (!nuevoPago.alumno_id || !nuevoPago.monto) {
-      setError('Seleccioná un alumno y cargá el monto.')
+      setError('Selecciona un alumno y carga el monto.')
       return
     }
 
@@ -323,7 +325,7 @@ export default function Home() {
 
     if (!client) return
 
-    const { error } = await client.from('pagos').insert([
+    const { error: createError } = await client.from('pagos').insert([
       {
         alumno_id: nuevoPago.alumno_id,
         monto: Number(nuevoPago.monto),
@@ -334,7 +336,7 @@ export default function Home() {
       },
     ])
 
-    if (error) {
+    if (createError) {
       setError('No se pudo registrar el pago.')
       return
     }
@@ -354,47 +356,51 @@ export default function Home() {
     setError('')
 
     if (!payload?.alumno_id || !payload?.monto) {
-      setError('Completá el monto para registrar el pago.')
-      return
+      setError('Completa el monto para registrar el pago.')
+      return false
     }
 
     const client = getSupabaseClient()
 
-    if (!client) return
+    if (!client) return false
 
-    const { error } = await client.from('pagos').insert([
+    const { error: createError } = await client.from('pagos').insert([
       {
         alumno_id: payload.alumno_id,
         monto: Number(payload.monto),
         medio_pago: payload.medio_pago || 'efectivo',
         plan: payload.plan || 'mensual',
         mes: payload.mes,
-        fecha_pago: payload.fecha_pago || new Date().toISOString().slice(0, 10),
+        fecha_pago:
+          payload.fecha_pago || new Date().toISOString().slice(0, 10),
       },
     ])
 
-    if (error) {
+    if (createError) {
       setError('No se pudo registrar el pago.')
-      return
+      return false
     }
 
     await cargarPagos()
+    return true
   }
 
   async function eliminarPago(id) {
-    const confirmar = window.confirm('¿Seguro que querés eliminar este pago?')
+    const confirmar = window.confirm('Seguro que quieres eliminar este pago?')
 
     if (!confirmar) return
 
     setError('')
-
     const client = getSupabaseClient()
 
     if (!client) return
 
-    const { error } = await client.from('pagos').delete().eq('id', id)
+    const { error: deleteError } = await client
+      .from('pagos')
+      .delete()
+      .eq('id', id)
 
-    if (error) {
+    if (deleteError) {
       setError('No se pudo eliminar el pago.')
       return
     }
@@ -407,7 +413,7 @@ export default function Home() {
     setError('')
 
     if (!nuevoCosto.descripcion.trim() || !nuevoCosto.monto) {
-      setError('Completá descripción y monto del costo.')
+      setError('Completa descripcion y monto del costo.')
       return
     }
 
@@ -415,7 +421,7 @@ export default function Home() {
 
     if (!client) return
 
-    const { error } = await client.from('costos').insert([
+    const { error: createError } = await client.from('costos').insert([
       {
         descripcion: nuevoCosto.descripcion,
         categoria: nuevoCosto.categoria,
@@ -425,7 +431,7 @@ export default function Home() {
       },
     ])
 
-    if (error) {
+    if (createError) {
       setError('No se pudo registrar el costo.')
       return
     }
@@ -441,19 +447,21 @@ export default function Home() {
   }
 
   async function eliminarCosto(id) {
-    const confirmar = window.confirm('¿Seguro que querés eliminar este costo?')
+    const confirmar = window.confirm('Seguro que quieres eliminar este costo?')
 
     if (!confirmar) return
 
     setError('')
-
     const client = getSupabaseClient()
 
     if (!client) return
 
-    const { error } = await client.from('costos').delete().eq('id', id)
+    const { error: deleteError } = await client
+      .from('costos')
+      .delete()
+      .eq('id', id)
 
-    if (error) {
+    if (deleteError) {
       setError('No se pudo eliminar el costo.')
       return
     }
@@ -466,7 +474,7 @@ export default function Home() {
     setError('')
 
     if (!nuevaRutina.alumno_id || !nuevaRutina.nombre.trim()) {
-      setError('Seleccioná un alumno y cargá el nombre de la rutina.')
+      setError('Selecciona un alumno y carga el nombre de la rutina.')
       return
     }
 
@@ -474,7 +482,7 @@ export default function Home() {
 
     if (!client) return
 
-    const { error } = await client.from('rutinas').insert([
+    const { error: createError } = await client.from('rutinas').insert([
       {
         alumno_id: nuevaRutina.alumno_id,
         nombre: nuevaRutina.nombre,
@@ -484,7 +492,7 @@ export default function Home() {
       },
     ])
 
-    if (error) {
+    if (createError) {
       setError('No se pudo crear la rutina.')
       return
     }
@@ -505,15 +513,15 @@ export default function Home() {
 
     if (!payload?.alumno_id || !payload?.nombre?.trim()) {
       setError('La rutina necesita un nombre.')
-      return
+      return false
     }
 
     const client = getSupabaseClient()
 
-    if (!client) return
+    if (!client) return false
 
     if (payload.id) {
-      const { error } = await client
+      const { error: updateError } = await client
         .from('rutinas')
         .update({
           nombre: payload.nombre,
@@ -523,12 +531,12 @@ export default function Home() {
         })
         .eq('id', payload.id)
 
-      if (error) {
+      if (updateError) {
         setError('No se pudo actualizar la rutina.')
-        return
+        return false
       }
     } else {
-      const { error } = await client.from('rutinas').insert([
+      const { error: createError } = await client.from('rutinas').insert([
         {
           alumno_id: payload.alumno_id,
           nombre: payload.nombre,
@@ -538,29 +546,32 @@ export default function Home() {
         },
       ])
 
-      if (error) {
+      if (createError) {
         setError('No se pudo crear la rutina.')
-        return
+        return false
       }
     }
 
     await cargarRutinas()
+    return true
   }
 
   async function eliminarRutina(id) {
-    const confirmar = window.confirm('¿Seguro que querés eliminar esta rutina?')
+    const confirmar = window.confirm('Seguro que quieres eliminar esta rutina?')
 
     if (!confirmar) return
 
     setError('')
-
     const client = getSupabaseClient()
 
     if (!client) return
 
-    const { error } = await client.from('rutinas').delete().eq('id', id)
+    const { error: deleteError } = await client
+      .from('rutinas')
+      .delete()
+      .eq('id', id)
 
-    if (error) {
+    if (deleteError) {
       setError('No se pudo eliminar la rutina.')
       return
     }
@@ -586,7 +597,6 @@ export default function Home() {
           .single()
 
         setProfile(profileData)
-
         await cargarDatos()
       }
     }
@@ -603,36 +613,28 @@ export default function Home() {
   }, [costos])
 
   const ganancia = totalIngresos - totalCostos
-
   const isProfesor = profile?.rol === 'profesor'
 
-  const paymentMonthOptions = useMemo(
-    () => getPaymentMonthOptions(pagos),
-    [pagos]
-  )
+  const paymentMonthOptions = useMemo(() => {
+    return getPaymentMonthOptions(pagos)
+  }, [pagos])
 
   if (!user) {
     return (
       <main className="page">
         <section className="panel loginPanel">
           <h1>GymFlow</h1>
-
-          <p>Ingresá con un usuario socio o profesor.</p>
+          <p>Ingresa con un usuario socio o profesor.</p>
 
           <form onSubmit={login} className="form">
             <label>Email</label>
+            <input value={email} onChange={(event) => setEmail(event.target.value)} />
 
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <label>Contraseña</label>
-
+            <label>Contrasena</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
             />
 
             {error && <div className="error">{error}</div>}
@@ -658,36 +660,28 @@ export default function Home() {
         <header className="topbar">
           <div>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
-
             <p>
               {profile?.nombre} · {profile?.email}
             </p>
           </div>
 
-          <button onClick={logout}>Cerrar sesión</button>
+          <button onClick={logout}>Cerrar sesion</button>
         </header>
 
         {!isProfesor && (
           <div className="cards">
             <article>
               <span>Ingresos</span>
-
-              <b className="money">
-                ${totalIngresos.toLocaleString('es-AR')}
-              </b>
+              <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
             </article>
 
             <article>
               <span>Costos</span>
-
-              <b className="dangerText">
-                ${totalCostos.toLocaleString('es-AR')}
-              </b>
+              <b className="dangerText">${totalCostos.toLocaleString('es-AR')}</b>
             </article>
 
             <article>
               <span>Ganancia</span>
-
               <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
                 ${ganancia.toLocaleString('es-AR')}
               </b>
@@ -695,7 +689,6 @@ export default function Home() {
 
             <article>
               <span>Alumnos</span>
-
               <b>{alumnos.length} registrados</b>
             </article>
           </div>
@@ -722,6 +715,7 @@ export default function Home() {
             nuevoAlumno={nuevoAlumno}
             setNuevoAlumno={setNuevoAlumno}
             crearAlumno={crearAlumno}
+            eliminarAlumno={eliminarAlumno}
             selectedAlumnoId={selectedAlumnoId}
             setSelectedAlumnoId={setSelectedAlumnoId}
             selectedPaymentMonth={selectedPaymentMonth}
