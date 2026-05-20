@@ -8,6 +8,7 @@ export default function StudentDetail({
   onEditAlumno,
   onEditRutina,
   onRegisterPago,
+  onDeletePago,
   onDeleteAlumno,
 }) {
   if (!selectedAlumno) {
@@ -21,6 +22,11 @@ export default function StudentDetail({
   }
 
   const currentRoutine = rutinasDelAlumno[0] || null
+
+  async function handleDeletePago(id) {
+    if (!onDeletePago) return
+    await onDeletePago(id)
+  }
 
   return (
     <div className="studentsPanel studentsDetailPanel">
@@ -105,6 +111,7 @@ export default function StudentDetail({
             <span>FECHA</span>
             <span>MEDIO</span>
             <span>MONTO</span>
+            <span />
           </div>
 
           <div className="studentsHistoryTableBody">
@@ -120,6 +127,14 @@ export default function StudentDetail({
                     {pago.medio_pago || '-'}
                   </span>
                   <strong>${Number(pago.monto || 0).toLocaleString('es-AR')}</strong>
+                  <button
+                    type="button"
+                    className="studentsDeletePaymentButton"
+                    onClick={() => handleDeletePago(pago.id)}
+                    aria-label="Eliminar pago"
+                  >
+                    ×
+                  </button>
                 </div>
               ))
             )}

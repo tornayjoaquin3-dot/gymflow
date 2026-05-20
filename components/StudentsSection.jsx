@@ -59,6 +59,7 @@ export default function StudentsSection({
   paymentMonthOptions,
   onUpdateAlumno,
   onRegisterPago,
+  onDeletePago,
   onSaveRutina,
 }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -362,6 +363,7 @@ export default function StudentsSection({
           onEditAlumno={openStudentModal}
           onEditRutina={openRoutineModal}
           onRegisterPago={openPaymentModal}
+          onDeletePago={onDeletePago}
           onDeleteAlumno={handleDeleteAlumno}
         />
       </div>

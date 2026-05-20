@@ -723,6 +723,7 @@ export default function Home() {
             paymentMonthOptions={paymentMonthOptions}
             onUpdateAlumno={actualizarAlumno}
             onRegisterPago={registrarPagoAlumno}
+            onDeletePago={eliminarPago}
             onSaveRutina={guardarRutinaAlumno}
           />
         )}

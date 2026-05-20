@@ -1260,6 +1260,7 @@ button{
   background:#fff;
   color:#111827;
   font-weight:700;
+  box-shadow:0 1px 0 rgba(15,23,42,0.03);
 }
 
 .studentsButtonPrimary{
@@ -1301,6 +1302,7 @@ button{
   border-radius:24px;
   background:#fff;
   padding:20px;
+  box-shadow:0 10px 30px rgba(15,23,42,0.04);
 }
 
 .studentsPanelTop{
@@ -1364,7 +1366,7 @@ button{
 
 .studentsTableRow.isSelected,
 .studentsTableRow:hover{
-  background:#fbfaf7;
+  background:#fafaf8;
 }
 
 .studentsNameCell{
@@ -1524,7 +1526,7 @@ button{
 }
 
 .studentsHistoryTableHeader{
-  grid-template-columns:120px 120px 120px;
+  grid-template-columns:120px 120px 120px 44px;
   color:#718096;
   font-size:12px;
   font-weight:800;
@@ -1533,7 +1535,7 @@ button{
 }
 
 .studentsHistoryTableRow{
-  grid-template-columns:120px 120px 120px;
+  grid-template-columns:120px 120px 120px 44px;
   border-top:1px solid #eceff3;
 }
 
@@ -1552,6 +1554,23 @@ button{
   color:#047857;
   font-size:12px;
   font-weight:700;
+}
+
+.studentsDeletePaymentButton{
+  justify-self:end;
+  width:28px;
+  height:28px;
+  border:1px solid #f2caca;
+  border-radius:999px;
+  background:#fff5f5;
+  color:#dc2626;
+  font-size:16px;
+  line-height:1;
+  font-weight:700;
+}
+
+.studentsDeletePaymentButton:hover{
+  background:#feecec;
 }
 
 .studentsModalBackdrop{
