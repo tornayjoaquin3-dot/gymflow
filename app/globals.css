@@ -2,11 +2,35 @@
   box-sizing:border-box;
 }
 
+:root{
+  --bg:#f6f3ed;
+  --surface:#ffffff;
+  --surface-soft:#fbfaf7;
+  --surface-muted:#f4f1eb;
+  --border:#e7e1d7;
+  --border-strong:#d9d2c7;
+  --text:#111827;
+  --text-muted:#6b7280;
+  --text-soft:#94a3b8;
+  --shadow:0 10px 30px rgba(15,23,42,0.05);
+  --shadow-soft:0 2px 10px rgba(15,23,42,0.03);
+  --primary:#171717;
+  --primary-hover:#000000;
+  --danger:#d94841;
+  --danger-soft:#fff1f0;
+  --success:#1f9d73;
+  --success-soft:#e8f7f2;
+}
+
+html{
+  background:var(--bg);
+}
+
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f172a;
-  color:white;
+  font-family:Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
 input,
@@ -29,13 +53,13 @@ button{
 }
 
 .panel{
-  background:#111c44;
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:20px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:28px;
   padding:32px;
   width:100%;
   max-width:420px;
-  box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  box-shadow:var(--shadow);
 }
 
 .loginPanel h1{
@@ -45,7 +69,7 @@ button{
 
 .loginPanel p{
   margin:0 0 24px;
-  opacity:0.8;
+  color:var(--text-muted);
 }
 
 .form{
@@ -56,118 +80,131 @@ button{
 
 .form label{
   font-size:14px;
-  opacity:0.9;
+  color:var(--text-muted);
 }
 
 .form input{
   width:100%;
   padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1e2a5a;
-  color:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
   font-size:15px;
 }
 
 .form input:focus{
-  outline:2px solid #3b82f6;
+  outline:2px solid rgba(17,24,39,0.08);
+  border-color:var(--border-strong);
 }
 
 .form button{
   margin-top:10px;
   padding:14px;
   border:none;
-  border-radius:10px;
-  background:#2563eb;
-  color:white;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
   font-size:15px;
   font-weight:bold;
   transition:0.2s;
 }
 
 .form button:hover{
-  background:#1d4ed8;
+  background:var(--primary-hover);
 }
 
 .error{
-  background:#7f1d1d;
-  color:#fecaca;
+  background:var(--danger-soft);
+  color:var(--danger);
+  border:1px solid #f6d0cc;
   padding:12px;
-  border-radius:10px;
+  border-radius:16px;
   font-size:14px;
 }
 
 .hint{
   margin-top:24px;
-  background:#172554;
+  background:var(--surface-soft);
   padding:16px;
-  border-radius:12px;
+  border-radius:16px;
+  border:1px solid var(--border);
   font-size:14px;
   line-height:1.6;
+  color:var(--text-muted);
 }
 
 .app{
   display:flex;
   min-height:100vh;
+  background:var(--bg);
 }
 
 .sidebar{
-  width:240px;
-  background:#111827;
-  padding:24px;
-  border-right:1px solid rgba(255,255,255,0.06);
+  width:250px;
+  background:rgba(255,255,255,0.55);
+  backdrop-filter:blur(8px);
+  padding:24px 20px;
+  border-right:1px solid var(--border);
   display:flex;
   flex-direction:column;
   gap:12px;
 }
 
 .sidebar h2{
-  margin:0 0 20px;
+  margin:4px 6px 22px;
+  font-size:32px;
+  letter-spacing:-0.04em;
 }
 
 .sidebar button{
   width:100%;
-  padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1f2937;
-  color:white;
+  padding:14px 16px;
+  border:1px solid transparent;
+  border-radius:18px;
+  background:transparent;
+  color:var(--text-muted);
   text-align:left;
   transition:0.2s;
+  font-weight:700;
 }
 
 .sidebar button:hover{
-  background:#374151;
+  background:rgba(255,255,255,0.82);
+  color:var(--text);
 }
 
 .main{
   flex:1;
-  padding:32px;
+  padding:28px 32px 40px;
 }
 
 .topbar{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  margin-bottom:30px;
+  margin-bottom:16px;
 }
 
 .topbar h1{
   margin:0;
+  font-size:30px;
+  letter-spacing:-0.03em;
 }
 
 .topbar p{
   margin-top:8px;
-  opacity:0.7;
+  color:var(--text-muted);
 }
 
 .topbar button{
-  padding:12px 18px;
-  border:none;
-  border-radius:10px;
-  background:#dc2626;
-  color:white;
+  padding:12px 16px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:var(--surface);
+  color:var(--text);
   font-weight:bold;
+  box-shadow:var(--shadow-soft);
 }
 
 .cards{
@@ -177,16 +214,17 @@ button{
 }
 
 .cards article{
-  background:#111827;
-  border-radius:18px;
+  background:var(--surface);
+  border-radius:24px;
   padding:24px;
-  border:1px solid rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-soft);
 }
 
 .cards span{
   display:block;
   font-size:13px;
-  opacity:0.6;
+  color:var(--text-soft);
   margin-bottom:10px;
 }
 
@@ -197,10 +235,11 @@ button{
 }
 .section{
   margin-top:40px;
-  background:#111827;
-  border-radius:20px;
+  background:var(--surface);
+  border-radius:28px;
   padding:24px;
-  border:1px solid rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
 }
 
 .sectionDense{
@@ -223,7 +262,7 @@ button{
 }
 
 .sectionHeader p{
-  opacity:0.7;
+  color:var(--text-muted);
   margin-top:8px;
 }
 
@@ -236,9 +275,9 @@ button{
 .sectionMeta span{
   padding:8px 12px;
   border-radius:999px;
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.08);
-  color:rgba(255,255,255,0.75);
+  background:var(--surface-soft);
+  border:1px solid var(--border);
+  color:var(--text-muted);
   font-size:12px;
 }
 
@@ -251,17 +290,17 @@ button{
 
 .studentForm input{
   padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1f2937;
-  color:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
 }
 
 .studentForm button{
   border:none;
-  border-radius:10px;
-  background:#2563eb;
-  color:white;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
 }
 
@@ -281,20 +320,23 @@ button{
 }
 
 .tableHeader{
-  background:#1e293b;
+  background:var(--surface-soft);
+  color:var(--text-soft);
   font-weight:bold;
+  border:1px solid var(--border);
 }
 
 .tableRow{
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.05);
+  background:var(--surface);
+  border:1px solid var(--border);
 }
 
 .empty{
   padding:20px;
-  background:#0f172a;
-  border-radius:12px;
-  opacity:0.7;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
+  border-radius:18px;
+  color:var(--text-muted);
 }
 .studentTableHeader,
 .studentTableRow{
@@ -305,10 +347,10 @@ button{
 .tableRow select{
   width:100%;
   padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#1f2937;
-  color:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--text);
 }
 
 .actions{
@@ -319,19 +361,21 @@ button{
 
 .actions button{
   border:none;
-  border-radius:8px;
+  border-radius:12px;
   padding:9px 12px;
-  background:#2563eb;
-  color:white;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
 }
 
 .actions .secondary{
-  background:#475569;
+  background:var(--surface);
+  color:var(--text);
+  border:1px solid var(--border);
 }
 
 .actions .danger{
-  background:#dc2626;
+  background:var(--danger);
 }
 
 .status{
@@ -365,9 +409,9 @@ button{
   gap:14px;
   padding:16px;
   margin-bottom:18px;
-  border-radius:16px;
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.05);
+  border-radius:20px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
 }
 
 .toolbarField{
@@ -379,7 +423,7 @@ button{
 .toolbarField span{
   font-size:12px;
   text-transform:uppercase;
-  color:rgba(255,255,255,0.58);
+  color:var(--text-soft);
 }
 
 .toolbarField input,
@@ -390,10 +434,10 @@ button{
   width:100%;
   padding:12px 14px;
   border:none;
-  border-radius:12px;
-  background:#111827;
-  color:white;
-  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
+  border:1px solid var(--border);
 }
 
 .toolbarField input:focus,
@@ -401,7 +445,8 @@ button{
 .adminForm input:focus,
 .adminForm select:focus,
 .adminForm textarea:focus{
-  outline:2px solid #3b82f6;
+  outline:2px solid rgba(17,24,39,0.08);
+  border-color:var(--border-strong);
 }
 
 .segmentedControl{
@@ -413,15 +458,17 @@ button{
 .segmentedControl button{
   padding:10px 12px;
   border:none;
-  border-radius:10px;
-  background:#111827;
-  color:rgba(255,255,255,0.74);
-  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+  background:var(--surface);
+  color:var(--text-muted);
+  border:1px solid var(--border);
+  font-weight:700;
 }
 
 .segmentedControl button.active{
-  background:#1d4ed8;
-  color:white;
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
 }
 
 .adminForm{
@@ -439,26 +486,26 @@ button{
 .dangerGhostButton,
 .compactButton{
   border:none;
-  border-radius:10px;
+  border-radius:14px;
   transition:0.2s;
 }
 
 .primaryButton{
-  background:#2563eb;
-  color:white;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
 }
 
 .ghostButton{
-  background:#172033;
-  color:#dbeafe;
-  border:1px solid rgba(148,163,184,0.18);
+  background:var(--surface);
+  color:var(--text);
+  border:1px solid var(--border);
 }
 
 .dangerGhostButton{
-  background:#2b1620;
-  color:#fecaca;
-  border:1px solid rgba(248,113,113,0.18);
+  background:var(--danger-soft);
+  color:var(--danger);
+  border:1px solid #f2caca;
 }
 
 .compactButton{
@@ -468,10 +515,10 @@ button{
 }
 
 .dataPanel{
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
+  border:1px solid var(--border);
+  border-radius:20px;
   overflow:hidden;
-  background:#0f172a;
+  background:var(--surface);
 }
 
 .dataTableHeader{
@@ -479,8 +526,8 @@ button{
   gap:12px;
   align-items:center;
   padding:14px 16px;
-  background:#101a2f;
-  color:rgba(255,255,255,0.62);
+  background:var(--surface-soft);
+  color:var(--text-soft);
   font-size:12px;
   text-transform:uppercase;
 }
@@ -495,11 +542,11 @@ button{
   gap:12px;
   align-items:center;
   padding:14px 16px;
-  border-top:1px solid rgba(255,255,255,0.05);
+  border-top:1px solid var(--border);
 }
 
 .dataRow.isSelected{
-  background:rgba(37,99,235,0.08);
+  background:#faf7f2;
 }
 
 .studentsGrid{
@@ -514,7 +561,7 @@ button{
   padding:0;
   border:none;
   background:transparent;
-  color:white;
+  color:var(--text);
   font-size:15px;
   font-weight:700;
   text-align:left;
@@ -525,7 +572,7 @@ button{
   flex-direction:column;
   gap:4px;
   margin-top:4px;
-  color:rgba(255,255,255,0.62);
+  color:var(--text-muted);
   font-size:13px;
 }
 
@@ -540,7 +587,7 @@ button{
 }
 
 .cellStack span{
-  color:rgba(255,255,255,0.62);
+  color:var(--text-muted);
   font-size:13px;
 }
 
@@ -562,7 +609,7 @@ button{
 }
 
 .statusStack small{
-  color:rgba(255,255,255,0.6);
+  color:var(--text-soft);
   font-size:12px;
 }
 
@@ -578,18 +625,18 @@ button{
 }
 
 .statusBadge.paid{
-  background:rgba(34,197,94,0.12);
-  color:#bbf7d0;
+  background:var(--success-soft);
+  color:var(--success);
 }
 
 .statusBadge.pending{
-  background:rgba(245,158,11,0.12);
-  color:#fde68a;
+  background:#fff6dc;
+  color:#a16207;
 }
 
 .statusBadge.overdue{
-  background:rgba(248,113,113,0.12);
-  color:#fecaca;
+  background:var(--danger-soft);
+  color:var(--danger);
 }
 
 .detailHeader{
@@ -612,7 +659,7 @@ button{
 
 .detailHeader p{
   margin:8px 0 0;
-  color:rgba(255,255,255,0.7);
+  color:var(--text-muted);
 }
 
 .detailSummaryGrid{
@@ -624,16 +671,16 @@ button{
 
 .summaryCard,
 .detailPanel{
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
+  border-radius:20px;
   padding:16px;
 }
 
 .summaryCard span,
 .summaryCard small,
 .detailPanelHeader small{
-  color:rgba(255,255,255,0.62);
+  color:var(--text-muted);
 }
 
 .summaryCard strong{
@@ -682,7 +729,7 @@ button{
 }
 
 .compactInfoList span{
-  color:rgba(255,255,255,0.58);
+  color:var(--text-soft);
   font-size:12px;
   text-transform:uppercase;
 }
@@ -708,8 +755,9 @@ button{
   justify-content:space-between;
   gap:12px;
   padding:12px;
-  border-radius:12px;
-  background:#111827;
+  border-radius:16px;
+  background:var(--surface);
+  border:1px solid var(--border);
 }
 
 .miniRow div{
@@ -722,7 +770,7 @@ button{
 .routineCompactHeader span,
 .routineNotes,
 .emptyInline{
-  color:rgba(255,255,255,0.65);
+  color:var(--text-muted);
 }
 
 .emptyInline{
@@ -749,7 +797,7 @@ button{
   margin:0;
   white-space:pre-wrap;
   font-family:Arial, sans-serif;
-  color:#e5e7eb;
+  color:var(--text);
 }
 
 .routineNotes{
@@ -822,17 +870,17 @@ button{
 .paymentForm input,
 .paymentForm select{
   padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1f2937;
-  color:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
 }
 
 .paymentForm button{
   border:none;
-  border-radius:10px;
-  background:#16a34a;
-  color:white;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
 }
 
@@ -842,7 +890,7 @@ button{
 }
 
 .money{
-  color:#86efac;
+  color:var(--success);
   font-weight:bold;
 }
 
@@ -865,17 +913,17 @@ button{
 .costForm input,
 .costForm select{
   padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1f2937;
-  color:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
 }
 
 .costForm button{
   border:none;
-  border-radius:10px;
-  background:#dc2626;
-  color:white;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
 }
 
@@ -885,7 +933,7 @@ button{
 }
 
 .dangerText{
-  color:#fca5a5;
+  color:var(--danger);
   font-weight:bold;
 }
 
@@ -909,10 +957,10 @@ button{
 .routineForm select,
 .routineForm textarea{
   padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#1f2937;
-  color:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
 }
 
 .routineForm textarea{
@@ -922,9 +970,9 @@ button{
 
 .routineForm button{
   border:none;
-  border-radius:10px;
-  background:#7c3aed;
-  color:white;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
 }
 
@@ -935,14 +983,14 @@ button{
 }
 
 .routineCard{
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
+  border-radius:20px;
   padding:18px;
 }
 
 .routineCard span{
-  opacity:0.65;
+  color:var(--text-muted);
   font-size:13px;
 }
 
@@ -952,9 +1000,10 @@ button{
 
 .routineCard pre{
   white-space:pre-wrap;
-  background:#111827;
+  background:var(--surface);
   padding:12px;
-  border-radius:10px;
+  border-radius:14px;
+  border:1px solid var(--border);
   font-family:Arial, sans-serif;
 }
 
@@ -983,7 +1032,7 @@ button{
 }
 
 .routineCopyFeedback{
-  color:#86efac;
+  color:var(--success);
   font-size:12px;
   font-weight:700;
 }
@@ -995,9 +1044,9 @@ button{
 }
 
 .listCard{
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.06);
-  border-radius:14px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
+  border-radius:20px;
   padding:18px;
 }
 
@@ -1007,20 +1056,22 @@ button{
 
 .listCard p{
   margin:6px 0;
-  opacity:0.85;
+  color:var(--text-muted);
 }
 .smallButton{
   margin-top:12px;
-  border:none;
-  border-radius:10px;
+  border:1px solid var(--border);
+  border-radius:14px;
   padding:10px 14px;
-  background:#2563eb;
-  color:white;
+  background:var(--surface);
+  color:var(--text);
   font-weight:bold;
 }
 
 .dangerButton{
-  background:#7f1d1d;
+  background:var(--danger-soft);
+  color:var(--danger);
+  border-color:#f2caca;
 }
 
 .buttonGroup{
@@ -1041,13 +1092,14 @@ button{
   flex-direction:column;
   gap:4px;
   padding:12px;
-  background:#111827;
-  border-radius:10px;
+  background:var(--surface);
+  border-radius:14px;
+  border:1px solid var(--border);
   margin-top:10px;
 }
 
 .miniItem span{
-  opacity:0.8;
+  color:var(--text-muted);
 }
 
 .miniItem pre{
@@ -1055,7 +1107,10 @@ button{
   font-family:Arial, sans-serif;
 }
 .sidebar button.activeMenu{
-  background:#2563eb;
+  background:var(--surface);
+  color:var(--text);
+  border-color:var(--border);
+  box-shadow:var(--shadow-soft);
 }
 
 .excelImportSection{
@@ -1078,14 +1133,14 @@ button{
   gap:8px;
   padding:16px 18px;
   border-radius:14px;
-  border:1px dashed rgba(59,130,246,0.45);
-  background:rgba(15,23,42,0.8);
+  border:1px dashed #cfc7ba;
+  background:var(--surface-soft);
   cursor:pointer;
 }
 
 .excelImportUpload input{
   font-size:13px;
-  color:#e2e8f0;
+  color:var(--text-muted);
 }
 
 .excelImportUploadLabel{
@@ -1093,7 +1148,7 @@ button{
   font-weight:700;
   letter-spacing:0.08em;
   text-transform:uppercase;
-  color:#93c5fd;
+  color:var(--text-soft);
 }
 
 .excelImportFileName{
@@ -1107,23 +1162,23 @@ button{
 }
 
 .excelImportClear{
-  border:none;
-  border-radius:10px;
+  border:1px solid var(--border);
+  border-radius:14px;
   padding:12px 16px;
-  background:#475569;
-  color:white;
+  background:var(--surface);
+  color:var(--text);
   font-weight:bold;
 }
 
 .excelImportRules{
   margin-bottom:20px;
   padding:14px 16px;
-  border-radius:12px;
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
   font-size:13px;
   line-height:1.6;
-  opacity:0.85;
+  color:var(--text-muted);
 }
 
 .excelImportRules p{
@@ -1134,9 +1189,9 @@ button{
 .excelImportResult{
   margin-top:20px;
   padding:20px;
-  border-radius:16px;
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,0.06);
+  border-radius:20px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
 }
 
 .excelImportPreview h3,
@@ -1154,15 +1209,15 @@ button{
 
 .excelImportStats article{
   padding:14px;
-  border-radius:12px;
-  background:#111827;
-  border:1px solid rgba(255,255,255,0.05);
+  border-radius:16px;
+  background:var(--surface);
+  border:1px solid var(--border);
 }
 
 .excelImportStats span{
   display:block;
   font-size:11px;
-  opacity:0.65;
+  color:var(--text-soft);
   text-transform:uppercase;
   letter-spacing:0.05em;
   margin-bottom:6px;
@@ -1175,12 +1230,12 @@ button{
 .excelImportStats p{
   margin:8px 0 0;
   font-size:11px;
-  opacity:0.6;
+  color:var(--text-muted);
   line-height:1.4;
 }
 
 .excelImportStat--ok strong{
-  color:#86efac;
+  color:var(--success);
 }
 
 .excelImportListBlock{
@@ -1205,8 +1260,8 @@ button{
 .excelImportNameList li{
   padding:6px 10px;
   border-radius:999px;
-  background:#111827;
-  border:1px solid rgba(255,255,255,0.06);
+  background:var(--surface);
+  border:1px solid var(--border);
   font-size:12px;
 }
 
@@ -1236,10 +1291,10 @@ button{
 
 .excelImportBtn{
   border:none;
-  border-radius:10px;
+  border-radius:16px;
   padding:14px 20px;
-  background:#2563eb;
-  color:white;
+  background:var(--primary);
+  color:#fff;
   font-weight:bold;
   font-size:14px;
 }
@@ -1249,8 +1304,8 @@ button{
 }
 
 .statusBadge.unpaid{
-  background:rgba(239,68,68,0.1);
-  color:#b91c1c;
+  background:var(--danger-soft);
+  color:var(--danger);
 }
 
 .studentsWorkspaceMockup{
