@@ -7,7 +7,6 @@ import { getMonthKey, getPaymentMonthOptions } from '../lib/student-utils'
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
 import StudentsSection from '../components/StudentsSection'
-import PaymentsSection from '../components/PaymentsSection'
 import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
 import ExcelImportSection from '../components/ExcelImportSection'
@@ -37,14 +36,6 @@ export default function Home() {
     nombre: '',
     telefono: '',
     observaciones: '',
-  })
-
-  const [nuevoPago, setNuevoPago] = useState({
-    alumno_id: '',
-    monto: '',
-    medio_pago: 'efectivo',
-    plan: 'mensual',
-    mes: new Date().toLocaleString('es-AR', { month: 'long' }),
   })
 
   const [nuevoCosto, setNuevoCosto] = useState({
@@ -311,46 +302,6 @@ export default function Home() {
 
     await cargarDatos()
     return true
-  }
-
-  async function crearPago(event) {
-    event.preventDefault()
-    setError('')
-
-    if (!nuevoPago.alumno_id || !nuevoPago.monto) {
-      setError('Selecciona un alumno y carga el monto.')
-      return
-    }
-
-    const client = getSupabaseClient()
-
-    if (!client) return
-
-    const { error: createError } = await client.from('pagos').insert([
-      {
-        alumno_id: nuevoPago.alumno_id,
-        monto: Number(nuevoPago.monto),
-        medio_pago: nuevoPago.medio_pago,
-        plan: nuevoPago.plan,
-        mes: nuevoPago.mes,
-        fecha_pago: new Date().toISOString().slice(0, 10),
-      },
-    ])
-
-    if (createError) {
-      setError('No se pudo registrar el pago.')
-      return
-    }
-
-    setNuevoPago({
-      alumno_id: '',
-      monto: '',
-      medio_pago: 'efectivo',
-      plan: 'mensual',
-      mes: new Date().toLocaleString('es-AR', { month: 'long' }),
-    })
-
-    await cargarPagos()
   }
 
   async function registrarPagoAlumno(payload) {
@@ -726,17 +677,6 @@ export default function Home() {
             onRegisterPago={registrarPagoAlumno}
             onDeletePago={eliminarPago}
             onSaveRutina={guardarRutinaAlumno}
-          />
-        )}
-
-        {activeSection === 'pagos' && !isProfesor && (
-          <PaymentsSection
-            alumnos={alumnos}
-            pagos={pagos}
-            nuevoPago={nuevoPago}
-            setNuevoPago={setNuevoPago}
-            crearPago={crearPago}
-            eliminarPago={eliminarPago}
           />
         )}
 

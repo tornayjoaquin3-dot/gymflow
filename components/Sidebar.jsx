@@ -29,13 +29,6 @@ export default function Sidebar({ isProfesor, activeSection, setActiveSection })
       {!isProfesor && (
         <>
           <button
-            className={activeSection === 'pagos' ? 'activeMenu' : ''}
-            onClick={() => setActiveSection('pagos')}
-          >
-            Pagos
-          </button>
-
-          <button
             className={activeSection === 'costos' ? 'activeMenu' : ''}
             onClick={() => setActiveSection('costos')}
           >
