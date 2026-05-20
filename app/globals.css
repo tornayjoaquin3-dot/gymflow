@@ -932,6 +932,27 @@ button{
   grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;
 }
 
+.costFilters{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.costFilters input,
+.costFilters select{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
+}
+
+.costsTableGrid{
+  grid-template-columns:140px minmax(180px,1.4fr) 150px 130px minmax(180px,1.2fr) 170px;
+}
+
 .dangerText{
   color:var(--danger);
   font-weight:bold;
@@ -943,6 +964,11 @@ button{
   }
 
   .costTableRow{
+    grid-template-columns:1fr;
+  }
+
+  .costFilters,
+  .costsTableGrid{
     grid-template-columns:1fr;
   }
 }
