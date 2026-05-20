@@ -55,18 +55,22 @@ export default function RoutinesSection({
 
   const filteredAlumnos = useMemo(() => {
     const normalizedSearch = normalizeText(studentSearchTerm)
+    const hasEnoughChars = normalizedSearch.length >= 2
+
+    if (!hasEnoughChars) {
+      return []
+    }
 
     return alumnos
       .filter((alumno) => !selectedAlumnoIds.includes(alumno.id))
-      .filter((alumno) => {
-        if (!normalizedSearch) {
-          return true
-        }
-
-        return normalizeText(alumno.nombre).includes(normalizedSearch)
-      })
+      .filter((alumno) =>
+        normalizeText(alumno.nombre).includes(normalizedSearch)
+      )
       .slice(0, 8)
   }, [alumnos, selectedAlumnoIds, studentSearchTerm])
+
+  const normalizedStudentSearch = normalizeText(studentSearchTerm)
+  const shouldShowStudentResults = normalizedStudentSearch.length >= 2
 
   function updateSelectedAlumnoIds(nextAlumnoIds) {
     setNuevaRutina({
@@ -141,19 +145,29 @@ export default function RoutinesSection({
               onChange={(event) => setStudentSearchTerm(event.target.value)}
             />
 
-            {filteredAlumnos.length > 0 && (
+            {shouldShowStudentResults ? (
               <div className="routineSelectorResults">
-                {filteredAlumnos.map((alumno) => (
-                  <button
-                    key={alumno.id}
-                    type="button"
-                    className="routineSelectorOption"
-                    onClick={() => handleSelectAlumno(alumno)}
-                  >
-                    {alumno.nombre}
-                  </button>
-                ))}
+                {filteredAlumnos.length > 0 ? (
+                  filteredAlumnos.map((alumno) => (
+                    <button
+                      key={alumno.id}
+                      type="button"
+                      className="routineSelectorOption"
+                      onClick={() => handleSelectAlumno(alumno)}
+                    >
+                      {alumno.nombre}
+                    </button>
+                  ))
+                ) : (
+                  <div className="routineSelectorEmpty">
+                    No se encontraron alumnos.
+                  </div>
+                )}
               </div>
+            ) : (
+              <small className="routineHelperText">
+                Busca un alumno para asociarlo a la rutina.
+              </small>
             )}
           </div>
 
