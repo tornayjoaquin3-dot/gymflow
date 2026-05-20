@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   buildRoutineShareText,
   getRoutineWhatsappUrl,
 } from '../lib/routine-sharing'
+import { normalizeText } from '../lib/student-utils'
 
 export default function RoutinesSection({
   alumnos,
@@ -16,6 +17,25 @@ export default function RoutinesSection({
   eliminarRutina,
 }) {
   const [copyFeedbackId, setCopyFeedbackId] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredRutinas = useMemo(() => {
+    const normalizedSearch = normalizeText(searchTerm)
+
+    if (!normalizedSearch) {
+      return rutinas
+    }
+
+    return rutinas.filter((rutina) => {
+      const searchableText = normalizeText(
+        [rutina.alumnos?.nombre, rutina.nombre, rutina.objetivo]
+          .filter(Boolean)
+          .join(' ')
+      )
+
+      return searchableText.includes(normalizedSearch)
+    })
+  }, [rutinas, searchTerm])
 
   function clearCopyFeedbackSoon() {
     window.setTimeout(() => {
@@ -128,11 +148,19 @@ export default function RoutinesSection({
         )}
       </form>
 
+      <div className="studentsSearchBar">
+        <input
+          placeholder="Buscar rutina..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
+      </div>
+
       <div className="routineGrid">
-        {rutinas.length === 0 ? (
-          <div className="empty">Todavía no hay rutinas cargadas.</div>
+        {filteredRutinas.length === 0 ? (
+          <div className="empty">Todavia no hay rutinas cargadas.</div>
         ) : (
-          rutinas.map((rutina) => (
+          filteredRutinas.map((rutina) => (
             <article className="routineCard" key={rutina.id}>
               <span>{rutina.alumnos?.nombre || 'Sin alumno'}</span>
               <h3>{rutina.nombre}</h3>
