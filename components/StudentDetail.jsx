@@ -9,9 +9,11 @@ export default function StudentDetail({
   selectedAlumno,
   pagosDelAlumno,
   rutinasDelAlumno,
+  currentRoutineMeta,
   paymentSnapshot,
   onEditAlumno,
   onEditRutina,
+  onAssociateRutina,
   onRegisterPago,
   onDeletePago,
   onDeleteAlumno,
@@ -105,6 +107,11 @@ export default function StudentDetail({
         <div className="studentsRoutineMiniCard">
           <div className="studentsRoutineHeader">
             <h4>Rutina actual</h4>
+            {currentRoutineMeta?.badgeLabel && (
+              <span className="studentsRoutineTypeBadge">
+                {currentRoutineMeta.badgeLabel}
+              </span>
+            )}
           </div>
           {currentRoutine ? (
             <>
@@ -145,6 +152,13 @@ export default function StudentDetail({
       <div className="studentsDetailActionBar">
         <button type="button" className="studentsMiniButton" onClick={onEditAlumno}>
           Editar alumno
+        </button>
+        <button
+          type="button"
+          className="studentsMiniButton"
+          onClick={onAssociateRutina}
+        >
+          Asociar rutina
         </button>
         <button type="button" className="studentsMiniButton" onClick={onEditRutina}>
           Editar rutina

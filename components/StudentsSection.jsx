@@ -7,6 +7,15 @@ import {
   normalizeText,
 } from '../lib/student-utils'
 
+function buildRoutineGroupKey(rutina) {
+  return [
+    rutina?.nombre || '',
+    rutina?.objetivo || '',
+    rutina?.ejercicios || '',
+    rutina?.observaciones || '',
+  ].join('::')
+}
+
 function getStudentStartDate(alumno, studentPayments) {
   if (alumno?.creado_en) {
     return alumno.creado_en.slice(0, 10)
@@ -67,6 +76,7 @@ export default function StudentsSection({
   const [studentForm, setStudentForm] = useState(EMPTY_STUDENT_FORM)
   const [routineForm, setRoutineForm] = useState(EMPTY_ROUTINE_FORM)
   const [paymentForm, setPaymentForm] = useState(EMPTY_PAYMENT_FORM)
+  const [routineSearchTerm, setRoutineSearchTerm] = useState('')
 
   const normalizedSearch = normalizeText(searchTerm)
 
@@ -131,8 +141,74 @@ export default function StudentsSection({
 
   const currentRoutine = rutinasDelAlumno[0] || null
 
+  const routineGroupCounts = useMemo(() => {
+    const counts = new Map()
+
+    rutinas.forEach((rutina) => {
+      const key = buildRoutineGroupKey(rutina)
+      counts.set(key, (counts.get(key) || 0) + 1)
+    })
+
+    return counts
+  }, [rutinas])
+
+  const currentRoutineMeta = useMemo(() => {
+    if (!currentRoutine) {
+      return { isShared: false, badgeLabel: '' }
+    }
+
+    const routineGroupKey = buildRoutineGroupKey(currentRoutine)
+    const groupSize = routineGroupCounts.get(routineGroupKey) || 1
+    const isShared = groupSize > 1
+
+    return {
+      isShared,
+      badgeLabel: isShared ? 'Rutina compartida' : 'Rutina propia',
+      groupSize,
+    }
+  }, [currentRoutine, routineGroupCounts])
+
+  const groupedRoutineTemplates = useMemo(() => {
+    const groupedMap = new Map()
+
+    rutinas.forEach((rutina) => {
+      const groupKey = buildRoutineGroupKey(rutina)
+
+      if (!groupedMap.has(groupKey)) {
+        groupedMap.set(groupKey, {
+          key: groupKey,
+          nombre: rutina.nombre || 'Rutina actual',
+          objetivo: rutina.objetivo || '',
+          ejercicios: rutina.ejercicios || '',
+          observaciones: rutina.observaciones || '',
+          alumnosCount: 0,
+        })
+      }
+
+      const currentGroup = groupedMap.get(groupKey)
+      currentGroup.alumnosCount += rutina.alumno_id ? 1 : 0
+    })
+
+    return [...groupedMap.values()]
+  }, [rutinas])
+
+  const filteredRoutineTemplates = useMemo(() => {
+    const normalizedSearch = normalizeText(routineSearchTerm)
+
+    if (!normalizedSearch) {
+      return groupedRoutineTemplates
+    }
+
+    return groupedRoutineTemplates.filter((rutina) =>
+      normalizeText(
+        [rutina.nombre, rutina.objetivo, rutina.ejercicios].join(' ')
+      ).includes(normalizedSearch)
+    )
+  }, [groupedRoutineTemplates, routineSearchTerm])
+
   function closeModal() {
     setActiveModal('')
+    setRoutineSearchTerm('')
   }
 
   function openCreateModal() {
@@ -157,13 +233,18 @@ export default function StudentsSection({
 
   function openRoutineModal() {
     setRoutineForm({
-      id: currentRoutine?.id || null,
+      id: currentRoutineMeta.isShared ? null : currentRoutine?.id || null,
       nombre: currentRoutine?.nombre || '',
       objetivo: currentRoutine?.objetivo || '',
       ejercicios: currentRoutine?.ejercicios || '',
       observaciones: currentRoutine?.observaciones || '',
     })
     setActiveModal('routine')
+  }
+
+  function openAssociateRoutineModal() {
+    setRoutineSearchTerm('')
+    setActiveModal('associateRoutine')
   }
 
   function openPaymentModal() {
@@ -215,6 +296,32 @@ export default function StudentsSection({
       objetivo: routineForm.objetivo,
       ejercicios: routineForm.ejercicios,
       observaciones: routineForm.observaciones,
+    })
+
+    if (success) {
+      closeModal()
+    }
+  }
+
+  async function handleAssociateRoutine(template) {
+    if (!selectedAlumno) return
+
+    const alreadyAssociated = rutinasDelAlumno.some(
+      (rutina) => buildRoutineGroupKey(rutina) === template.key
+    )
+
+    if (alreadyAssociated) {
+      closeModal()
+      return
+    }
+
+    const success = await onSaveRutina({
+      id: null,
+      alumno_id: selectedAlumno.id,
+      nombre: template.nombre,
+      objetivo: template.objetivo,
+      ejercicios: template.ejercicios,
+      observaciones: template.observaciones,
     })
 
     if (success) {
@@ -358,9 +465,11 @@ export default function StudentsSection({
           selectedAlumno={selectedAlumno}
           pagosDelAlumno={pagosDelAlumno}
           rutinasDelAlumno={rutinasDelAlumno}
+          currentRoutineMeta={currentRoutineMeta}
           selectedPaymentMonth={selectedPaymentMonth}
           paymentSnapshot={selectedRow?.paymentSnapshot || null}
           onEditAlumno={openStudentModal}
+          onAssociateRutina={openAssociateRoutineModal}
           onEditRutina={openRoutineModal}
           onRegisterPago={openPaymentModal}
           onDeletePago={onDeletePago}
@@ -564,6 +673,13 @@ export default function StudentsSection({
               </button>
             </div>
 
+            {currentRoutineMeta.isShared && (
+              <div className="studentsRoutineSharedNotice">
+                Esta rutina es compartida. Al guardar cambios se creara una nueva
+                rutina propia para este alumno y la original seguira intacta.
+              </div>
+            )}
+
             <form onSubmit={handleSaveRutina} className="studentsModalForm">
               <input
                 placeholder="Nombre rutina"
@@ -611,6 +727,57 @@ export default function StudentsSection({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {activeModal === 'associateRoutine' && (
+        <div className="studentsModalBackdrop" onClick={closeModal}>
+          <div
+            className="studentsModalCard"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="studentsModalHeader">
+              <h4>Asociar rutina</h4>
+              <button type="button" onClick={closeModal}>
+                Cerrar
+              </button>
+            </div>
+
+            <div className="studentsModalForm">
+              <input
+                placeholder="Buscar rutina existente..."
+                value={routineSearchTerm}
+                onChange={(event) => setRoutineSearchTerm(event.target.value)}
+              />
+
+              <div className="studentsAssociateRoutineList">
+                {filteredRoutineTemplates.length === 0 ? (
+                  <div className="studentsTableEmpty">
+                    No encontramos rutinas para esa busqueda.
+                  </div>
+                ) : (
+                  filteredRoutineTemplates.map((template) => (
+                    <button
+                      key={template.key}
+                      type="button"
+                      className="studentsAssociateRoutineCard"
+                      onClick={() => handleAssociateRoutine(template)}
+                    >
+                      <strong>{template.nombre}</strong>
+                      <span>{template.objetivo || 'Sin objetivo'}</span>
+                      <small>
+                        {template.alumnosCount > 1
+                          ? 'Rutina compartida'
+                          : template.alumnosCount === 1
+                            ? 'Rutina propia'
+                            : 'Sin alumno'}
+                      </small>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
