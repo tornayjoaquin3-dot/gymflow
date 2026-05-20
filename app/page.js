@@ -5,13 +5,11 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import {
   getMonthKey,
   getPaymentMonthOptions,
-  getStudentPaymentSnapshot,
 } from '../lib/student-utils'
 
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
 import StudentsSection from '../components/StudentsSection'
-import StudentDetail from '../components/StudentDetail'
 import PaymentsSection from '../components/PaymentsSection'
 import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
@@ -223,14 +221,18 @@ export default function Home() {
 
     if (!client) return
 
-    const { error } = await client.from('alumnos').insert([
+    const { data, error } = await client
+      .from('alumnos')
+      .insert([
       {
         nombre: nuevoAlumno.nombre,
         telefono: nuevoAlumno.telefono,
         observaciones: nuevoAlumno.observaciones,
         estado: 'activo',
       },
-    ])
+      ])
+      .select()
+      .single()
 
     if (error) {
       setError('No se pudo crear el alumno.')
@@ -242,6 +244,40 @@ export default function Home() {
       telefono: '',
       observaciones: '',
     })
+
+    if (data?.id) {
+      setSelectedAlumnoId(data.id)
+      setActiveSection('alumnos')
+    }
+
+    await cargarAlumnos()
+  }
+
+  async function actualizarAlumno(payload) {
+    setError('')
+
+    if (!payload?.id || !payload.nombre?.trim()) {
+      setError('El nombre del alumno es obligatorio.')
+      return
+    }
+
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client
+      .from('alumnos')
+      .update({
+        nombre: payload.nombre,
+        telefono: payload.telefono,
+        observaciones: payload.observaciones,
+      })
+      .eq('id', payload.id)
+
+    if (error) {
+      setError('No se pudo actualizar el alumno.')
+      return
+    }
 
     await cargarAlumnos()
   }
@@ -310,6 +346,37 @@ export default function Home() {
       plan: 'mensual',
       mes: new Date().toLocaleString('es-AR', { month: 'long' }),
     })
+
+    await cargarPagos()
+  }
+
+  async function registrarPagoAlumno(payload) {
+    setError('')
+
+    if (!payload?.alumno_id || !payload?.monto) {
+      setError('Completá el monto para registrar el pago.')
+      return
+    }
+
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const { error } = await client.from('pagos').insert([
+      {
+        alumno_id: payload.alumno_id,
+        monto: Number(payload.monto),
+        medio_pago: payload.medio_pago || 'efectivo',
+        plan: payload.plan || 'mensual',
+        mes: payload.mes,
+        fecha_pago: payload.fecha_pago || new Date().toISOString().slice(0, 10),
+      },
+    ])
+
+    if (error) {
+      setError('No se pudo registrar el pago.')
+      return
+    }
 
     await cargarPagos()
   }
@@ -433,6 +500,53 @@ export default function Home() {
     await cargarRutinas()
   }
 
+  async function guardarRutinaAlumno(payload) {
+    setError('')
+
+    if (!payload?.alumno_id || !payload?.nombre?.trim()) {
+      setError('La rutina necesita un nombre.')
+      return
+    }
+
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    if (payload.id) {
+      const { error } = await client
+        .from('rutinas')
+        .update({
+          nombre: payload.nombre,
+          objetivo: payload.objetivo,
+          ejercicios: payload.ejercicios,
+          observaciones: payload.observaciones,
+        })
+        .eq('id', payload.id)
+
+      if (error) {
+        setError('No se pudo actualizar la rutina.')
+        return
+      }
+    } else {
+      const { error } = await client.from('rutinas').insert([
+        {
+          alumno_id: payload.alumno_id,
+          nombre: payload.nombre,
+          objetivo: payload.objetivo,
+          ejercicios: payload.ejercicios,
+          observaciones: payload.observaciones,
+        },
+      ])
+
+      if (error) {
+        setError('No se pudo crear la rutina.')
+        return
+      }
+    }
+
+    await cargarRutinas()
+  }
+
   async function eliminarRutina(id) {
     const confirmar = window.confirm('¿Seguro que querés eliminar esta rutina?')
 
@@ -492,31 +606,10 @@ export default function Home() {
 
   const isProfesor = profile?.rol === 'profesor'
 
-  const selectedAlumno = alumnos.find(
-    (alumno) => alumno.id === selectedAlumnoId
-  )
-
   const paymentMonthOptions = useMemo(
     () => getPaymentMonthOptions(pagos),
     [pagos]
   )
-
-  const pagosDelAlumno = pagos.filter(
-    (pago) => pago.alumno_id === selectedAlumnoId
-  )
-
-  const rutinasDelAlumno = rutinas.filter(
-    (rutina) => rutina.alumno_id === selectedAlumnoId
-  )
-
-  const totalPagadoAlumno = pagosDelAlumno.reduce(
-    (acc, pago) => acc + Number(pago.monto || 0),
-    0
-  )
-
-  const selectedAlumnoPaymentSnapshot = selectedAlumno
-    ? getStudentPaymentSnapshot(selectedAlumno, pagos, selectedPaymentMonth)
-    : null
 
   if (!user) {
     return (
@@ -621,7 +714,7 @@ export default function Home() {
           />
         )}
 
-        {activeSection === 'alumnos' && (
+        {(activeSection === 'alumnos' || activeSection === 'fichaAlumno') && (
           <StudentsSection
             alumnos={alumnos}
             pagos={pagos}
@@ -629,25 +722,14 @@ export default function Home() {
             nuevoAlumno={nuevoAlumno}
             setNuevoAlumno={setNuevoAlumno}
             crearAlumno={crearAlumno}
-            eliminarAlumno={eliminarAlumno}
             selectedAlumnoId={selectedAlumnoId}
             setSelectedAlumnoId={setSelectedAlumnoId}
-            setActiveSection={setActiveSection}
             selectedPaymentMonth={selectedPaymentMonth}
             setSelectedPaymentMonth={setSelectedPaymentMonth}
             paymentMonthOptions={paymentMonthOptions}
-          />
-        )}
-
-        {activeSection === 'fichaAlumno' && selectedAlumno && (
-          <StudentDetail
-            selectedAlumno={selectedAlumno}
-            pagosDelAlumno={pagosDelAlumno}
-            rutinasDelAlumno={rutinasDelAlumno}
-            totalPagadoAlumno={totalPagadoAlumno}
-            setActiveSection={setActiveSection}
-            selectedPaymentMonth={selectedPaymentMonth}
-            paymentSnapshot={selectedAlumnoPaymentSnapshot}
+            onUpdateAlumno={actualizarAlumno}
+            onRegisterPago={registrarPagoAlumno}
+            onSaveRutina={guardarRutinaAlumno}
           />
         )}
 

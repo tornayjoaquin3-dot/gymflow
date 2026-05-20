@@ -1217,3 +1217,451 @@ button{
 .excelImportBtn:disabled{
   opacity:0.5;
 }
+
+.statusBadge.unpaid{
+  background:rgba(239,68,68,0.1);
+  color:#b91c1c;
+}
+
+.studentsWorkspace{
+  margin-top:40px;
+  padding:28px;
+  border-radius:28px;
+  background:#f8f7f3;
+  color:#0f172a;
+  border:1px solid rgba(15,23,42,0.08);
+  box-shadow:0 24px 60px rgba(15,23,42,0.12);
+}
+
+.studentsWorkspaceHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.studentsWorkspaceHeader h2{
+  margin:0;
+  font-size:42px;
+  line-height:1;
+}
+
+.studentsWorkspaceHeader p{
+  margin:8px 0 0;
+  color:#64748b;
+}
+
+.studentsWorkspaceControls{
+  display:flex;
+  align-items:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.studentsPeriodControl{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.studentsPeriodControl span{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:#64748b;
+}
+
+.studentsPeriodControl select,
+.studentsSearchInput,
+.studentsCreatePanel input,
+.studentsEditorFields input,
+.studentsEditorFields textarea,
+.studentsEditorFields select{
+  border:1px solid #d8dde6;
+  border-radius:18px;
+  background:white;
+  color:#0f172a;
+}
+
+.studentsPeriodControl select{
+  min-width:190px;
+  padding:12px 14px;
+}
+
+.studentsPrimaryAction{
+  border:none;
+  border-radius:18px;
+  padding:14px 18px;
+  background:#171717;
+  color:white;
+  font-weight:700;
+}
+
+.studentsSearchRow{
+  margin-bottom:18px;
+}
+
+.studentsSearchInput{
+  width:100%;
+  padding:16px 18px;
+  font-size:28px;
+  font-weight:500;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.studentsSearchInput::placeholder{
+  color:#94a3b8;
+}
+
+.studentsCreatePanel{
+  display:grid;
+  grid-template-columns:minmax(0, 1.2fr) minmax(180px, 0.8fr) minmax(0, 1fr) auto;
+  gap:10px;
+  padding:14px;
+  margin-bottom:18px;
+  border-radius:22px;
+  background:#f1efe8;
+  border:1px solid #e2e8f0;
+}
+
+.studentsCreatePanel input{
+  padding:12px 14px;
+}
+
+.studentsWorkspaceGrid{
+  display:grid;
+  grid-template-columns:minmax(320px, 0.95fr) minmax(360px, 0.7fr);
+  gap:18px;
+  align-items:start;
+}
+
+.studentsListCard,
+.studentsDetailCard{
+  border-radius:24px;
+  background:white;
+  border:1px solid #e2e8f0;
+}
+
+.studentsListCard{
+  padding:18px 18px 10px;
+}
+
+.studentsListHeader,
+.studentsBlockHeader,
+.studentsEditorHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.studentsListHeader span,
+.studentsBlockHeader span,
+.studentsEditorHeader span,
+.studentsDetailPhone,
+.studentsDetailCard .statusStack small,
+.studentsInfoCard span,
+.studentsDetailBlock p,
+.studentsPaymentRow span,
+.studentsRoutineCard span,
+.studentsRoutineCard p,
+.studentsBlockEmpty{
+  color:#64748b;
+}
+
+.studentsEyebrow{
+  margin:0 0 6px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#94a3b8;
+}
+
+.studentsRows{
+  display:flex;
+  flex-direction:column;
+}
+
+.studentsRow{
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(0, 1.4fr) auto 56px;
+  align-items:center;
+  gap:12px;
+  padding:16px 14px;
+  border:none;
+  border-top:1px solid #eef2f7;
+  background:transparent;
+  color:#0f172a;
+  text-align:left;
+}
+
+.studentsRow:first-child{
+  border-top:1px solid #eef2f7;
+}
+
+.studentsRow:hover,
+.studentsRow.isSelected{
+  background:#f6f6f2;
+}
+
+.studentsRowIdentity{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+.studentsRowIdentity strong{
+  font-size:16px;
+}
+
+.studentsRowIdentity span{
+  color:#64748b;
+  font-size:13px;
+}
+
+.studentsRowStatus{
+  justify-self:start;
+}
+
+.studentsRowLink{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:42px;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid #d8dde6;
+  font-size:12px;
+  font-weight:700;
+}
+
+.studentsEmptyState,
+.studentsDetailEmpty{
+  padding:28px 18px;
+  color:#64748b;
+}
+
+.studentsDetailCard{
+  padding:20px;
+}
+
+.studentsDetailHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
+}
+
+.studentsDetailHeader h3{
+  margin:0 0 6px;
+  font-size:28px;
+}
+
+.studentsDetailActions,
+.studentsEditorActions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.studentsDetailActions{
+  margin-bottom:14px;
+}
+
+.studentsInlineButton,
+.studentsInlineButtonPrimary{
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.studentsInlineButton{
+  border:1px solid #d8dde6;
+  background:#fff;
+  color:#1e293b;
+}
+
+.studentsInlineButtonPrimary{
+  border:none;
+  background:#171717;
+  color:white;
+}
+
+.studentsEditorCard{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:16px;
+  margin-bottom:14px;
+  border-radius:20px;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+}
+
+.studentsEditorCard h4{
+  margin:0;
+}
+
+.studentsEditorFields{
+  display:grid;
+  gap:10px;
+}
+
+.studentsEditorFieldsTwoCols{
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+}
+
+.studentsEditorFields input,
+.studentsEditorFields textarea,
+.studentsEditorFields select{
+  width:100%;
+  padding:12px 14px;
+}
+
+.studentsEditorFields textarea{
+  min-height:92px;
+  resize:vertical;
+}
+
+.studentsPeriodHint{
+  color:#64748b;
+  font-size:13px;
+}
+
+.studentsDetailGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.studentsInfoCard,
+.studentsDetailBlock{
+  border:1px solid #e2e8f0;
+  border-radius:20px;
+  background:#fcfcfb;
+}
+
+.studentsInfoCard{
+  padding:14px;
+}
+
+.studentsInfoCard strong{
+  display:block;
+  margin-top:8px;
+  font-size:18px;
+}
+
+.studentsDetailBlock{
+  padding:16px;
+  margin-bottom:14px;
+}
+
+.studentsDetailBlock h4{
+  margin:0;
+}
+
+.studentsDetailBlock p{
+  margin:12px 0 0;
+  line-height:1.5;
+}
+
+.studentsPaymentsList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+
+.studentsPaymentRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:white;
+  border:1px solid #e2e8f0;
+}
+
+.studentsPaymentRow div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.studentsRoutineCard{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:12px;
+  padding:14px;
+  border-radius:18px;
+  background:white;
+  border:1px solid #e2e8f0;
+}
+
+.studentsRoutineCard pre{
+  margin:0;
+  white-space:pre-wrap;
+  font-family:Arial, sans-serif;
+  color:#0f172a;
+}
+
+.studentsRoutineCard p{
+  margin:0;
+}
+
+.studentsWorkspace .statusBadge{
+  padding:5px 10px;
+  font-size:11px;
+}
+
+.studentsWorkspace .statusStack small{
+  font-size:11px;
+}
+
+@media(max-width:1100px){
+  .studentsWorkspaceGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:900px){
+  .studentsWorkspace{
+    padding:18px;
+    border-radius:22px;
+  }
+
+  .studentsWorkspaceHeader,
+  .studentsWorkspaceControls,
+  .studentsDetailHeader{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .studentsWorkspaceHeader h2{
+    font-size:34px;
+  }
+
+  .studentsSearchInput{
+    font-size:20px;
+  }
+
+  .studentsCreatePanel,
+  .studentsEditorFieldsTwoCols,
+  .studentsDetailGrid{
+    grid-template-columns:1fr;
+  }
+
+  .studentsRow{
+    grid-template-columns:1fr;
+    align-items:flex-start;
+  }
+}
