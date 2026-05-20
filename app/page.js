@@ -54,6 +54,7 @@ export default function Home() {
     ejercicios: '',
     observaciones: '',
   })
+  const [editingRutinaId, setEditingRutinaId] = useState(null)
 
   function getSupabaseClient() {
     if (!supabase) {
@@ -70,6 +71,16 @@ export default function Home() {
       categoria: 'alquiler',
       monto: '',
       fecha: new Date().toISOString().slice(0, 10),
+      observaciones: '',
+    })
+  }
+
+  function resetNuevaRutina() {
+    setNuevaRutina({
+      alumno_id: '',
+      nombre: '',
+      objetivo: '',
+      ejercicios: '',
       observaciones: '',
     })
   }
@@ -480,30 +491,59 @@ export default function Home() {
 
     if (!client) return
 
-    const { error: createError } = await client.from('rutinas').insert([
-      {
-        alumno_id: nuevaRutina.alumno_id,
-        nombre: nuevaRutina.nombre,
-        objetivo: nuevaRutina.objetivo,
-        ejercicios: nuevaRutina.ejercicios,
-        observaciones: nuevaRutina.observaciones,
-      },
-    ])
+    if (editingRutinaId) {
+      const { error: updateError } = await client
+        .from('rutinas')
+        .update({
+          alumno_id: nuevaRutina.alumno_id,
+          nombre: nuevaRutina.nombre,
+          objetivo: nuevaRutina.objetivo,
+          ejercicios: nuevaRutina.ejercicios,
+          observaciones: nuevaRutina.observaciones,
+        })
+        .eq('id', editingRutinaId)
 
-    if (createError) {
-      setError('No se pudo crear la rutina.')
-      return
+      if (updateError) {
+        setError('No se pudo actualizar la rutina.')
+        return
+      }
+    } else {
+      const { error: createError } = await client.from('rutinas').insert([
+        {
+          alumno_id: nuevaRutina.alumno_id,
+          nombre: nuevaRutina.nombre,
+          objetivo: nuevaRutina.objetivo,
+          ejercicios: nuevaRutina.ejercicios,
+          observaciones: nuevaRutina.observaciones,
+        },
+      ])
+
+      if (createError) {
+        setError('No se pudo crear la rutina.')
+        return
+      }
     }
 
-    setNuevaRutina({
-      alumno_id: '',
-      nombre: '',
-      objetivo: '',
-      ejercicios: '',
-      observaciones: '',
-    })
+    resetNuevaRutina()
+    setEditingRutinaId(null)
 
     await cargarRutinas()
+  }
+
+  function editarRutina(rutina) {
+    setEditingRutinaId(rutina.id)
+    setNuevaRutina({
+      alumno_id: rutina.alumno_id || '',
+      nombre: rutina.nombre || '',
+      objetivo: rutina.objetivo || '',
+      ejercicios: rutina.ejercicios || '',
+      observaciones: rutina.observaciones || '',
+    })
+  }
+
+  function cancelarEdicionRutina() {
+    setEditingRutinaId(null)
+    resetNuevaRutina()
   }
 
   async function guardarRutinaAlumno(payload) {
@@ -572,6 +612,10 @@ export default function Home() {
     if (deleteError) {
       setError('No se pudo eliminar la rutina.')
       return
+    }
+
+    if (editingRutinaId === id) {
+      cancelarEdicionRutina()
     }
 
     await cargarRutinas()
@@ -746,6 +790,9 @@ export default function Home() {
             nuevaRutina={nuevaRutina}
             setNuevaRutina={setNuevaRutina}
             crearRutina={crearRutina}
+            editingRutinaId={editingRutinaId}
+            editarRutina={editarRutina}
+            cancelarEdicionRutina={cancelarEdicionRutina}
             eliminarRutina={eliminarRutina}
           />
         )}

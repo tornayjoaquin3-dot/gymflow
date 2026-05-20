@@ -10,6 +10,9 @@ export default function RoutinesSection({
   nuevaRutina,
   setNuevaRutina,
   crearRutina,
+  editingRutinaId,
+  editarRutina,
+  cancelarEdicionRutina,
   eliminarRutina,
 }) {
   const [copyFeedbackId, setCopyFeedbackId] = useState(null)
@@ -112,7 +115,17 @@ export default function RoutinesSection({
           }
         />
 
-        <button>Crear rutina</button>
+        <button>{editingRutinaId ? 'Guardar cambios' : 'Crear rutina'}</button>
+
+        {editingRutinaId && (
+          <button
+            type="button"
+            className="smallButton"
+            onClick={cancelarEdicionRutina}
+          >
+            Cancelar edicion
+          </button>
+        )}
       </form>
 
       <div className="routineGrid">
@@ -160,12 +173,21 @@ export default function RoutinesSection({
                 </p>
               )}
 
-              <button
-                className="smallButton dangerButton"
-                onClick={() => eliminarRutina(rutina.id)}
-              >
-                Eliminar rutina
-              </button>
+              <div className="buttonGroup">
+                <button
+                  className="smallButton"
+                  onClick={() => editarRutina(rutina)}
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="smallButton dangerButton"
+                  onClick={() => eliminarRutina(rutina.id)}
+                >
+                  Eliminar rutina
+                </button>
+              </div>
             </article>
           ))
         )}
