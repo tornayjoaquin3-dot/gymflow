@@ -953,33 +953,146 @@ button{
   margin-bottom:24px;
 }
 
+.routineFormCompact{
+  grid-template-columns:minmax(260px,1.2fr) repeat(2,minmax(180px,0.9fr));
+  align-items:start;
+}
+
 .routineForm input,
 .routineForm select,
 .routineForm textarea{
-  padding:14px;
+  padding:11px 12px;
   border:1px solid var(--border);
-  border-radius:16px;
+  border-radius:14px;
   background:var(--surface);
   color:var(--text);
 }
 
 .routineForm textarea{
-  min-height:100px;
+  min-height:84px;
   resize:vertical;
 }
 
 .routineForm button{
   border:none;
-  border-radius:16px;
+  border-radius:14px;
   background:var(--primary);
   color:#fff;
   font-weight:bold;
+}
+
+.routineSearchBarTop{
+  margin-bottom:14px;
+}
+
+.routineFormBlock{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.routineFormBlock span{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-soft);
+}
+
+.routineSelectorBlock{
+  grid-row:span 2;
+}
+
+.routineSelectorField{
+  position:relative;
+}
+
+.routineSelectorResults{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  right:0;
+  z-index:5;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  box-shadow:var(--shadow);
+}
+
+.routineSelectorOption{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:var(--surface-soft);
+  color:var(--text);
+  text-align:left;
+  font-weight:600;
+}
+
+.routineSelectorOption:hover{
+  background:#f7f3ec;
+}
+
+.routineSelectedChips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  min-height:36px;
+}
+
+.routineChip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:var(--surface-soft);
+  border:1px solid var(--border);
+  font-size:12px;
+  font-weight:700;
+}
+
+.routineChip button{
+  border:none;
+  background:transparent;
+  color:var(--text-muted);
+  padding:0;
+  width:16px;
+  height:16px;
+  line-height:1;
+}
+
+.routineHelperText{
+  color:var(--text-muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.routineFormActions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.routineSubmitButton{
+  padding:11px 14px;
+  min-width:150px;
 }
 
 .routineGrid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:16px;
+}
+
+.routineGridCompact{
+  gap:14px;
 }
 
 .routineCard{
@@ -989,22 +1102,33 @@ button{
   padding:18px;
 }
 
+.routineCardCompact{
+  padding:14px;
+}
+
+.routineCardTop{
+  margin-bottom:10px;
+}
+
 .routineCard span{
   color:var(--text-muted);
   font-size:13px;
 }
 
 .routineCard h3{
-  margin:8px 0 12px;
+  margin:6px 0 0;
+  font-size:18px;
 }
 
 .routineCard pre{
   white-space:pre-wrap;
   background:var(--surface);
-  padding:12px;
-  border-radius:14px;
+  padding:10px 12px;
+  border-radius:12px;
   border:1px solid var(--border);
   font-family:Arial, sans-serif;
+  font-size:13px;
+  line-height:1.5;
 }
 
 .routineActionRow{
@@ -1012,7 +1136,7 @@ button{
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 
 .routineShareButton{
@@ -1020,7 +1144,7 @@ button{
   border-radius:12px;
   background:#fff;
   color:#111827;
-  padding:8px 10px;
+  padding:7px 10px;
   font-size:12px;
   font-weight:700;
 }
@@ -1984,6 +2108,14 @@ button{
   .dashboardMetricGrid,
   .dashboardChartRow{
     grid-template-columns:1fr;
+  }
+
+  .routineFormCompact{
+    grid-template-columns:1fr;
+  }
+
+  .routineSelectorBlock{
+    grid-row:auto;
   }
 
   .dashboardChartHeader{

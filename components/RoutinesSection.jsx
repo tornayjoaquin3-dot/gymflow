@@ -18,6 +18,17 @@ export default function RoutinesSection({
 }) {
   const [copyFeedbackId, setCopyFeedbackId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [studentSearchTerm, setStudentSearchTerm] = useState('')
+
+  const selectedAlumnoIds = nuevaRutina.alumno_ids?.length
+    ? nuevaRutina.alumno_ids
+    : nuevaRutina.alumno_id
+      ? [nuevaRutina.alumno_id]
+      : []
+
+  const selectedAlumnos = useMemo(() => {
+    return alumnos.filter((alumno) => selectedAlumnoIds.includes(alumno.id))
+  }, [alumnos, selectedAlumnoIds])
 
   const filteredRutinas = useMemo(() => {
     const normalizedSearch = normalizeText(searchTerm)
@@ -28,7 +39,12 @@ export default function RoutinesSection({
 
     return rutinas.filter((rutina) => {
       const searchableText = normalizeText(
-        [rutina.alumnos?.nombre, rutina.nombre, rutina.objetivo]
+        [
+          rutina.alumnos?.nombre,
+          rutina.nombre,
+          rutina.objetivo,
+          rutina.ejercicios,
+        ]
           .filter(Boolean)
           .join(' ')
       )
@@ -36,6 +52,40 @@ export default function RoutinesSection({
       return searchableText.includes(normalizedSearch)
     })
   }, [rutinas, searchTerm])
+
+  const filteredAlumnos = useMemo(() => {
+    const normalizedSearch = normalizeText(studentSearchTerm)
+
+    return alumnos
+      .filter((alumno) => !selectedAlumnoIds.includes(alumno.id))
+      .filter((alumno) => {
+        if (!normalizedSearch) {
+          return true
+        }
+
+        return normalizeText(alumno.nombre).includes(normalizedSearch)
+      })
+      .slice(0, 8)
+  }, [alumnos, selectedAlumnoIds, studentSearchTerm])
+
+  function updateSelectedAlumnoIds(nextAlumnoIds) {
+    setNuevaRutina({
+      ...nuevaRutina,
+      alumno_ids: nextAlumnoIds,
+      alumno_id: nextAlumnoIds[0] || '',
+    })
+  }
+
+  function handleSelectAlumno(alumno) {
+    updateSelectedAlumnoIds([...selectedAlumnoIds, alumno.id])
+    setStudentSearchTerm('')
+  }
+
+  function handleRemoveAlumno(alumnoId) {
+    updateSelectedAlumnoIds(
+      selectedAlumnoIds.filter((selectedId) => selectedId !== alumnoId)
+    )
+  }
 
   function clearCopyFeedbackSoon() {
     window.setTimeout(() => {
@@ -69,27 +119,65 @@ export default function RoutinesSection({
     <section className="section">
       <div className="sectionHeader">
         <h2>Rutinas</h2>
-        <p>Los profesores pueden crear y visualizar rutinas.</p>
+        <p>Espacio rapido para crear, duplicar y compartir rutinas.</p>
       </div>
 
-      <form onSubmit={crearRutina} className="routineForm">
-        <select
-          value={nuevaRutina.alumno_id}
-          onChange={(e) =>
-            setNuevaRutina({
-              ...nuevaRutina,
-              alumno_id: e.target.value,
-            })
-          }
-        >
-          <option value="">Seleccionar alumno</option>
+      <div className="studentsSearchBar routineSearchBarTop">
+        <input
+          placeholder="Buscar rutina..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
+      </div>
 
-          {alumnos.map((alumno) => (
-            <option key={alumno.id} value={alumno.id}>
-              {alumno.nombre}
-            </option>
-          ))}
-        </select>
+      <form onSubmit={crearRutina} className="routineForm routineFormCompact">
+        <div className="routineFormBlock routineSelectorBlock">
+          <span>Alumnos</span>
+
+          <div className="routineSelectorField">
+            <input
+              placeholder="Buscar alumno para asociar"
+              value={studentSearchTerm}
+              onChange={(event) => setStudentSearchTerm(event.target.value)}
+            />
+
+            {filteredAlumnos.length > 0 && (
+              <div className="routineSelectorResults">
+                {filteredAlumnos.map((alumno) => (
+                  <button
+                    key={alumno.id}
+                    type="button"
+                    className="routineSelectorOption"
+                    onClick={() => handleSelectAlumno(alumno)}
+                  >
+                    {alumno.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="routineSelectedChips">
+            {selectedAlumnos.length > 0 ? (
+              selectedAlumnos.map((alumno) => (
+                <span key={alumno.id} className="routineChip">
+                  {alumno.nombre}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAlumno(alumno.id)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))
+            ) : (
+              <small className="routineHelperText">
+                Sin alumnos asociados. Se intentara guardar sin asignacion si tu
+                esquema actual lo permite.
+              </small>
+            )}
+          </div>
+        </div>
 
         <input
           placeholder="Nombre rutina"
@@ -135,35 +223,33 @@ export default function RoutinesSection({
           }
         />
 
-        <button>{editingRutinaId ? 'Guardar cambios' : 'Crear rutina'}</button>
-
-        {editingRutinaId && (
-          <button
-            type="button"
-            className="smallButton"
-            onClick={cancelarEdicionRutina}
-          >
-            Cancelar edicion
+        <div className="routineFormActions">
+          <button className="routineSubmitButton">
+            {editingRutinaId ? 'Guardar cambios' : 'Crear rutina'}
           </button>
-        )}
+
+          {editingRutinaId && (
+            <button
+              type="button"
+              className="smallButton"
+              onClick={cancelarEdicionRutina}
+            >
+              Cancelar edicion
+            </button>
+          )}
+        </div>
       </form>
 
-      <div className="studentsSearchBar">
-        <input
-          placeholder="Buscar rutina..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
-      </div>
-
-      <div className="routineGrid">
+      <div className="routineGrid routineGridCompact">
         {filteredRutinas.length === 0 ? (
           <div className="empty">Todavia no hay rutinas cargadas.</div>
         ) : (
           filteredRutinas.map((rutina) => (
-            <article className="routineCard" key={rutina.id}>
-              <span>{rutina.alumnos?.nombre || 'Sin alumno'}</span>
-              <h3>{rutina.nombre}</h3>
+            <article className="routineCard routineCardCompact" key={rutina.id}>
+              <div className="routineCardTop">
+                <span>{rutina.alumnos?.nombre || 'Sin alumno'}</span>
+                <h3>{rutina.nombre}</h3>
+              </div>
 
               <div className="routineActionRow">
                 <button
@@ -189,10 +275,6 @@ export default function RoutinesSection({
                 <b>Objetivo:</b> {rutina.objetivo || '-'}
               </p>
 
-              <p>
-                <b>Ejercicios:</b>
-              </p>
-
               <pre>{rutina.ejercicios || '-'}</pre>
 
               {rutina.observaciones && (
@@ -203,6 +285,7 @@ export default function RoutinesSection({
 
               <div className="buttonGroup">
                 <button
+                  type="button"
                   className="smallButton"
                   onClick={() => editarRutina(rutina)}
                 >
@@ -210,6 +293,7 @@ export default function RoutinesSection({
                 </button>
 
                 <button
+                  type="button"
                   className="smallButton dangerButton"
                   onClick={() => eliminarRutina(rutina.id)}
                 >

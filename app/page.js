@@ -49,6 +49,7 @@ export default function Home() {
 
   const [nuevaRutina, setNuevaRutina] = useState({
     alumno_id: '',
+    alumno_ids: [],
     nombre: '',
     objetivo: '',
     ejercicios: '',
@@ -78,6 +79,7 @@ export default function Home() {
   function resetNuevaRutina() {
     setNuevaRutina({
       alumno_id: '',
+      alumno_ids: [],
       nombre: '',
       objetivo: '',
       ejercicios: '',
@@ -482,8 +484,8 @@ export default function Home() {
     event.preventDefault()
     setError('')
 
-    if (!nuevaRutina.alumno_id || !nuevaRutina.nombre.trim()) {
-      setError('Selecciona un alumno y carga el nombre de la rutina.')
+    if (!nuevaRutina.nombre.trim()) {
+      setError('Carga el nombre de la rutina.')
       return
     }
 
@@ -491,35 +493,78 @@ export default function Home() {
 
     if (!client) return
 
+    const selectedAlumnoIds = [
+      ...new Set(
+        (nuevaRutina.alumno_ids?.length
+          ? nuevaRutina.alumno_ids
+          : nuevaRutina.alumno_id
+            ? [nuevaRutina.alumno_id]
+            : []
+        ).filter(Boolean)
+      ),
+    ]
+
+    const routinePayload = {
+      nombre: nuevaRutina.nombre,
+      objetivo: nuevaRutina.objetivo,
+      ejercicios: nuevaRutina.ejercicios,
+      observaciones: nuevaRutina.observaciones,
+    }
+
     if (editingRutinaId) {
+      const primaryAlumnoId = selectedAlumnoIds[0] || null
       const { error: updateError } = await client
         .from('rutinas')
         .update({
-          alumno_id: nuevaRutina.alumno_id,
-          nombre: nuevaRutina.nombre,
-          objetivo: nuevaRutina.objetivo,
-          ejercicios: nuevaRutina.ejercicios,
-          observaciones: nuevaRutina.observaciones,
+          alumno_id: primaryAlumnoId,
+          ...routinePayload,
         })
         .eq('id', editingRutinaId)
 
       if (updateError) {
-        setError('No se pudo actualizar la rutina.')
+        setError(
+          primaryAlumnoId
+            ? 'No se pudo actualizar la rutina.'
+            : 'Tu configuracion actual no permite guardar una rutina sin alumno asignado.'
+        )
         return
       }
+
+      const additionalAlumnoIds = selectedAlumnoIds.slice(1)
+
+      if (additionalAlumnoIds.length > 0) {
+        const { error: duplicateError } = await client.from('rutinas').insert(
+          additionalAlumnoIds.map((alumnoId) => ({
+            alumno_id: alumnoId,
+            ...routinePayload,
+          }))
+        )
+
+        if (duplicateError) {
+          setError('La rutina se actualizo, pero no se pudo duplicar para todos los alumnos seleccionados.')
+          await cargarRutinas()
+          return
+        }
+      }
     } else {
-      const { error: createError } = await client.from('rutinas').insert([
-        {
-          alumno_id: nuevaRutina.alumno_id,
-          nombre: nuevaRutina.nombre,
-          objetivo: nuevaRutina.objetivo,
-          ejercicios: nuevaRutina.ejercicios,
-          observaciones: nuevaRutina.observaciones,
-        },
-      ])
+      const insertRows =
+        selectedAlumnoIds.length > 0
+          ? selectedAlumnoIds.map((alumnoId) => ({
+              alumno_id: alumnoId,
+              ...routinePayload,
+            }))
+          : [{ alumno_id: null, ...routinePayload }]
+
+      const { error: createError } = await client.from('rutinas').insert(
+        insertRows
+      )
 
       if (createError) {
-        setError('No se pudo crear la rutina.')
+        setError(
+          selectedAlumnoIds.length > 0
+            ? 'No se pudo crear la rutina.'
+            : 'Tu configuracion actual no permite guardar una rutina sin alumno asignado.'
+        )
         return
       }
     }
@@ -534,6 +579,7 @@ export default function Home() {
     setEditingRutinaId(rutina.id)
     setNuevaRutina({
       alumno_id: rutina.alumno_id || '',
+      alumno_ids: rutina.alumno_id ? [rutina.alumno_id] : [],
       nombre: rutina.nombre || '',
       objetivo: rutina.objetivo || '',
       ejercicios: rutina.ejercicios || '',
