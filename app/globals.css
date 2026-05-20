@@ -1533,6 +1533,10 @@ button{
   flex-wrap:wrap;
 }
 
+.studentsRoutineShareActionsBelow{
+  margin-top:12px;
+}
+
 .studentsRoutineMiniCard strong{
   display:block;
   margin-bottom:6px;
@@ -1554,6 +1558,11 @@ button{
   padding:7px 10px;
   font-size:12px;
   font-weight:700;
+}
+
+.studentsTinyButton:disabled{
+  opacity:0.55;
+  cursor:not-allowed;
 }
 
 .studentsTinyButtonPrimary{

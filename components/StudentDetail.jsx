@@ -105,24 +105,6 @@ export default function StudentDetail({
         <div className="studentsRoutineMiniCard">
           <div className="studentsRoutineHeader">
             <h4>Rutina actual</h4>
-            {currentRoutine && (
-              <div className="studentsRoutineShareActions">
-                <button
-                  type="button"
-                  className="studentsTinyButton studentsTinyButtonPrimary"
-                  onClick={handleShareRoutine}
-                >
-                  Compartir
-                </button>
-                <button
-                  type="button"
-                  className="studentsTinyButton"
-                  onClick={handleCopyRoutine}
-                >
-                  Copiar
-                </button>
-              </div>
-            )}
           </div>
           {currentRoutine ? (
             <>
@@ -130,12 +112,32 @@ export default function StudentDetail({
               {currentRoutine.objetivo && <span>{currentRoutine.objetivo}</span>}
               <pre>{currentRoutine.ejercicios || '-'}</pre>
               {currentRoutine.observaciones && <p>{currentRoutine.observaciones}</p>}
-              {copyFeedback && (
-                <small className="studentsCopyFeedback">{copyFeedback}</small>
-              )}
             </>
           ) : (
             <p>Sin rutina cargada.</p>
+          )}
+
+          <div className="studentsRoutineShareActions studentsRoutineShareActionsBelow">
+            <button
+              type="button"
+              className="studentsTinyButton studentsTinyButtonPrimary"
+              onClick={handleShareRoutine}
+              disabled={!currentRoutine}
+            >
+              Compartir
+            </button>
+            <button
+              type="button"
+              className="studentsTinyButton"
+              onClick={handleCopyRoutine}
+              disabled={!currentRoutine}
+            >
+              Copiar
+            </button>
+          </div>
+
+          {copyFeedback && (
+            <small className="studentsCopyFeedback">{copyFeedback}</small>
           )}
         </div>
       </div>
