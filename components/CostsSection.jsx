@@ -14,7 +14,7 @@ export default function CostsSection({
 
       <form onSubmit={crearCosto} className="costForm">
         <input
-          placeholder="Descripción"
+          placeholder="Descripcion"
           value={nuevoCosto.descripcion}
           onChange={(e) =>
             setNuevoCosto({
@@ -54,6 +54,17 @@ export default function CostsSection({
         />
 
         <input
+          type="date"
+          value={nuevoCosto.fecha}
+          onChange={(e) =>
+            setNuevoCosto({
+              ...nuevoCosto,
+              fecha: e.target.value,
+            })
+          }
+        />
+
+        <input
           placeholder="Observaciones"
           value={nuevoCosto.observaciones}
           onChange={(e) =>
@@ -69,7 +80,7 @@ export default function CostsSection({
 
       <div className="simpleList">
         {costos.length === 0 ? (
-          <div className="empty">Todavía no hay costos cargados.</div>
+          <div className="empty">Todavia no hay costos cargados.</div>
         ) : (
           costos.map((costo) => (
             <article className="listCard" key={costo.id}>
@@ -79,7 +90,8 @@ export default function CostsSection({
                 ${Number(costo.monto || 0).toLocaleString('es-AR')}
               </p>
 
-              <p>Categoría: {costo.categoria || '-'}</p>
+              <p>Categoria: {costo.categoria || '-'}</p>
+              <p>Fecha: {costo.fecha || 'Sin fecha'}</p>
               <p>Observaciones: {costo.observaciones || '-'}</p>
 
               <button

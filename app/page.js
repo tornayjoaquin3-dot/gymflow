@@ -42,6 +42,7 @@ export default function Home() {
     descripcion: '',
     categoria: 'alquiler',
     monto: '',
+    fecha: new Date().toISOString().slice(0, 10),
     observaciones: '',
   })
 
@@ -378,8 +379,8 @@ export default function Home() {
         descripcion: nuevoCosto.descripcion,
         categoria: nuevoCosto.categoria,
         monto: Number(nuevoCosto.monto),
+        fecha: nuevoCosto.fecha || new Date().toISOString().slice(0, 10),
         observaciones: nuevoCosto.observaciones,
-        fecha: new Date().toISOString().slice(0, 10),
       },
     ])
 
@@ -392,6 +393,7 @@ export default function Home() {
       descripcion: '',
       categoria: 'alquiler',
       monto: '',
+      fecha: new Date().toISOString().slice(0, 10),
       observaciones: '',
     })
 
