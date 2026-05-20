@@ -1,4 +1,9 @@
+import { useState } from 'react'
 import StudentStatusBadge from './StudentStatusBadge'
+import {
+  buildRoutineShareText,
+  getRoutineWhatsappUrl,
+} from '../lib/routine-sharing'
 
 export default function StudentDetail({
   selectedAlumno,
@@ -22,10 +27,44 @@ export default function StudentDetail({
   }
 
   const currentRoutine = rutinasDelAlumno[0] || null
+  const [copyFeedback, setCopyFeedback] = useState('')
 
   async function handleDeletePago(id) {
     if (!onDeletePago) return
     await onDeletePago(id)
+  }
+
+  function clearCopyFeedbackSoon() {
+    window.setTimeout(() => {
+      setCopyFeedback('')
+    }, 1800)
+  }
+
+  async function handleCopyRoutine() {
+    if (!currentRoutine) return
+
+    const text = buildRoutineShareText(selectedAlumno.nombre, currentRoutine)
+
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyFeedback('Rutina copiada')
+      clearCopyFeedbackSoon()
+    } catch (error) {
+      setCopyFeedback('No se pudo copiar')
+      clearCopyFeedbackSoon()
+    }
+  }
+
+  function handleShareRoutine() {
+    if (!currentRoutine) return
+
+    const url = getRoutineWhatsappUrl(
+      selectedAlumno.nombre,
+      selectedAlumno.telefono,
+      currentRoutine
+    )
+
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -64,13 +103,36 @@ export default function StudentDetail({
         </div>
 
         <div className="studentsRoutineMiniCard">
-          <h4>Rutina actual</h4>
+          <div className="studentsRoutineHeader">
+            <h4>Rutina actual</h4>
+            {currentRoutine && (
+              <div className="studentsRoutineShareActions">
+                <button
+                  type="button"
+                  className="studentsTinyButton studentsTinyButtonPrimary"
+                  onClick={handleShareRoutine}
+                >
+                  Compartir
+                </button>
+                <button
+                  type="button"
+                  className="studentsTinyButton"
+                  onClick={handleCopyRoutine}
+                >
+                  Copiar
+                </button>
+              </div>
+            )}
+          </div>
           {currentRoutine ? (
             <>
               <strong>{currentRoutine.nombre || 'Rutina actual'}</strong>
               {currentRoutine.objetivo && <span>{currentRoutine.objetivo}</span>}
               <pre>{currentRoutine.ejercicios || '-'}</pre>
               {currentRoutine.observaciones && <p>{currentRoutine.observaciones}</p>}
+              {copyFeedback && (
+                <small className="studentsCopyFeedback">{copyFeedback}</small>
+              )}
             </>
           ) : (
             <p>Sin rutina cargada.</p>

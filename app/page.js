@@ -196,7 +196,8 @@ export default function Home() {
         `
         *,
         alumnos (
-          nombre
+          nombre,
+          telefono
         )
       `
       )

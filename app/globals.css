@@ -957,6 +957,36 @@ button{
   border-radius:10px;
   font-family:Arial, sans-serif;
 }
+
+.routineActionRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.routineShareButton{
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:12px;
+  background:#fff;
+  color:#111827;
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.routineShareButtonPrimary{
+  border-color:#171717;
+  background:#171717;
+  color:#fff;
+}
+
+.routineCopyFeedback{
+  color:#86efac;
+  font-size:12px;
+  font-weight:700;
+}
 .simpleList{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -1485,6 +1515,24 @@ button{
   font-size:14px;
 }
 
+.studentsRoutineHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.studentsRoutineHeader h4{
+  margin:0;
+}
+
+.studentsRoutineShareActions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
 .studentsRoutineMiniCard strong{
   display:block;
   margin-bottom:6px;
@@ -1496,6 +1544,30 @@ button{
   white-space:pre-wrap;
   font-family:Arial, sans-serif;
   color:#111827;
+}
+
+.studentsTinyButton{
+  border:1px solid #d6d7da;
+  border-radius:12px;
+  background:#fff;
+  color:#111827;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.studentsTinyButtonPrimary{
+  border-color:#171717;
+  background:#171717;
+  color:#fff;
+}
+
+.studentsCopyFeedback{
+  display:block;
+  margin-top:10px;
+  color:#047857;
+  font-size:12px;
+  font-weight:700;
 }
 
 .studentsDetailActionBar{
