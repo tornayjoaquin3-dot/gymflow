@@ -1743,9 +1743,177 @@ button{
   color:#dc2626;
 }
 
+.dashboardWorkspace{
+  margin-top:40px;
+  color:#0f172a;
+}
+
+.dashboardHero{
+  margin-bottom:18px;
+}
+
+.dashboardHero h2{
+  margin:0;
+  font-size:28px;
+}
+
+.dashboardHero p{
+  margin:8px 0 0;
+  color:#64748b;
+  font-size:15px;
+}
+
+.dashboardFilterRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:22px;
+}
+
+.dashboardFilterButton{
+  border:1px solid #d6d7da;
+  border-radius:999px;
+  background:#fff;
+  color:#334155;
+  padding:11px 16px;
+  font-size:14px;
+  font-weight:700;
+}
+
+.dashboardFilterButton.isActive{
+  border-color:#171717;
+  background:#171717;
+  color:#fff;
+}
+
+.dashboardMetricGrid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.dashboardMetricCard,
+.dashboardChartCard{
+  border:1px solid #e5e7eb;
+  border-radius:24px;
+  background:#fff;
+  padding:22px;
+  box-shadow:0 10px 30px rgba(15,23,42,0.04);
+}
+
+.dashboardMetricCard span,
+.dashboardChartHeader small,
+.dashboardMetricCard small{
+  color:#94a3b8;
+}
+
+.dashboardMetricCard span{
+  display:block;
+  margin-bottom:12px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.dashboardMetricCard strong{
+  display:block;
+  font-size:32px;
+  line-height:1.1;
+  color:#0f172a;
+}
+
+.dashboardMetricCard small{
+  display:block;
+  margin-top:10px;
+  font-size:13px;
+}
+
+.dashboardChartHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.dashboardChartHeader h3{
+  margin:0;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#718096;
+}
+
+.dashboardChartList{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.dashboardChartRow{
+  display:grid;
+  grid-template-columns:110px minmax(0, 1fr) 140px;
+  align-items:center;
+  gap:18px;
+}
+
+.dashboardChartMonth{
+  color:#475569;
+  font-size:15px;
+}
+
+.dashboardChartBars{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.dashboardBarTrack{
+  width:100%;
+  height:12px;
+  border-radius:999px;
+  background:#f1f2ee;
+  overflow:hidden;
+}
+
+.dashboardBar{
+  height:100%;
+  border-radius:999px;
+}
+
+.dashboardBarIncome{
+  background:#1f9d73;
+}
+
+.dashboardBarCost{
+  background:#171717;
+}
+
+.dashboardBarProfit{
+  background:#111827;
+}
+
+.dashboardBarLoss{
+  background:#e1524a;
+}
+
+.dashboardChartValue{
+  text-align:right;
+  font-size:15px;
+  font-weight:800;
+  color:#0f172a;
+}
+
 @media(max-width:1200px){
   .studentsMockupGrid{
     grid-template-columns:1fr;
+  }
+
+  .dashboardMetricGrid{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1771,5 +1939,19 @@ button{
 
   .studentsModalGridTwo{
     grid-template-columns:1fr;
+  }
+
+  .dashboardMetricGrid,
+  .dashboardChartRow{
+    grid-template-columns:1fr;
+  }
+
+  .dashboardChartValue{
+    text-align:left;
+  }
+
+  .dashboardChartHeader{
+    flex-direction:column;
+    align-items:flex-start;
   }
 }

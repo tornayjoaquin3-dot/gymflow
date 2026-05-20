@@ -646,15 +646,6 @@ export default function Home() {
     verificarSesion()
   }, [])
 
-  const totalIngresos = useMemo(() => {
-    return pagos.reduce((acc, pago) => acc + Number(pago.monto || 0), 0)
-  }, [pagos])
-
-  const totalCostos = useMemo(() => {
-    return costos.reduce((acc, costo) => acc + Number(costo.monto || 0), 0)
-  }, [costos])
-
-  const ganancia = totalIngresos - totalCostos
   const isProfesor = profile?.rol === 'profesor'
 
   const paymentMonthOptions = useMemo(() => {
@@ -710,43 +701,10 @@ export default function Home() {
           <button onClick={logout}>Cerrar sesion</button>
         </header>
 
-        {!isProfesor && (
-          <div className="cards">
-            <article>
-              <span>Ingresos</span>
-              <b className="money">${totalIngresos.toLocaleString('es-AR')}</b>
-            </article>
-
-            <article>
-              <span>Costos</span>
-              <b className="dangerText">${totalCostos.toLocaleString('es-AR')}</b>
-            </article>
-
-            <article>
-              <span>Ganancia</span>
-              <b className={ganancia >= 0 ? 'money' : 'dangerText'}>
-                ${ganancia.toLocaleString('es-AR')}
-              </b>
-            </article>
-
-            <article>
-              <span>Alumnos</span>
-              <b>{alumnos.length} registrados</b>
-            </article>
-          </div>
-        )}
-
         {error && <div className="error">{error}</div>}
 
         {activeSection === 'dashboard' && !isProfesor && (
-          <Dashboard
-            totalIngresos={totalIngresos}
-            totalCostos={totalCostos}
-            ganancia={ganancia}
-            alumnos={alumnos}
-            pagos={pagos}
-            costos={costos}
-          />
+          <Dashboard alumnos={alumnos} pagos={pagos} costos={costos} />
         )}
 
         {(activeSection === 'alumnos' || activeSection === 'fichaAlumno') && (
