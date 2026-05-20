@@ -545,6 +545,16 @@ button{
   border-top:1px solid var(--border);
 }
 
+.dataRowCompact{
+  min-height:50px;
+  padding:8px 14px;
+  font-size:13px;
+}
+
+.dataRowCompact strong{
+  font-size:13px;
+}
+
 .dataRow.isSelected{
   background:#faf7f2;
 }
@@ -596,6 +606,12 @@ button{
   flex-wrap:wrap;
   gap:8px;
   justify-content:flex-end;
+}
+
+.rowActionsCompact{
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:6px;
 }
 
 .statusStack{
@@ -1298,6 +1314,14 @@ button{
   background:var(--surface);
   color:var(--text);
   font-weight:bold;
+}
+
+.smallButtonCompact{
+  margin-top:0;
+  padding:7px 10px;
+  border-radius:12px;
+  font-size:12px;
+  line-height:1.1;
 }
 
 .dangerButton{

@@ -205,7 +205,7 @@ export default function CostsSection({
             </div>
           ) : (
             filteredCostos.map((costo) => (
-              <div key={costo.id} className="dataRow costsTableGrid">
+              <div key={costo.id} className="dataRow dataRowCompact costsTableGrid">
                 <span>{costo.fecha || 'Sin fecha'}</span>
                 <strong>{costo.descripcion || '-'}</strong>
                 <span>{costo.categoria || '-'}</span>
@@ -213,10 +213,10 @@ export default function CostsSection({
                   ${Number(costo.monto || 0).toLocaleString('es-AR')}
                 </strong>
                 <span>{costo.observaciones || '-'}</span>
-                <div className="rowActions">
+                <div className="rowActions rowActionsCompact">
                   <button
                     type="button"
-                    className="smallButton"
+                    className="smallButton smallButtonCompact"
                     onClick={() => editarCosto(costo)}
                   >
                     Editar
@@ -224,7 +224,7 @@ export default function CostsSection({
 
                   <button
                     type="button"
-                    className="smallButton dangerButton"
+                    className="smallButton smallButtonCompact dangerButton"
                     onClick={() => eliminarCosto(costo.id)}
                   >
                     Eliminar
