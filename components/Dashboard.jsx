@@ -1,5 +1,16 @@
 import { useMemo, useState } from 'react'
 import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import {
   TOTAL_PERIOD_VALUE,
   compareMonthKeys,
   getMonthKey,
@@ -8,6 +19,24 @@ import {
 
 function formatCurrency(value) {
   return `$${Number(value || 0).toLocaleString('es-AR')}`
+}
+
+function DashboardTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) {
+    return null
+  }
+
+  return (
+    <div className="dashboardTooltip">
+      <strong>{label}</strong>
+      {payload.map((entry) => (
+        <div className="dashboardTooltipRow" key={entry.dataKey}>
+          <span>{entry.name}</span>
+          <b>{formatCurrency(entry.value)}</b>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function getDashboardMonthOptions(pagos, costos) {
@@ -99,14 +128,11 @@ export default function Dashboard({ alumnos, pagos, costos }) {
     return getMonthBreakdown(selectedPeriod, pagos, costos)
   }, [selectedPeriod, pagos, costos])
 
-  const chartMaxValue = useMemo(() => {
-    const values = monthlyBreakdown.flatMap((item) => [
-      item.ingresos,
-      item.costos,
-      Math.abs(item.ganancia),
-    ])
-
-    return Math.max(...values, 1)
+  const chartData = useMemo(() => {
+    return monthlyBreakdown.map((item) => ({
+      ...item,
+      gananciaColor: item.ganancia >= 0 ? '#2563eb' : '#e1524a',
+    }))
   }, [monthlyBreakdown])
 
   return (
@@ -174,49 +200,64 @@ export default function Dashboard({ alumnos, pagos, costos }) {
         {monthlyBreakdown.length === 0 ? (
           <div className="empty">Todavia no hay pagos o costos para comparar.</div>
         ) : (
-          <div className="dashboardChartList">
-            {monthlyBreakdown.map((item) => (
-              <div className="dashboardChartRow" key={item.monthKey}>
-                <div className="dashboardChartMonth">{item.label}</div>
-
-                <div className="dashboardChartBars">
-                  <div className="dashboardBarTrack">
-                    <div
-                      className="dashboardBar dashboardBarIncome"
-                      style={{
-                        width: `${(item.ingresos / chartMaxValue) * 100}%`,
-                      }}
-                    />
-                  </div>
-
-                  <div className="dashboardBarTrack">
-                    <div
-                      className="dashboardBar dashboardBarCost"
-                      style={{
-                        width: `${(item.costos / chartMaxValue) * 100}%`,
-                      }}
-                    />
-                  </div>
-
-                  <div className="dashboardBarTrack">
-                    <div
-                      className={`dashboardBar ${
-                        item.ganancia >= 0
-                          ? 'dashboardBarProfit'
-                          : 'dashboardBarLoss'
-                      }`}
-                      style={{
-                        width: `${(Math.abs(item.ganancia) / chartMaxValue) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="dashboardChartValue">
-                  {formatCurrency(item.ganancia)}
-                </div>
-              </div>
-            ))}
+          <div className="dashboardChartCanvas">
+            <ResponsiveContainer width="100%" height={Math.max(320, chartData.length * 72)}>
+              <BarChart
+                data={chartData}
+                layout="vertical"
+                margin={{ top: 8, right: 24, left: 12, bottom: 8 }}
+                barCategoryGap={16}
+              >
+                <CartesianGrid stroke="#edf0f3" horizontal={false} />
+                <XAxis
+                  type="number"
+                  tickFormatter={(value) => formatCurrency(value)}
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="label"
+                  tick={{ fill: '#475569', fontSize: 13 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={96}
+                />
+                <Tooltip content={<DashboardTooltip />} cursor={{ fill: '#f8fafc' }} />
+                <Legend
+                  wrapperStyle={{ paddingTop: 8 }}
+                  iconType="circle"
+                  formatter={(value) => (
+                    <span className="dashboardLegendText">{value}</span>
+                  )}
+                />
+                <Bar
+                  dataKey="ingresos"
+                  name="Ingresos"
+                  fill="#1f9d73"
+                  radius={[0, 999, 999, 0]}
+                  maxBarSize={16}
+                />
+                <Bar
+                  dataKey="costos"
+                  name="Costos"
+                  fill="#f08b82"
+                  radius={[0, 999, 999, 0]}
+                  maxBarSize={16}
+                />
+                <Bar
+                  dataKey="ganancia"
+                  name="Ganancia"
+                  radius={[0, 999, 999, 0]}
+                  maxBarSize={16}
+                >
+                  {chartData.map((entry) => (
+                    <Cell key={entry.monthKey} fill={entry.gananciaColor} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         )}
       </div>
