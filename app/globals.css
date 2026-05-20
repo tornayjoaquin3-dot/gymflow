@@ -1103,6 +1103,12 @@ button{
   gap:14px;
 }
 
+.routineList{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
 .routineCard{
   background:var(--surface-soft);
   border:1px solid var(--border);
@@ -1114,8 +1120,76 @@ button{
   padding:14px;
 }
 
+.routineRowCard{
+  padding:14px 16px;
+  cursor:pointer;
+}
+
+.routineRowCard.isExpanded{
+  background:#fcfbf8;
+}
+
 .routineCardTop{
   margin-bottom:10px;
+}
+
+.routineRowSummary{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.routineRowMain{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+.routineRowMain strong{
+  font-size:16px;
+}
+
+.routineRowMain span,
+.routineExpandedMeta span{
+  color:var(--text-muted);
+  font-size:13px;
+}
+
+.routineRowMain small{
+  color:var(--text-soft);
+  font-size:12px;
+  line-height:1.4;
+}
+
+.routineRowActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.routineExpandedContent{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.routineExpandedMeta{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.routineExpandedMeta p{
+  margin:0;
+  color:var(--text-muted);
+  line-height:1.5;
 }
 
 .routineCard span{
@@ -2124,6 +2198,14 @@ button{
 
   .routineSelectorBlock{
     grid-row:auto;
+  }
+
+  .routineRowSummary{
+    flex-direction:column;
+  }
+
+  .routineRowActions{
+    justify-content:flex-start;
   }
 
   .dashboardChartHeader{

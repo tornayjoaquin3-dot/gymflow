@@ -576,10 +576,16 @@ export default function Home() {
   }
 
   function editarRutina(rutina) {
+    const selectedAlumnoIds = Array.isArray(rutina.alumno_ids)
+      ? rutina.alumno_ids.filter(Boolean)
+      : rutina.alumno_id
+        ? [rutina.alumno_id]
+        : []
+
     setEditingRutinaId(rutina.id)
     setNuevaRutina({
       alumno_id: rutina.alumno_id || '',
-      alumno_ids: rutina.alumno_id ? [rutina.alumno_id] : [],
+      alumno_ids: selectedAlumnoIds,
       nombre: rutina.nombre || '',
       objetivo: rutina.objetivo || '',
       ejercicios: rutina.ejercicios || '',
@@ -640,8 +646,13 @@ export default function Home() {
     return true
   }
 
-  async function eliminarRutina(id) {
-    const confirmar = window.confirm('Seguro que quieres eliminar esta rutina?')
+  async function eliminarRutina(idOrIds) {
+    const routineIds = Array.isArray(idOrIds) ? idOrIds : [idOrIds]
+    const confirmar = window.confirm(
+      routineIds.length > 1
+        ? 'Seguro que quieres eliminar estas rutinas?'
+        : 'Seguro que quieres eliminar esta rutina?'
+    )
 
     if (!confirmar) return
 
@@ -653,14 +664,14 @@ export default function Home() {
     const { error: deleteError } = await client
       .from('rutinas')
       .delete()
-      .eq('id', id)
+      .in('id', routineIds)
 
     if (deleteError) {
       setError('No se pudo eliminar la rutina.')
       return
     }
 
-    if (editingRutinaId === id) {
+    if (routineIds.includes(editingRutinaId)) {
       cancelarEdicionRutina()
     }
 

@@ -5,6 +5,27 @@ import {
 } from '../lib/routine-sharing'
 import { normalizeText } from '../lib/student-utils'
 
+function buildRoutineGroupKey(rutina) {
+  return [
+    rutina.nombre || '',
+    rutina.objetivo || '',
+    rutina.ejercicios || '',
+    rutina.observaciones || '',
+  ].join('::')
+}
+
+function getAssociatedAlumnoLabel(rutinaGroup) {
+  if (rutinaGroup.alumnos.length > 1) {
+    return 'Varios alumnos'
+  }
+
+  if (rutinaGroup.alumnos.length === 1) {
+    return rutinaGroup.alumnos[0].nombre
+  }
+
+  return 'Sin alumno'
+}
+
 export default function RoutinesSection({
   alumnos,
   rutinas,
@@ -19,6 +40,7 @@ export default function RoutinesSection({
   const [copyFeedbackId, setCopyFeedbackId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [studentSearchTerm, setStudentSearchTerm] = useState('')
+  const [expandedRoutineKey, setExpandedRoutineKey] = useState(null)
 
   const selectedAlumnoIds = nuevaRutina.alumno_ids?.length
     ? nuevaRutina.alumno_ids
@@ -29,29 +51,6 @@ export default function RoutinesSection({
   const selectedAlumnos = useMemo(() => {
     return alumnos.filter((alumno) => selectedAlumnoIds.includes(alumno.id))
   }, [alumnos, selectedAlumnoIds])
-
-  const filteredRutinas = useMemo(() => {
-    const normalizedSearch = normalizeText(searchTerm)
-
-    if (!normalizedSearch) {
-      return rutinas
-    }
-
-    return rutinas.filter((rutina) => {
-      const searchableText = normalizeText(
-        [
-          rutina.alumnos?.nombre,
-          rutina.nombre,
-          rutina.objetivo,
-          rutina.ejercicios,
-        ]
-          .filter(Boolean)
-          .join(' ')
-      )
-
-      return searchableText.includes(normalizedSearch)
-    })
-  }, [rutinas, searchTerm])
 
   const filteredAlumnos = useMemo(() => {
     const normalizedSearch = normalizeText(studentSearchTerm)
@@ -71,6 +70,73 @@ export default function RoutinesSection({
 
   const normalizedStudentSearch = normalizeText(studentSearchTerm)
   const shouldShowStudentResults = normalizedStudentSearch.length >= 2
+
+  const groupedRutinas = useMemo(() => {
+    const groupedMap = new Map()
+
+    rutinas.forEach((rutina) => {
+      const groupKey = buildRoutineGroupKey(rutina)
+
+      if (!groupedMap.has(groupKey)) {
+        groupedMap.set(groupKey, {
+          key: groupKey,
+          id: rutina.id,
+          ids: [],
+          alumno_id: rutina.alumno_id || '',
+          alumno_ids: [],
+          nombre: rutina.nombre,
+          objetivo: rutina.objetivo,
+          ejercicios: rutina.ejercicios,
+          observaciones: rutina.observaciones,
+          alumnos: [],
+          telefono: rutina.alumnos?.telefono || '',
+        })
+      }
+
+      const currentGroup = groupedMap.get(groupKey)
+      currentGroup.ids.push(rutina.id)
+
+      if (rutina.alumno_id && !currentGroup.alumno_ids.includes(rutina.alumno_id)) {
+        currentGroup.alumno_ids.push(rutina.alumno_id)
+      }
+
+      if (
+        rutina.alumnos?.nombre &&
+        !currentGroup.alumnos.some((alumno) => alumno.id === rutina.alumno_id)
+      ) {
+        currentGroup.alumnos.push({
+          id: rutina.alumno_id,
+          nombre: rutina.alumnos.nombre,
+          telefono: rutina.alumnos.telefono || '',
+        })
+      }
+    })
+
+    return [...groupedMap.values()]
+  }, [rutinas])
+
+  const filteredRutinas = useMemo(() => {
+    const normalizedSearch = normalizeText(searchTerm)
+
+    if (!normalizedSearch) {
+      return groupedRutinas
+    }
+
+    return groupedRutinas.filter((rutina) => {
+      const searchableText = normalizeText(
+        [
+          rutina.nombre,
+          rutina.objetivo,
+          rutina.ejercicios,
+          rutina.alumnos.map((alumno) => alumno.nombre).join(' '),
+        ]
+          .filter(Boolean)
+          .join(' ')
+      )
+
+      return searchableText.includes(normalizedSearch)
+    })
+  }, [groupedRutinas, searchTerm])
 
   function updateSelectedAlumnoIds(nextAlumnoIds) {
     setNuevaRutina({
@@ -98,11 +164,11 @@ export default function RoutinesSection({
   }
 
   async function handleCopyRoutine(rutina) {
-    const text = buildRoutineShareText(rutina.alumnos?.nombre, rutina)
+    const text = buildRoutineShareText(getAssociatedAlumnoLabel(rutina), rutina)
 
     try {
       await navigator.clipboard.writeText(text)
-      setCopyFeedbackId(rutina.id)
+      setCopyFeedbackId(rutina.key)
       clearCopyFeedbackSoon()
     } catch (error) {
       setCopyFeedbackId(null)
@@ -110,13 +176,21 @@ export default function RoutinesSection({
   }
 
   function handleShareRoutine(rutina) {
+    const sharedPhone =
+      rutina.alumnos.length === 1 ? rutina.alumnos[0].telefono : ''
     const url = getRoutineWhatsappUrl(
-      rutina.alumnos?.nombre,
-      rutina.alumnos?.telefono,
+      getAssociatedAlumnoLabel(rutina),
+      sharedPhone,
       rutina
     )
 
     window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  function handleToggleRoutine(rutinaKey) {
+    setExpandedRoutineKey((currentKey) =>
+      currentKey === rutinaKey ? null : rutinaKey
+    )
   }
 
   return (
@@ -180,7 +254,7 @@ export default function RoutinesSection({
                     type="button"
                     onClick={() => handleRemoveAlumno(alumno.id)}
                   >
-                    ×
+                    x
                   </button>
                 </span>
               ))
@@ -254,68 +328,115 @@ export default function RoutinesSection({
         </div>
       </form>
 
-      <div className="routineGrid routineGridCompact">
+      <div className="routineList">
         {filteredRutinas.length === 0 ? (
           <div className="empty">Todavia no hay rutinas cargadas.</div>
         ) : (
-          filteredRutinas.map((rutina) => (
-            <article className="routineCard routineCardCompact" key={rutina.id}>
-              <div className="routineCardTop">
-                <span>{rutina.alumnos?.nombre || 'Sin alumno'}</span>
-                <h3>{rutina.nombre}</h3>
-              </div>
+          filteredRutinas.map((rutina) => {
+            const isExpanded = expandedRoutineKey === rutina.key
 
-              <div className="routineActionRow">
-                <button
-                  type="button"
-                  className="routineShareButton routineShareButtonPrimary"
-                  onClick={() => handleShareRoutine(rutina)}
-                >
-                  Compartir
-                </button>
-                <button
-                  type="button"
-                  className="routineShareButton"
-                  onClick={() => handleCopyRoutine(rutina)}
-                >
-                  Copiar
-                </button>
-                {copyFeedbackId === rutina.id && (
+            return (
+              <article
+                key={rutina.key}
+                className={`routineCard routineRowCard ${
+                  isExpanded ? 'isExpanded' : ''
+                }`}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleToggleRoutine(rutina.key)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    handleToggleRoutine(rutina.key)
+                  }
+                }}
+              >
+                <div className="routineRowSummary">
+                  <div className="routineRowMain">
+                    <strong>{rutina.nombre || 'Rutina sin nombre'}</strong>
+                    <span>{getAssociatedAlumnoLabel(rutina)}</span>
+                    {rutina.objetivo && (
+                      <small>{rutina.objetivo}</small>
+                    )}
+                  </div>
+
+                  <div
+                    className="routineRowActions"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      className="smallButton"
+                      onClick={() => handleToggleRoutine(rutina.key)}
+                    >
+                      {isExpanded ? 'Ocultar' : 'Ver'}
+                    </button>
+                    <button
+                      type="button"
+                      className="smallButton"
+                      onClick={() => editarRutina(rutina)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="routineShareButton routineShareButtonPrimary"
+                      onClick={() => handleShareRoutine(rutina)}
+                    >
+                      Compartir
+                    </button>
+                    <button
+                      type="button"
+                      className="routineShareButton"
+                      onClick={() => handleCopyRoutine(rutina)}
+                    >
+                      Copiar
+                    </button>
+                    <button
+                      type="button"
+                      className="smallButton dangerButton"
+                      onClick={() => eliminarRutina(rutina.ids)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+
+                {copyFeedbackId === rutina.key && (
                   <small className="routineCopyFeedback">Rutina copiada</small>
                 )}
-              </div>
 
-              <p>
-                <b>Objetivo:</b> {rutina.objetivo || '-'}
-              </p>
+                {isExpanded && (
+                  <div className="routineExpandedContent">
+                    {rutina.alumnos.length > 1 && (
+                      <div className="routineExpandedMeta">
+                        <span>Alumnos asociados</span>
+                        <div className="routineSelectedChips">
+                          {rutina.alumnos.map((alumno) => (
+                            <span key={alumno.id} className="routineChip">
+                              {alumno.nombre}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-              <pre>{rutina.ejercicios || '-'}</pre>
+                    <div className="routineExpandedMeta">
+                      <span>Ejercicios</span>
+                      <pre>{rutina.ejercicios || '-'}</pre>
+                    </div>
 
-              {rutina.observaciones && (
-                <p>
-                  <b>Observaciones:</b> {rutina.observaciones}
-                </p>
-              )}
-
-              <div className="buttonGroup">
-                <button
-                  type="button"
-                  className="smallButton"
-                  onClick={() => editarRutina(rutina)}
-                >
-                  Editar
-                </button>
-
-                <button
-                  type="button"
-                  className="smallButton dangerButton"
-                  onClick={() => eliminarRutina(rutina.id)}
-                >
-                  Eliminar rutina
-                </button>
-              </div>
-            </article>
-          ))
+                    {rutina.observaciones && (
+                      <div className="routineExpandedMeta">
+                        <span>Observaciones</span>
+                        <p>{rutina.observaciones}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </article>
+            )
+          })
         )}
       </div>
     </section>
