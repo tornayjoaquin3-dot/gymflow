@@ -1,26 +1,9 @@
 import StudentStatusBadge from './StudentStatusBadge'
 
-function getPaymentMonthCount(payments) {
-  return new Set(
-    payments
-      .map((payment) => payment?.fecha_pago?.slice(0, 7))
-      .filter(Boolean)
-  ).size
-}
-
-function getFirstPayment(payments) {
-  return [...payments].sort((left, right) => {
-    const leftTime = new Date(left?.fecha_pago || 0).getTime()
-    const rightTime = new Date(right?.fecha_pago || 0).getTime()
-    return leftTime - rightTime
-  })[0]
-}
-
 export default function StudentDetail({
   selectedAlumno,
   pagosDelAlumno,
   rutinasDelAlumno,
-  totalPagadoAlumno,
   paymentSnapshot,
   onEditAlumno,
   onEditRutina,
@@ -37,10 +20,7 @@ export default function StudentDetail({
     )
   }
 
-  const firstPayment = getFirstPayment(pagosDelAlumno)
-  const lastPayment = paymentSnapshot?.latestPayment || null
   const currentRoutine = rutinasDelAlumno[0] || null
-  const monthCount = getPaymentMonthCount(pagosDelAlumno)
 
   return (
     <div className="studentsPanel studentsDetailPanel">
@@ -63,46 +43,16 @@ export default function StudentDetail({
           </div>
 
           <div className="studentsInfoRow">
-            <span>Estado</span>
-            <div className="studentsInfoValue">
-              <span className="studentsStatusPill">
-                {selectedAlumno.estado || 'activo'}
-              </span>
-            </div>
-          </div>
-
-          <div className="studentsInfoRow">
             <span>Telefono</span>
             <div className="studentsInfoValue">
               <strong>{selectedAlumno.telefono || '-'}</strong>
             </div>
           </div>
 
-          <div className="studentsInfoRow">
-            <span>Total abonado</span>
-            <div className="studentsInfoValue">
-              <strong>${totalPagadoAlumno.toLocaleString('es-AR')}</strong>
-            </div>
-          </div>
-
-          <div className="studentsInfoRow">
-            <span>Meses pagos</span>
-            <div className="studentsInfoValue">
-              <strong>{monthCount}</strong>
-            </div>
-          </div>
-
-          <div className="studentsInfoRow">
-            <span>Primer pago</span>
-            <div className="studentsInfoValue">
-              <strong>{firstPayment?.fecha_pago || '-'}</strong>
-            </div>
-          </div>
-
-          <div className="studentsInfoRow">
-            <span>Ultimo pago</span>
-            <div className="studentsInfoValue">
-              <strong>{lastPayment?.fecha_pago || '-'}</strong>
+          <div className="studentsInfoRow studentsInfoRowNotes">
+            <span>Observaciones</span>
+            <div className="studentsInfoValue studentsInfoNotes">
+              <strong>{selectedAlumno.observaciones || 'Sin observaciones'}</strong>
             </div>
           </div>
         </div>
@@ -145,13 +95,6 @@ export default function StudentDetail({
         </button>
       </div>
 
-      <div className="studentsInfoRow studentsInfoRowNotes">
-        <span>Observaciones</span>
-        <div className="studentsInfoValue studentsInfoNotes">
-          <strong>{selectedAlumno.observaciones || 'Sin observaciones'}</strong>
-        </div>
-      </div>
-
       <div className="studentsHistoryBlock">
         <div className="studentsPanelTop studentsHistoryHeader">
           <h3>HISTORIAL DE PAGOS</h3>
@@ -159,10 +102,9 @@ export default function StudentDetail({
 
         <div className="studentsHistoryTable">
           <div className="studentsHistoryTableHeader">
-            <span>ALUMNO</span>
-            <span>MONTO</span>
-            <span>MEDIO</span>
             <span>FECHA</span>
+            <span>MEDIO</span>
+            <span>MONTO</span>
           </div>
 
           <div className="studentsHistoryTableBody">
@@ -173,12 +115,11 @@ export default function StudentDetail({
             ) : (
               pagosDelAlumno.map((pago) => (
                 <div key={pago.id} className="studentsHistoryTableRow">
-                  <span>{selectedAlumno.nombre}</span>
-                  <strong>${Number(pago.monto || 0).toLocaleString('es-AR')}</strong>
+                  <span>{pago.fecha_pago || '-'}</span>
                   <span className="studentsHistoryPill">
                     {pago.medio_pago || '-'}
                   </span>
-                  <span>{pago.fecha_pago || '-'}</span>
+                  <strong>${Number(pago.monto || 0).toLocaleString('es-AR')}</strong>
                 </div>
               ))
             )}

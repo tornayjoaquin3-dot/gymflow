@@ -1343,7 +1343,7 @@ button{
 }
 
 .studentsTableHeader{
-  grid-template-columns:minmax(0, 1.7fr) 170px 120px 74px;
+  grid-template-columns:minmax(0, 1.7fr) 120px 120px 74px;
   color:#718096;
   font-size:12px;
   font-weight:800;
@@ -1352,7 +1352,7 @@ button{
 }
 
 .studentsTableRow{
-  grid-template-columns:minmax(0, 1.7fr) 170px 120px 74px;
+  grid-template-columns:minmax(0, 1.7fr) 120px 120px 74px;
   border-top:1px solid #eceff3;
   cursor:pointer;
   background:#fff;
@@ -1391,19 +1391,6 @@ button{
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
-}
-
-.studentsStatusPill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:6px 10px;
-  border-radius:999px;
-  background:#e7f5ee;
-  color:#047857;
-  font-size:12px;
-  font-weight:700;
-  text-transform:lowercase;
 }
 
 .studentsRowAction,
@@ -1537,7 +1524,7 @@ button{
 }
 
 .studentsHistoryTableHeader{
-  grid-template-columns:minmax(0, 1.4fr) 110px 110px 110px;
+  grid-template-columns:120px 120px 120px;
   color:#718096;
   font-size:12px;
   font-weight:800;
@@ -1546,7 +1533,7 @@ button{
 }
 
 .studentsHistoryTableRow{
-  grid-template-columns:minmax(0, 1.4fr) 110px 110px 110px;
+  grid-template-columns:120px 120px 120px;
   border-top:1px solid #eceff3;
 }
 

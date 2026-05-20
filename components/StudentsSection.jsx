@@ -128,13 +128,6 @@ export default function StudentsSection({
     return rutinas.filter((rutina) => rutina.alumno_id === selectedAlumnoId)
   }, [rutinas, selectedAlumnoId])
 
-  const totalPagadoAlumno = useMemo(() => {
-    return pagosDelAlumno.reduce(
-      (accumulator, pago) => accumulator + Number(pago.monto || 0),
-      0
-    )
-  }, [pagosDelAlumno])
-
   const currentRoutine = rutinasDelAlumno[0] || null
 
   function closeModal() {
@@ -301,7 +294,7 @@ export default function StudentsSection({
           <div className="studentsTable">
             <div className="studentsTableHeader">
               <span>NOMBRE</span>
-              <span>ESTADO</span>
+              <span>PAGO MES</span>
               <span>ALTA</span>
               <span />
             </div>
@@ -334,9 +327,6 @@ export default function StudentsSection({
                     </div>
 
                     <div className="studentsStateCell">
-                      <span className="studentsStatusPill">
-                        {alumno.estado || 'activo'}
-                      </span>
                       <StudentStatusBadge
                         label={paymentSnapshot.badgeLabel}
                         tone={paymentSnapshot.badgeTone}
@@ -367,7 +357,6 @@ export default function StudentsSection({
           selectedAlumno={selectedAlumno}
           pagosDelAlumno={pagosDelAlumno}
           rutinasDelAlumno={rutinasDelAlumno}
-          totalPagadoAlumno={totalPagadoAlumno}
           selectedPaymentMonth={selectedPaymentMonth}
           paymentSnapshot={selectedRow?.paymentSnapshot || null}
           onEditAlumno={openStudentModal}
