@@ -80,12 +80,16 @@ export default function StudentDetail({
           <div className="studentsInfoRow">
             <span>Nombre</span>
             <div className="studentsInfoValue studentsNameValue">
-              <strong>{selectedAlumno.nombre}</strong>
-              <StudentStatusBadge
-                label={paymentSnapshot?.badgeLabel || 'No pagó'}
-                tone={paymentSnapshot?.badgeTone || 'unpaid'}
-                compact
-              />
+              <div className="studentsNameTextBlock">
+                <strong>{selectedAlumno.nombre}</strong>
+              </div>
+              <div className="studentsPaymentBadgeWrap">
+                <StudentStatusBadge
+                  label={paymentSnapshot?.badgeLabel || 'No pago'}
+                  tone={paymentSnapshot?.badgeTone || 'unpaid'}
+                  compact
+                />
+              </div>
             </div>
           </div>
 
@@ -211,7 +215,7 @@ export default function StudentDetail({
                     onClick={() => handleDeletePago(pago.id)}
                     aria-label="Eliminar pago"
                   >
-                    ×
+                    x
                   </button>
                 </div>
               ))

@@ -1785,13 +1785,15 @@ button{
 
 .studentsDetailTop{
   display:grid;
-  grid-template-columns:minmax(0, 1fr) minmax(210px, 0.9fr);
+  grid-template-columns:minmax(0, 1.2fr) minmax(250px, 0.88fr);
   gap:16px;
+  align-items:start;
 }
 
 .studentsDetailSummary{
   display:flex;
   flex-direction:column;
+  min-width:0;
 }
 
 .studentsInfoRow{
@@ -1825,6 +1827,7 @@ button{
 
 .studentsNameValue{
   align-items:flex-start;
+  gap:12px;
 }
 
 .studentsInfoNotes{
@@ -1836,11 +1839,34 @@ button{
   font-size:15px;
 }
 
+.studentsNameTextBlock{
+  flex:1;
+  min-width:0;
+}
+
+.studentsNameTextBlock strong{
+  display:block;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.15;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+}
+
+.studentsPaymentBadgeWrap{
+  flex:0 0 auto;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+}
+
 .studentsRoutineMiniCard{
   padding:16px;
   border:1px solid #e5e7eb;
   border-radius:20px;
   background:#fbfbfa;
+  min-height:260px;
+  align-self:start;
 }
 
 .studentsRoutineMiniCard h4{
@@ -1864,12 +1890,12 @@ button{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  padding:6px 10px;
+  padding:5px 9px;
   border-radius:999px;
   background:var(--surface);
   border:1px solid var(--border);
   color:var(--text-muted);
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
 }
 
@@ -2123,8 +2149,9 @@ button{
 }
 
 .studentsWorkspaceMockup .statusBadge{
-  padding:6px 10px;
-  font-size:12px;
+  padding:4px 8px;
+  font-size:11px;
+  line-height:1;
 }
 
 .studentsWorkspaceMockup .statusBadge.paid{
@@ -2330,6 +2357,19 @@ button{
   .studentsInfoRow{
     grid-template-columns:1fr;
     gap:8px;
+  }
+
+  .studentsNameValue{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .studentsPaymentBadgeWrap{
+    justify-content:flex-start;
+  }
+
+  .studentsRoutineMiniCard{
+    min-height:auto;
   }
 
   .studentsModalGridTwo{
