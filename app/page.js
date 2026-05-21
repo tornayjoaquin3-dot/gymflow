@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
-import { getMonthKey, getPaymentMonthOptions } from '../lib/student-utils'
+import {
+  getMonthKey,
+  getPaymentMonthOptions,
+  normalizeText,
+} from '../lib/student-utils'
 
 import Sidebar from '../components/Sidebar'
 import Dashboard from '../components/Dashboard'
@@ -327,6 +331,150 @@ export default function Home() {
 
     await cargarDatos()
     return true
+  }
+
+  async function unificarAlumnosDuplicados() {
+    setError('')
+    const client = getSupabaseClient()
+
+    if (!client) return null
+
+    const groupedMap = new Map()
+
+    alumnos.forEach((alumno) => {
+      const key = normalizeText(alumno.nombre)
+      if (!key) return
+
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, [])
+      }
+
+      groupedMap.get(key).push(alumno)
+    })
+
+    const duplicateGroups = [...groupedMap.values()].filter(
+      (group) => group.length > 1
+    )
+
+    if (duplicateGroups.length === 0) {
+      return {
+        alumnosUnificados: 0,
+        pagosReasignados: 0,
+        rutinasReasignadas: 0,
+        alumnosEliminados: 0,
+      }
+    }
+
+    let alumnosUnificados = 0
+    let pagosReasignados = 0
+    let rutinasReasignadas = 0
+    let alumnosEliminados = 0
+
+    for (const group of duplicateGroups) {
+      const sortedGroup = [...group].sort((left, right) => {
+        const leftCompleteness =
+          Number(Boolean(left.telefono)) + Number(Boolean(left.observaciones))
+        const rightCompleteness =
+          Number(Boolean(right.telefono)) + Number(Boolean(right.observaciones))
+
+        if (leftCompleteness !== rightCompleteness) {
+          return rightCompleteness - leftCompleteness
+        }
+
+        const leftCreatedAt = new Date(left.creado_en || 0).getTime()
+        const rightCreatedAt = new Date(right.creado_en || 0).getTime()
+
+        return leftCreatedAt - rightCreatedAt
+      })
+
+      const principal = sortedGroup[0]
+      const duplicates = sortedGroup.slice(1)
+      const duplicateIds = duplicates.map((alumno) => alumno.id)
+
+      if (!duplicateIds.length) continue
+
+      const mergedPhone =
+        principal.telefono ||
+        duplicates.find((alumno) => alumno.telefono)?.telefono ||
+        ''
+      const mergedObservaciones =
+        principal.observaciones ||
+        duplicates.find((alumno) => alumno.observaciones)?.observaciones ||
+        ''
+
+      const { error: updatePrincipalError } = await client
+        .from('alumnos')
+        .update({
+          telefono: mergedPhone,
+          observaciones: mergedObservaciones,
+        })
+        .eq('id', principal.id)
+
+      if (updatePrincipalError) {
+        throw new Error(
+          `No se pudo actualizar el alumno principal ${principal.nombre}.`
+        )
+      }
+
+      const pagosDelGrupo = pagos.filter((pago) =>
+        duplicateIds.includes(pago.alumno_id)
+      )
+
+      if (pagosDelGrupo.length > 0) {
+        const { error: updatePagosError } = await client
+          .from('pagos')
+          .update({ alumno_id: principal.id })
+          .in('alumno_id', duplicateIds)
+
+        if (updatePagosError) {
+          throw new Error(`No se pudieron reasignar pagos de ${principal.nombre}.`)
+        }
+
+        pagosReasignados += pagosDelGrupo.length
+      }
+
+      const rutinasDelGrupo = rutinas.filter((rutina) =>
+        duplicateIds.includes(rutina.alumno_id)
+      )
+
+      if (rutinasDelGrupo.length > 0) {
+        const { error: updateRutinasError } = await client
+          .from('rutinas')
+          .update({ alumno_id: principal.id })
+          .in('alumno_id', duplicateIds)
+
+        if (updateRutinasError) {
+          throw new Error(`No se pudieron reasignar rutinas de ${principal.nombre}.`)
+        }
+
+        rutinasReasignadas += rutinasDelGrupo.length
+      }
+
+      const { error: deleteDuplicatesError } = await client
+        .from('alumnos')
+        .delete()
+        .in('id', duplicateIds)
+
+      if (deleteDuplicatesError) {
+        throw new Error(`No se pudieron eliminar duplicados de ${principal.nombre}.`)
+      }
+
+      if (duplicateIds.includes(selectedAlumnoId)) {
+        setSelectedAlumnoId(principal.id)
+      }
+
+      alumnosUnificados += group.length
+      alumnosEliminados += duplicateIds.length
+    }
+
+    await cargarDatos()
+
+    return {
+      alumnosUnificados,
+      pagosReasignados,
+      rutinasReasignadas,
+      alumnosEliminados,
+    }
   }
 
   async function registrarPagoAlumno(payload) {
@@ -779,6 +927,7 @@ export default function Home() {
             setSelectedPaymentMonth={setSelectedPaymentMonth}
             paymentMonthOptions={paymentMonthOptions}
             onUpdateAlumno={actualizarAlumno}
+            onMergeDuplicates={unificarAlumnosDuplicados}
             onRegisterPago={registrarPagoAlumno}
             onDeletePago={eliminarPago}
             onSaveRutina={guardarRutinaAlumno}

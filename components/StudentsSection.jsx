@@ -67,6 +67,7 @@ export default function StudentsSection({
   setSelectedPaymentMonth,
   paymentMonthOptions,
   onUpdateAlumno,
+  onMergeDuplicates,
   onRegisterPago,
   onDeletePago,
   onSaveRutina,
@@ -349,6 +350,30 @@ export default function StudentsSection({
     }
   }
 
+  async function handleMergeDuplicates() {
+    if (!onMergeDuplicates) return
+
+    const confirmed = window.confirm(
+      'Se van a unificar alumnos con nombres repetidos. Esta accion reasigna pagos y rutinas al alumno principal. ¿Continuar?'
+    )
+
+    if (!confirmed) return
+
+    const summary = await onMergeDuplicates()
+
+    if (!summary) return
+
+    window.alert(
+      [
+        'Unificacion completada.',
+        `Alumnos unificados: ${summary.alumnosUnificados}`,
+        `Pagos reasignados: ${summary.pagosReasignados}`,
+        `Rutinas reasignadas: ${summary.rutinasReasignadas}`,
+        `Alumnos duplicados eliminados: ${summary.alumnosEliminados}`,
+      ].join('\n')
+    )
+  }
+
   return (
     <section className="studentsWorkspaceMockup">
       <div className="studentsHero">
@@ -371,6 +396,13 @@ export default function StudentsSection({
             onClick={openPaymentModal}
           >
             + Pago
+          </button>
+          <button
+            type="button"
+            className="studentsButton"
+            onClick={handleMergeDuplicates}
+          >
+            Unificar duplicados
           </button>
         </div>
       </div>
