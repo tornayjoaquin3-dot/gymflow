@@ -1638,6 +1638,13 @@ button{
   align-items:start;
 }
 
+.studentsMockupGrid > .studentsPanel:first-child{
+  min-height:640px;
+  max-height:calc(100vh - 220px);
+  display:flex;
+  flex-direction:column;
+}
+
 .studentsPanel{
   border:1px solid #e5e7eb;
   border-radius:24px;
@@ -1673,6 +1680,19 @@ button{
   border:1px solid #e5e7eb;
   border-radius:18px;
   overflow:hidden;
+}
+
+.studentsTable{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.studentsTableBody{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
 }
 
 .studentsTableHeader,
@@ -1759,6 +1779,8 @@ button{
   display:flex;
   flex-direction:column;
   gap:18px;
+  position:sticky;
+  top:24px;
 }
 
 .studentsDetailTop{
@@ -2287,6 +2309,22 @@ button{
   .studentsHistoryTableHeader,
   .studentsHistoryTableRow{
     grid-template-columns:1fr;
+  }
+
+  .studentsMockupGrid > .studentsPanel:first-child{
+    min-height:auto;
+    max-height:none;
+  }
+
+  .studentsTable,
+  .studentsTableBody{
+    display:block;
+    overflow:visible;
+  }
+
+  .studentsDetailPanel{
+    position:static;
+    top:auto;
   }
 
   .studentsInfoRow{
