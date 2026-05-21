@@ -94,15 +94,15 @@ export default function StudentDetail({
             <span>Nombre</span>
             <div className="studentsInfoValue studentsNameValue">
               <div className="studentsNameHeader">
-                <div className="studentsNameTextBlock">
-                  <strong title={selectedAlumno.nombre}>{selectedAlumno.nombre}</strong>
-                </div>
                 <div className="studentsPaymentBadgeWrap">
                   <StudentStatusBadge
                     label={paymentSnapshot?.badgeLabel || 'No pago'}
                     tone={paymentSnapshot?.badgeTone || 'unpaid'}
                     compact
                   />
+                </div>
+                <div className="studentsNameTextBlock">
+                  <strong title={selectedAlumno.nombre}>{selectedAlumno.nombre}</strong>
                 </div>
               </div>
             </div>

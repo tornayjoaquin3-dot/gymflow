@@ -1886,8 +1886,8 @@ button{
 
 .studentsDetailTop{
   display:grid;
-  grid-template-columns:minmax(0, 1.7fr) minmax(220px, 0.72fr);
-  gap:14px;
+  grid-template-columns:minmax(0, 1fr) 280px;
+  gap:18px;
   align-items:start;
 }
 
@@ -1895,6 +1895,7 @@ button{
   display:flex;
   flex-direction:column;
   min-width:0;
+  flex:1 1 auto;
 }
 
 .studentsInfoRow{
@@ -1924,18 +1925,20 @@ button{
   align-items:center;
   justify-content:space-between;
   gap:10px;
+  min-width:0;
 }
 
 .studentsNameValue{
   display:block;
   min-width:0;
+  width:100%;
 }
 
 .studentsNameHeader{
   display:flex;
+  flex-direction:column;
   align-items:flex-start;
-  justify-content:space-between;
-  gap:10px;
+  gap:8px;
   width:100%;
   min-width:0;
 }
@@ -1950,34 +1953,30 @@ button{
 }
 
 .studentsNameTextBlock{
-  flex:1;
+  flex:1 1 auto;
   min-width:0;
-  max-width:100%;
+  width:100%;
+  max-width:none;
 }
 
 .studentsNameTextBlock strong{
-  display:-webkit-box;
+  display:block;
   font-size:18px;
-  font-weight:700;
-  line-height:1.2;
+  font-weight:800;
+  line-height:1.18;
   white-space:normal;
   word-break:normal;
   overflow-wrap:break-word;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  -webkit-line-clamp:2;
-  line-clamp:2;
-  -webkit-box-orient:vertical;
-  max-width:100%;
+  max-width:none;
 }
 
 .studentsPaymentBadgeWrap{
   flex:0 0 auto;
   display:flex;
   align-items:flex-start;
-  justify-content:flex-end;
+  justify-content:flex-start;
   align-self:flex-start;
-  margin-top:1px;
+  width:100%;
 }
 
 .studentsRoutineMiniCard{
@@ -1988,7 +1987,8 @@ button{
   min-height:260px;
   align-self:start;
   min-width:0;
-  max-width:320px;
+  width:100%;
+  max-width:280px;
   justify-self:end;
 }
 
@@ -2490,16 +2490,30 @@ button{
   }
 
   .studentsNameValue{
-    flex-direction:column;
-    align-items:flex-start;
+    width:100%;
+  }
+
+  .studentsNameHeader{
+    gap:8px;
   }
 
   .studentsPaymentBadgeWrap{
     justify-content:flex-start;
   }
 
+  .studentsNameTextBlock strong{
+    display:-webkit-box;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    -webkit-line-clamp:2;
+    line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+
   .studentsRoutineMiniCard{
     min-height:auto;
+    max-width:none;
+    width:100%;
   }
 
   .studentsModalGridTwo{
