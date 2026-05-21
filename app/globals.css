@@ -1886,50 +1886,13 @@ button{
 
 .studentsDetailTop{
   display:flex;
+  flex-direction:column;
   gap:18px;
-  align-items:start;
 }
 
 .studentsDetailSummary{
   display:flex;
   flex-direction:column;
-  flex:1 1 0;
-  min-width:0;
-  width:100%;
-}
-
-.studentsInfoRow{
-  display:grid;
-  grid-template-columns:140px minmax(0, 1fr);
-  align-items:start;
-  gap:16px;
-  padding:10px 0;
-  border-top:1px solid #eceff3;
-}
-
-.studentsInfoRowNotes{
-  margin-top:-4px;
-}
-
-.studentsInfoRow:first-child{
-  padding-top:0;
-  border-top:none;
-}
-
-.studentsInfoRow > span{
-  color:#718096;
-}
-
-.studentsInfoValue{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  min-width:0;
-}
-
-.studentsNameValue{
-  display:block;
   min-width:0;
   width:100%;
 }
@@ -1938,47 +1901,61 @@ button{
   display:flex;
   flex-direction:column;
   align-items:flex-start;
-  gap:8px;
+  gap:12px;
   width:100%;
   min-width:0;
 }
 
-.studentsInfoNotes{
-  justify-content:flex-start;
+.studentsDetailPrimaryCard{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding-bottom:4px;
+  border-bottom:1px solid #eceff3;
 }
 
-.studentsNameValue strong,
-.studentsInfoValue strong{
+.studentsInfoStack{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.studentsInfoItem{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.studentsInfoItem span{
+  color:#718096;
+  font-size:13px;
+}
+
+.studentsInfoItem strong{
   font-size:15px;
+  line-height:1.45;
 }
 
 .studentsNameTextBlock{
-  flex:1 1 auto;
-  min-width:0;
   width:100%;
-  max-width:none;
 }
 
 .studentsNameTextBlock strong{
   display:block;
-  font-size:18px;
+  font-size:28px;
   font-weight:800;
-  line-height:1.18;
+  line-height:1.08;
   white-space:normal;
   word-break:normal;
   overflow-wrap:break-word;
   overflow:visible;
   text-overflow:clip;
-  max-width:none;
 }
 
 .studentsPaymentBadgeWrap{
-  flex:0 0 auto;
   display:flex;
   align-items:flex-start;
   justify-content:flex-start;
-  align-self:flex-start;
-  width:100%;
 }
 
 .studentsRoutineMiniCard{
@@ -1991,7 +1968,10 @@ button{
   align-self:start;
   min-width:0;
   width:100%;
-  max-width:248px;
+}
+
+.studentsRoutineSectionCard{
+  max-width:420px;
 }
 
 .studentsRoutineMiniCard h4{
@@ -2505,6 +2485,8 @@ button{
 
   .studentsNameTextBlock strong{
     display:-webkit-box;
+    font-size:22px;
+    line-height:1.12;
     overflow:hidden;
     text-overflow:ellipsis;
     -webkit-line-clamp:2;

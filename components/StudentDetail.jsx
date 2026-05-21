@@ -90,81 +90,76 @@ export default function StudentDetail({
 
       <div className="studentsDetailTop">
         <div className="studentsDetailSummary">
-          <div className="studentsInfoRow">
-            <span>Nombre</span>
-            <div className="studentsInfoValue studentsNameValue">
-              <div className="studentsNameHeader">
-                <div className="studentsPaymentBadgeWrap">
-                  <StudentStatusBadge
-                    label={paymentSnapshot?.badgeLabel || 'No pago'}
-                    tone={paymentSnapshot?.badgeTone || 'unpaid'}
-                    compact
-                  />
-                </div>
-                <div className="studentsNameTextBlock">
-                  <strong title={selectedAlumno.nombre}>{selectedAlumno.nombre}</strong>
-                </div>
+          <div className="studentsDetailPrimaryCard">
+            <div className="studentsNameHeader">
+              <div className="studentsPaymentBadgeWrap">
+                <StudentStatusBadge
+                  label={paymentSnapshot?.badgeLabel || 'No pago'}
+                  tone={paymentSnapshot?.badgeTone || 'unpaid'}
+                  compact
+                />
+              </div>
+              <div className="studentsNameTextBlock">
+                <strong title={selectedAlumno.nombre}>{selectedAlumno.nombre}</strong>
+              </div>
+            </div>
+
+            <div className="studentsInfoStack">
+              <div className="studentsInfoItem">
+                <span>Telefono</span>
+                <strong>{selectedAlumno.telefono || '-'}</strong>
+              </div>
+
+              <div className="studentsInfoItem">
+                <span>Observaciones</span>
+                <strong>{selectedAlumno.observaciones || 'Sin observaciones'}</strong>
               </div>
             </div>
           </div>
 
-          <div className="studentsInfoRow">
-            <span>Telefono</span>
-            <div className="studentsInfoValue">
-              <strong>{selectedAlumno.telefono || '-'}</strong>
+          <div className="studentsRoutineMiniCard studentsRoutineSectionCard">
+            <div className="studentsRoutineHeader">
+              <h4>Rutina actual</h4>
+              {currentRoutineMeta?.badgeLabel && (
+                <span className="studentsRoutineTypeBadge">
+                  {currentRoutineMeta.badgeLabel}
+                </span>
+              )}
             </div>
-          </div>
+            {currentRoutine ? (
+              <>
+                <strong>{currentRoutine.nombre || 'Rutina actual'}</strong>
+                {currentRoutine.objetivo && <span>{currentRoutine.objetivo}</span>}
+                <pre>{currentRoutine.ejercicios || '-'}</pre>
+                {currentRoutine.observaciones && <p>{currentRoutine.observaciones}</p>}
+              </>
+            ) : (
+              <p>Sin rutina cargada.</p>
+            )}
 
-          <div className="studentsInfoRow studentsInfoRowNotes">
-            <span>Observaciones</span>
-            <div className="studentsInfoValue studentsInfoNotes">
-              <strong>{selectedAlumno.observaciones || 'Sin observaciones'}</strong>
+            <div className="studentsRoutineShareActions studentsRoutineShareActionsBelow">
+              <button
+                type="button"
+                className="studentsTinyButton studentsTinyButtonPrimary"
+                onClick={handleShareRoutine}
+                disabled={!currentRoutine}
+              >
+                Compartir
+              </button>
+              <button
+                type="button"
+                className="studentsTinyButton"
+                onClick={handleCopyRoutine}
+                disabled={!currentRoutine}
+              >
+                Copiar
+              </button>
             </div>
-          </div>
-        </div>
 
-        <div className="studentsRoutineMiniCard">
-          <div className="studentsRoutineHeader">
-            <h4>Rutina actual</h4>
-            {currentRoutineMeta?.badgeLabel && (
-              <span className="studentsRoutineTypeBadge">
-                {currentRoutineMeta.badgeLabel}
-              </span>
+            {copyFeedback && (
+              <small className="studentsCopyFeedback">{copyFeedback}</small>
             )}
           </div>
-          {currentRoutine ? (
-            <>
-              <strong>{currentRoutine.nombre || 'Rutina actual'}</strong>
-              {currentRoutine.objetivo && <span>{currentRoutine.objetivo}</span>}
-              <pre>{currentRoutine.ejercicios || '-'}</pre>
-              {currentRoutine.observaciones && <p>{currentRoutine.observaciones}</p>}
-            </>
-          ) : (
-            <p>Sin rutina cargada.</p>
-          )}
-
-          <div className="studentsRoutineShareActions studentsRoutineShareActionsBelow">
-            <button
-              type="button"
-              className="studentsTinyButton studentsTinyButtonPrimary"
-              onClick={handleShareRoutine}
-              disabled={!currentRoutine}
-            >
-              Compartir
-            </button>
-            <button
-              type="button"
-              className="studentsTinyButton"
-              onClick={handleCopyRoutine}
-              disabled={!currentRoutine}
-            >
-              Copiar
-            </button>
-          </div>
-
-          {copyFeedback && (
-            <small className="studentsCopyFeedback">{copyFeedback}</small>
-          )}
         </div>
       </div>
 
