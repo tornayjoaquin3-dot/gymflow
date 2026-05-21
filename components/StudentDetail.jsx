@@ -11,6 +11,8 @@ export default function StudentDetail({
   rutinasDelAlumno,
   currentRoutineMeta,
   paymentSnapshot,
+  isMobileDetail = false,
+  onBackToList,
   onEditAlumno,
   onEditRutina,
   onAssociateRutina,
@@ -72,7 +74,18 @@ export default function StudentDetail({
   return (
     <div className="studentsPanel studentsDetailPanel">
       <div className="studentsPanelTop">
-        <h3>FICHA DEL ALUMNO</h3>
+        <div className="studentsDetailPanelHeading">
+          {isMobileDetail && (
+            <button
+              type="button"
+              className="studentsBackButton"
+              onClick={onBackToList}
+            >
+              ← Volver al listado
+            </button>
+          )}
+          <h3>FICHA DEL ALUMNO</h3>
+        </div>
       </div>
 
       <div className="studentsDetailTop">
@@ -80,15 +93,17 @@ export default function StudentDetail({
           <div className="studentsInfoRow">
             <span>Nombre</span>
             <div className="studentsInfoValue studentsNameValue">
-              <div className="studentsNameTextBlock">
-                <strong>{selectedAlumno.nombre}</strong>
-              </div>
-              <div className="studentsPaymentBadgeWrap">
-                <StudentStatusBadge
-                  label={paymentSnapshot?.badgeLabel || 'No pago'}
-                  tone={paymentSnapshot?.badgeTone || 'unpaid'}
-                  compact
-                />
+              <div className="studentsNameHeader">
+                <div className="studentsNameTextBlock">
+                  <strong title={selectedAlumno.nombre}>{selectedAlumno.nombre}</strong>
+                </div>
+                <div className="studentsPaymentBadgeWrap">
+                  <StudentStatusBadge
+                    label={paymentSnapshot?.badgeLabel || 'No pago'}
+                    tone={paymentSnapshot?.badgeTone || 'unpaid'}
+                    compact
+                  />
+                </div>
               </div>
             </div>
           </div>

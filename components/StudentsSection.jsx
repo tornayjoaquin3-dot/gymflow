@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import StudentDetail from './StudentDetail'
 import StudentStatusBadge from './StudentStatusBadge'
 import {
@@ -78,6 +78,10 @@ export default function StudentsSection({
   const [routineForm, setRoutineForm] = useState(EMPTY_ROUTINE_FORM)
   const [paymentForm, setPaymentForm] = useState(EMPTY_PAYMENT_FORM)
   const [routineSearchTerm, setRoutineSearchTerm] = useState('')
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
+  const [isMobileDetailVisible, setIsMobileDetailVisible] = useState(false)
+  const studentsTableBodyRef = useRef(null)
+  const listScrollTopRef = useRef(0)
 
   const normalizedSearch = normalizeText(searchTerm)
 
@@ -107,10 +111,36 @@ export default function StudentsSection({
   }, [alumnos, normalizedSearch, pagos, selectedPaymentMonth])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)')
+
+    function syncViewport(eventLike) {
+      const matches = eventLike.matches
+      setIsMobileViewport(matches)
+
+      if (!matches) {
+        setIsMobileDetailVisible(false)
+      }
+    }
+
+    syncViewport(mediaQuery)
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncViewport)
+      return () => mediaQuery.removeEventListener('change', syncViewport)
+    }
+
+    mediaQuery.addListener(syncViewport)
+    return () => mediaQuery.removeListener(syncViewport)
+  }, [])
+
+  useEffect(() => {
     if (!rows.length) {
       if (selectedAlumnoId) {
         setSelectedAlumnoId(null)
       }
+      setIsMobileDetailVisible(false)
       return
     }
 
@@ -122,6 +152,16 @@ export default function StudentsSection({
       setSelectedAlumnoId(rows[0].alumno.id)
     }
   }, [rows, selectedAlumnoId, setSelectedAlumnoId])
+
+  useEffect(() => {
+    if (!isMobileViewport || isMobileDetailVisible) return
+
+    const tableBody = studentsTableBodyRef.current
+
+    if (tableBody) {
+      tableBody.scrollTop = listScrollTopRef.current
+    }
+  }, [isMobileViewport, isMobileDetailVisible, rows.length])
 
   const selectedRow = useMemo(() => {
     return rows.find((row) => row.alumno.id === selectedAlumnoId) || null
@@ -374,6 +414,25 @@ export default function StudentsSection({
     )
   }
 
+  function openAlumnoDetail(alumnoId) {
+    setSelectedAlumnoId(alumnoId)
+
+    if (isMobileViewport) {
+      const tableBody = studentsTableBodyRef.current
+      if (tableBody) {
+        listScrollTopRef.current = tableBody.scrollTop
+      }
+      setIsMobileDetailVisible(true)
+    }
+  }
+
+  function handleBackToList() {
+    setIsMobileDetailVisible(false)
+  }
+
+  const shouldShowList = !isMobileViewport || !isMobileDetailVisible
+  const shouldShowDetail = !isMobileViewport || isMobileDetailVisible
+
   return (
     <section className="studentsWorkspaceMockup">
       <div className="studentsHero">
@@ -416,7 +475,8 @@ export default function StudentsSection({
       </div>
 
       <div className="studentsMockupGrid">
-        <div className="studentsPanel">
+        {shouldShowList && (
+        <div className="studentsPanel studentsListPanel">
           <div className="studentsPanelTop">
             <h3>LISTADO</h3>
             <select
@@ -439,7 +499,7 @@ export default function StudentsSection({
               <span />
             </div>
 
-            <div className="studentsTableBody">
+            <div className="studentsTableBody" ref={studentsTableBodyRef}>
               {rows.length === 0 ? (
                 <div className="studentsTableEmpty">
                   No encontramos alumnos para esa busqueda.
@@ -451,13 +511,13 @@ export default function StudentsSection({
                     className={`studentsTableRow ${
                       alumno.id === selectedAlumnoId ? 'isSelected' : ''
                     }`}
-                    onClick={() => setSelectedAlumnoId(alumno.id)}
+                    onClick={() => openAlumnoDetail(alumno.id)}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault()
-                        setSelectedAlumnoId(alumno.id)
+                        openAlumnoDetail(alumno.id)
                       }
                     }}
                   >
@@ -484,7 +544,7 @@ export default function StudentsSection({
                       data-label="Accion"
                       onClick={(event) => {
                         event.stopPropagation()
-                        setSelectedAlumnoId(alumno.id)
+                        openAlumnoDetail(alumno.id)
                       }}
                     >
                       Ver
@@ -495,7 +555,9 @@ export default function StudentsSection({
             </div>
           </div>
         </div>
+        )}
 
+        {shouldShowDetail && (
         <StudentDetail
           selectedAlumno={selectedAlumno}
           pagosDelAlumno={pagosDelAlumno}
@@ -509,7 +571,10 @@ export default function StudentsSection({
           onRegisterPago={openPaymentModal}
           onDeletePago={onDeletePago}
           onDeleteAlumno={handleDeleteAlumno}
+          isMobileDetail={isMobileViewport}
+          onBackToList={handleBackToList}
         />
+        )}
       </div>
 
       {activeModal === 'create' && (
