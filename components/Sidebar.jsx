@@ -1,48 +1,71 @@
-export default function Sidebar({ isProfesor, activeSection, setActiveSection }) {
+export default function Sidebar({
+  isProfesor,
+  activeSection,
+  setActiveSection,
+  isOpen = false,
+  onClose,
+}) {
+  function handleNavigate(section) {
+    setActiveSection(section)
+    onClose?.()
+  }
+
   return (
-    <aside className="sidebar">
-      <h2>GymFlow</h2>
-
-      {!isProfesor && (
+    <aside className={`sidebar${isOpen ? ' isOpen' : ''}`}>
+      <div className="sidebarHeader">
+        <h2>GymFlow</h2>
         <button
-          className={activeSection === 'dashboard' ? 'activeMenu' : ''}
-          onClick={() => setActiveSection('dashboard')}
+          type="button"
+          className="sidebarCloseButton"
+          onClick={onClose}
+          aria-label="Cerrar menu"
         >
-          Dashboard
+          ×
         </button>
-      )}
+      </div>
 
-      <button
-        className={activeSection === 'alumnos' ? 'activeMenu' : ''}
-        onClick={() => setActiveSection('alumnos')}
-      >
-        Alumnos
-      </button>
-
-      <button
-        className={activeSection === 'rutinas' ? 'activeMenu' : ''}
-        onClick={() => setActiveSection('rutinas')}
-      >
-        Rutinas
-      </button>
-
-      {!isProfesor && (
-        <>
+      <div className="sidebarNav">
+        {!isProfesor && (
           <button
-            className={activeSection === 'costos' ? 'activeMenu' : ''}
-            onClick={() => setActiveSection('costos')}
+            className={activeSection === 'dashboard' ? 'activeMenu' : ''}
+            onClick={() => handleNavigate('dashboard')}
           >
-            Costos
+            Dashboard
           </button>
+        )}
 
-          <button
-            className={activeSection === 'importar' ? 'activeMenu' : ''}
-            onClick={() => setActiveSection('importar')}
-          >
-            Importar Excel
-          </button>
-        </>
-      )}
+        <button
+          className={activeSection === 'alumnos' ? 'activeMenu' : ''}
+          onClick={() => handleNavigate('alumnos')}
+        >
+          Alumnos
+        </button>
+
+        <button
+          className={activeSection === 'rutinas' ? 'activeMenu' : ''}
+          onClick={() => handleNavigate('rutinas')}
+        >
+          Rutinas
+        </button>
+
+        {!isProfesor && (
+          <>
+            <button
+              className={activeSection === 'costos' ? 'activeMenu' : ''}
+              onClick={() => handleNavigate('costos')}
+            >
+              Costos
+            </button>
+
+            <button
+              className={activeSection === 'importar' ? 'activeMenu' : ''}
+              onClick={() => handleNavigate('importar')}
+            >
+              Importar Excel
+            </button>
+          </>
+        )}
+      </div>
     </aside>
   )
 }

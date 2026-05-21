@@ -461,12 +461,12 @@ export default function StudentsSection({
                       }
                     }}
                   >
-                    <div className="studentsNameCell">
+                    <div className="studentsNameCell" data-label="Nombre">
                       <strong>{alumno.nombre}</strong>
                       {alumno.telefono && <span>{alumno.telefono}</span>}
                     </div>
 
-                    <div className="studentsStateCell">
+                    <div className="studentsStateCell" data-label="Pago mes">
                       <StudentStatusBadge
                         label={paymentSnapshot.badgeLabel}
                         tone={paymentSnapshot.badgeTone}
@@ -474,11 +474,14 @@ export default function StudentsSection({
                       />
                     </div>
 
-                    <span className="studentsDateCell">{alta}</span>
+                    <span className="studentsDateCell" data-label="Alta">
+                      {alta}
+                    </span>
 
                     <button
                       type="button"
                       className="studentsRowAction"
+                      data-label="Accion"
                       onClick={(event) => {
                         event.stopPropagation()
                         setSelectedAlumnoId(alumno.id)

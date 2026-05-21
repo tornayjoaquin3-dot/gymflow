@@ -204,11 +204,13 @@ export default function StudentDetail({
             ) : (
               pagosDelAlumno.map((pago) => (
                 <div key={pago.id} className="studentsHistoryTableRow">
-                  <span>{pago.fecha_pago || '-'}</span>
-                  <span className="studentsHistoryPill">
+                  <span data-label="Fecha">{pago.fecha_pago || '-'}</span>
+                  <span className="studentsHistoryPill" data-label="Medio">
                     {pago.medio_pago || '-'}
                   </span>
-                  <strong>${Number(pago.monto || 0).toLocaleString('es-AR')}</strong>
+                  <strong data-label="Monto">
+                    ${Number(pago.monto || 0).toLocaleString('es-AR')}
+                  </strong>
                   <button
                     type="button"
                     className="studentsDeletePaymentButton"

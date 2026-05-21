@@ -56,6 +56,7 @@ export default function Home() {
   const [selectedPaymentMonth, setSelectedPaymentMonth] = useState(
     getMonthKey()
   )
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -946,6 +947,25 @@ export default function Home() {
     }
   }, [activeSection, role])
 
+  useEffect(() => {
+    setIsSidebarOpen(false)
+  }, [activeSection])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const shouldLockScroll = isSidebarOpen && window.innerWidth <= 900
+    const previousOverflow = document.body.style.overflow
+
+    if (shouldLockScroll) {
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isSidebarOpen])
+
   const paymentMonthOptions = useMemo(() => {
     return getPaymentMonthOptions(pagos)
   }, [pagos])
@@ -992,22 +1012,45 @@ export default function Home() {
 
   return (
     <main className="app">
+      {isSidebarOpen && (
+        <button
+          type="button"
+          className="sidebarOverlay"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-label="Cerrar menu"
+        />
+      )}
+
       <Sidebar
         isProfesor={isProfesor}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <section className="main">
         <header className="topbar">
-          <div>
+          <div className="topbarIdentity">
+            <button
+              type="button"
+              className="mobileMenuButton"
+              onClick={() => setIsSidebarOpen(true)}
+              aria-label="Abrir menu"
+            >
+              <span />
+              <span />
+              <span />
+            </button>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
             <p>
               {profile?.nombre} · {profile?.email}
             </p>
           </div>
 
-          <button onClick={logout}>Cerrar sesion</button>
+          <div className="topbarActions">
+            <button onClick={logout}>Cerrar sesion</button>
+          </div>
         </header>
 
         {error && <div className="error">{error}</div>}

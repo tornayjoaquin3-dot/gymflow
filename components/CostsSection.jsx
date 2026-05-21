@@ -206,14 +206,17 @@ export default function CostsSection({
           ) : (
             filteredCostos.map((costo) => (
               <div key={costo.id} className="dataRow dataRowCompact costsTableGrid">
-                <span>{costo.fecha || 'Sin fecha'}</span>
-                <strong>{costo.descripcion || '-'}</strong>
-                <span>{costo.categoria || '-'}</span>
-                <strong className="dangerText">
+                <span data-label="Fecha">{costo.fecha || 'Sin fecha'}</span>
+                <strong data-label="Descripcion">{costo.descripcion || '-'}</strong>
+                <span data-label="Categoria">{costo.categoria || '-'}</span>
+                <strong className="dangerText" data-label="Monto">
                   ${Number(costo.monto || 0).toLocaleString('es-AR')}
                 </strong>
-                <span>{costo.observaciones || '-'}</span>
-                <div className="rowActions rowActionsCompact">
+                <span data-label="Observaciones">{costo.observaciones || '-'}</span>
+                <div
+                  className="rowActions rowActionsCompact"
+                  data-label="Acciones"
+                >
                   <button
                     type="button"
                     className="smallButton smallButtonCompact"
