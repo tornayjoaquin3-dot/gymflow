@@ -15,12 +15,33 @@ import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
 import ExcelImportSection from '../components/ExcelImportSection'
 
+const ROLE_SECTIONS = {
+  socio: ['dashboard', 'alumnos', 'fichaAlumno', 'rutinas', 'costos', 'importar'],
+  profesor: ['alumnos', 'fichaAlumno', 'rutinas'],
+}
+
+function normalizeRole(roleValue) {
+  const normalizedRole = String(roleValue || '').trim().toLowerCase()
+  return normalizedRole === 'profesor' ? 'profesor' : 'socio'
+}
+
+function mapProfileRow(row, fallbackEmail) {
+  if (!row) return null
+
+  return {
+    nombre: row.nombre || row.email || fallbackEmail || 'Usuario',
+    email: row.email || fallbackEmail || '',
+    rol: normalizeRole(row.role || row.rol),
+  }
+}
+
 export default function Home() {
-  const [email, setEmail] = useState('socio@gymflow.com')
-  const [password, setPassword] = useState('123456')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [authResolved, setAuthResolved] = useState(false)
 
   const [alumnos, setAlumnos] = useState([])
   const [pagos, setPagos] = useState([])
@@ -70,6 +91,81 @@ export default function Home() {
     return supabase
   }
 
+  function resetAppState() {
+    setUser(null)
+    setProfile(null)
+    setAlumnos([])
+    setPagos([])
+    setCostos([])
+    setRutinas([])
+    setActiveSection('alumnos')
+    setSelectedAlumnoId(null)
+  }
+
+  async function loadUserProfile(client, authUser) {
+    const fallbackEmail = authUser?.email || ''
+
+    const { data: profileByUserId, error: profileByUserIdError } = await client
+      .from('profiles')
+      .select('user_id,email,role,nombre')
+      .eq('user_id', authUser.id)
+      .maybeSingle()
+
+    if (profileByUserId) {
+      return mapProfileRow(profileByUserId, fallbackEmail)
+    }
+
+    const profilesTableAvailable =
+      !profileByUserIdError ||
+      !/relation .*profiles/i.test(profileByUserIdError.message || '')
+
+    if (profilesTableAvailable) {
+      const { data: profileByEmail } = await client
+        .from('profiles')
+        .select('user_id,email,role,nombre')
+        .eq('email', fallbackEmail)
+        .maybeSingle()
+
+      if (profileByEmail) {
+        return mapProfileRow(profileByEmail, fallbackEmail)
+      }
+    }
+
+    const { data: legacyProfile } = await client
+      .from('usuarios')
+      .select('nombre,email,rol')
+      .eq('email', fallbackEmail)
+      .maybeSingle()
+
+    if (legacyProfile) {
+      return mapProfileRow(legacyProfile, fallbackEmail)
+    }
+
+    return null
+  }
+
+  async function hydrateSession(authUser) {
+    const client = getSupabaseClient()
+
+    if (!client || !authUser) return false
+
+    const profileData = await loadUserProfile(client, authUser)
+
+    if (!profileData) {
+      setError(
+        'No se encontro un perfil con rol para este usuario. Crea un registro en profiles o usuarios.'
+      )
+      await client.auth.signOut()
+      resetAppState()
+      return false
+    }
+
+    setUser(authUser)
+    setProfile(profileData)
+    await cargarDatos()
+    return true
+  }
+
   function resetNuevoCosto() {
     setNuevoCosto({
       descripcion: '',
@@ -113,23 +209,7 @@ export default function Home() {
       setLoading(false)
       return
     }
-
-    const { data: profileData, error: profileError } = await client
-      .from('usuarios')
-      .select('nombre,email,rol')
-      .eq('email', data.user.email)
-      .single()
-
-    if (profileError) {
-      setError('No se pudo cargar el perfil del usuario.')
-      setLoading(false)
-      return
-    }
-
-    setUser(data.user)
-    setProfile(profileData)
-
-    await cargarDatos()
+    await hydrateSession(data.user)
     setLoading(false)
   }
 
@@ -139,15 +219,7 @@ export default function Home() {
     if (client) {
       await client.auth.signOut()
     }
-
-    setUser(null)
-    setProfile(null)
-    setAlumnos([])
-    setPagos([])
-    setCostos([])
-    setRutinas([])
-    setActiveSection('alumnos')
-    setSelectedAlumnoId(null)
+    resetAppState()
   }
 
   async function cargarDatos() {
@@ -835,34 +907,66 @@ export default function Home() {
       const { data } = await supabase.auth.getSession()
 
       if (data.session?.user) {
-        setUser(data.session.user)
-
-        const { data: profileData } = await supabase
-          .from('usuarios')
-          .select('nombre,email,rol')
-          .eq('email', data.session.user.email)
-          .single()
-
-        setProfile(profileData)
-        await cargarDatos()
+        await hydrateSession(data.session.user)
+      } else {
+        resetAppState()
       }
+
+      setAuthResolved(true)
     }
 
     verificarSesion()
+
+    if (!supabase) return
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        void hydrateSession(session.user).finally(() => setAuthResolved(true))
+      } else {
+        resetAppState()
+        setAuthResolved(true)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const isProfesor = profile?.rol === 'profesor'
+  const role = normalizeRole(profile?.rol)
+  const isProfesor = role === 'profesor'
+
+  useEffect(() => {
+    const allowedSections = ROLE_SECTIONS[role] || ROLE_SECTIONS.socio
+
+    if (!allowedSections.includes(activeSection)) {
+      setActiveSection('alumnos')
+    }
+  }, [activeSection, role])
 
   const paymentMonthOptions = useMemo(() => {
     return getPaymentMonthOptions(pagos)
   }, [pagos])
+
+  if (!authResolved) {
+    return (
+      <main className="page">
+        <section className="panel loginPanel">
+          <h1>GymFlow</h1>
+          <p>Verificando sesion...</p>
+        </section>
+      </main>
+    )
+  }
 
   if (!user) {
     return (
       <main className="page">
         <section className="panel loginPanel">
           <h1>GymFlow</h1>
-          <p>Ingresa con un usuario socio o profesor.</p>
+          <p>Ingresa con tu email y contrasena.</p>
 
           <form onSubmit={login} className="form">
             <label>Email</label>
