@@ -1885,8 +1885,7 @@ button{
 }
 
 .studentsDetailTop{
-  display:grid;
-  grid-template-columns:minmax(0, 1fr) 280px;
+  display:flex;
   gap:18px;
   align-items:start;
 }
@@ -1894,8 +1893,9 @@ button{
 .studentsDetailSummary{
   display:flex;
   flex-direction:column;
+  flex:1 1 0;
   min-width:0;
-  flex:1 1 auto;
+  width:100%;
 }
 
 .studentsInfoRow{
@@ -1967,6 +1967,8 @@ button{
   white-space:normal;
   word-break:normal;
   overflow-wrap:break-word;
+  overflow:visible;
+  text-overflow:clip;
   max-width:none;
 }
 
@@ -1980,6 +1982,7 @@ button{
 }
 
 .studentsRoutineMiniCard{
+  flex:0 0 248px;
   padding:16px;
   border:1px solid #e5e7eb;
   border-radius:20px;
@@ -1988,8 +1991,7 @@ button{
   align-self:start;
   min-width:0;
   width:100%;
-  max-width:280px;
-  justify-self:end;
+  max-width:248px;
 }
 
 .studentsRoutineMiniCard h4{
