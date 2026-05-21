@@ -87,12 +87,13 @@ export default function ExcelImportSection({ alumnos, pagos, onImportComplete })
 
     const existentes = new Set(
       pagos.map((p) =>
-        clavePago(p.alumno_id, p.fecha_pago, Number(p.monto), p.medio_pago)
+        clavePago(p.alumno_id, p.fecha_pago, Number(p.monto), p.mes)
       )
     )
 
     const errores = [...(resumen.erroresParseo || [])]
     let alumnosCreados = 0
+    const alumnosReutilizados = resumen.alumnosReutilizados.length
     let duplicadosOmitidos = resumen.duplicados
 
     try {
@@ -148,7 +149,7 @@ export default function ExcelImportSection({ alumnos, pagos, onImportComplete })
           alumno.id,
           fila.fecha_pago,
           fila.monto,
-          fila.medio_pago
+          fila.mes
         )
 
         if (existentes.has(clave)) {
@@ -184,6 +185,7 @@ export default function ExcelImportSection({ alumnos, pagos, onImportComplete })
 
       setResultado({
         alumnosCreados,
+        alumnosReutilizados,
         pagosImportados,
         duplicadosOmitidos,
         errores,
@@ -281,6 +283,10 @@ export default function ExcelImportSection({ alumnos, pagos, onImportComplete })
               <strong>{resumen.alumnosNuevos.length}</strong>
             </article>
             <article>
+              <span>Alumnos reutilizados</span>
+              <strong>{resumen.alumnosReutilizados.length}</strong>
+            </article>
+            <article>
               <span>Pagos a importar</span>
               <strong className="money">{resumen.pagosAImportar}</strong>
             </article>
@@ -332,6 +338,10 @@ export default function ExcelImportSection({ alumnos, pagos, onImportComplete })
             <article className="excelImportStat--ok">
               <span>Alumnos creados</span>
               <strong>{resultado.alumnosCreados}</strong>
+            </article>
+            <article className="excelImportStat--ok">
+              <span>Alumnos reutilizados</span>
+              <strong>{resultado.alumnosReutilizados}</strong>
             </article>
             <article className="excelImportStat--ok">
               <span>Pagos importados</span>
