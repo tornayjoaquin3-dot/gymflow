@@ -65,50 +65,54 @@ function parseExerciseLine(line) {
 }
 
 function buildRoutineBlocks(routineText) {
-  const lines = String(routineText || '')
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
+  try {
+    const lines = String(routineText || '')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
 
-  const blocks = []
-  let exerciseRows = []
+    const blocks = []
+    let exerciseRows = []
 
-  function flushExerciseRows() {
-    if (!exerciseRows.length) return
-    blocks.push({
-      type: 'exerciseTable',
-      rows: exerciseRows,
-    })
-    exerciseRows = []
-  }
+    function flushExerciseRows() {
+      if (!exerciseRows.length) return
+      blocks.push({
+        type: 'exerciseTable',
+        rows: exerciseRows,
+      })
+      exerciseRows = []
+    }
 
-  lines.forEach((line) => {
-    if (isRoutineHeading(line)) {
+    lines.forEach((line) => {
+      if (isRoutineHeading(line)) {
+        flushExerciseRows()
+        blocks.push({
+          type: 'heading',
+          text: line,
+        })
+        return
+      }
+
+      const exerciseLine = parseExerciseLine(line)
+
+      if (exerciseLine) {
+        exerciseRows.push(exerciseLine)
+        return
+      }
+
       flushExerciseRows()
       blocks.push({
-        type: 'heading',
+        type: 'text',
         text: line,
       })
-      return
-    }
-
-    const exerciseLine = parseExerciseLine(line)
-
-    if (exerciseLine) {
-      exerciseRows.push(exerciseLine)
-      return
-    }
+    })
 
     flushExerciseRows()
-    blocks.push({
-      type: 'text',
-      text: line,
-    })
-  })
 
-  flushExerciseRows()
-
-  return blocks
+    return Array.isArray(blocks) ? blocks : []
+  } catch (error) {
+    return []
+  }
 }
 
 export default function StudentDetail({
@@ -127,6 +131,15 @@ export default function StudentDetail({
   onDeleteAlumno,
 }) {
   const [copyFeedback, setCopyFeedback] = useState('')
+  const currentRoutine = Array.isArray(rutinasDelAlumno) ? rutinasDelAlumno[0] || null : null
+  const rawRoutineText =
+    typeof currentRoutine?.ejercicios === 'string'
+      ? currentRoutine.ejercicios
+      : currentRoutine?.ejercicios != null
+        ? String(currentRoutine.ejercicios)
+        : ''
+  const routineBlocks = useMemo(() => buildRoutineBlocks(rawRoutineText), [rawRoutineText])
+  const hasStructuredRoutineBlocks = Array.isArray(routineBlocks) && routineBlocks.length > 0
 
   if (!selectedAlumno) {
     return (
@@ -137,12 +150,6 @@ export default function StudentDetail({
       </div>
     )
   }
-
-  const currentRoutine = rutinasDelAlumno[0] || null
-  const routineBlocks = useMemo(
-    () => buildRoutineBlocks(currentRoutine?.ejercicios),
-    [currentRoutine?.ejercicios]
-  )
 
   async function handleDeletePago(id) {
     if (!onDeletePago) return
@@ -259,13 +266,13 @@ export default function StudentDetail({
                       Detalle de rutina
                     </span>
                     <div className="studentsRoutineScrollArea">
-                      {routineBlocks.length > 0 ? (
+                      {hasStructuredRoutineBlocks ? (
                         <div className="studentsRoutineRichContent">
                           {routineBlocks.map((block, index) => {
-                            if (block.type === 'heading') {
+                            if (block?.type === 'heading') {
                               return (
                                 <div
-                                  key={`${block.type}-${index}`}
+                                  key={`${block.type}-${index}-${block.text || 'heading'}`}
                                   className="studentsRoutineHeading"
                                 >
                                   {block.text}
@@ -273,7 +280,10 @@ export default function StudentDetail({
                               )
                             }
 
-                            if (block.type === 'exerciseTable') {
+                            if (
+                              block?.type === 'exerciseTable' &&
+                              Array.isArray(block.rows)
+                            ) {
                               return (
                                 <div
                                   key={`${block.type}-${index}`}
@@ -287,12 +297,12 @@ export default function StudentDetail({
                                   <div className="studentsRoutineTableBody">
                                     {block.rows.map((row, rowIndex) => (
                                       <div
-                                        key={`${row.ejercicio}-${rowIndex}`}
+                                        key={`${row?.ejercicio || 'row'}-${rowIndex}`}
                                         className="studentsRoutineTableRow"
                                       >
-                                        <span>{row.ejercicio}</span>
-                                        <strong>{row.series}</strong>
-                                        <em>{row.peso || '-'}</em>
+                                        <span>{row?.ejercicio || '-'}</span>
+                                        <strong>{row?.series || '-'}</strong>
+                                        <em>{row?.peso || '-'}</em>
                                       </div>
                                     ))}
                                   </div>
@@ -302,14 +312,16 @@ export default function StudentDetail({
 
                             return (
                               <p
-                                key={`${block.type}-${index}`}
+                                key={`${block?.type || 'text'}-${index}-${block?.text || ''}`}
                                 className="studentsRoutineParagraph"
                               >
-                                {block.text}
+                                {block?.text || ''}
                               </p>
                             )
                           })}
                         </div>
+                      ) : rawRoutineText ? (
+                        <pre>{rawRoutineText}</pre>
                       ) : (
                         <pre>-</pre>
                       )}
