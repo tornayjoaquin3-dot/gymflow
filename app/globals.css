@@ -2091,6 +2091,79 @@ button{
   line-height:1.55;
 }
 
+.studentsRoutineRichContent{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.studentsRoutineHeading{
+  padding:8px 10px;
+  border-radius:12px;
+  background:#f1f5f9;
+  color:#0f172a;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+
+.studentsRoutineParagraph{
+  margin:0;
+  color:#475569;
+  line-height:1.55;
+}
+
+.studentsRoutineTableWrap{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.studentsRoutineTableHeader,
+.studentsRoutineTableRow{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 110px 88px;
+  gap:12px;
+  align-items:start;
+  padding:10px 12px;
+}
+
+.studentsRoutineTableHeader{
+  background:#f8fafc;
+  color:#64748b;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+
+.studentsRoutineTableRow{
+  border-top:1px solid #eef2f7;
+}
+
+.studentsRoutineTableRow span{
+  color:#0f172a;
+  line-height:1.5;
+}
+
+.studentsRoutineTableRow strong{
+  margin:0;
+  text-align:right;
+  white-space:nowrap;
+  font-size:13px;
+}
+
+.studentsRoutineTableRow em{
+  color:#64748b;
+  font-size:12px;
+  font-style:normal;
+  font-weight:700;
+  text-align:right;
+  white-space:nowrap;
+}
+
 .studentsRoutineScrollAreaEmpty{
   max-height:none;
 }
