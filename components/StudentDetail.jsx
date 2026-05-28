@@ -126,16 +126,48 @@ export default function StudentDetail({
                 </span>
               )}
             </div>
-            {currentRoutine ? (
-              <>
-                <strong>{currentRoutine.nombre || 'Rutina actual'}</strong>
-                {currentRoutine.objetivo && <span>{currentRoutine.objetivo}</span>}
-                <pre>{currentRoutine.ejercicios || '-'}</pre>
-                {currentRoutine.observaciones && <p>{currentRoutine.observaciones}</p>}
-              </>
-            ) : (
-              <p>Sin rutina cargada.</p>
-            )}
+
+            <div className="studentsRoutineContent">
+              {currentRoutine ? (
+                <>
+                  <div className="studentsRoutineMeta">
+                    <strong>{currentRoutine.nombre || 'Rutina actual'}</strong>
+                    {currentRoutine.objetivo && (
+                      <p className="studentsRoutineObjective">
+                        {currentRoutine.objetivo}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="studentsRoutineBody">
+                    <span className="studentsRoutineBodyLabel">
+                      Detalle de rutina
+                    </span>
+                    <div className="studentsRoutineScrollArea">
+                      <pre>{currentRoutine.ejercicios || '-'}</pre>
+                    </div>
+                  </div>
+
+                  {currentRoutine.observaciones && (
+                    <div className="studentsRoutineNotesBlock">
+                      <span className="studentsRoutineBodyLabel">
+                        Observaciones
+                      </span>
+                      <p>{currentRoutine.observaciones}</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="studentsRoutineBody">
+                  <span className="studentsRoutineBodyLabel">
+                    Detalle de rutina
+                  </span>
+                  <div className="studentsRoutineScrollArea studentsRoutineScrollAreaEmpty">
+                    <p>Sin rutina cargada.</p>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="studentsRoutineShareActions studentsRoutineShareActionsBelow">
               <button

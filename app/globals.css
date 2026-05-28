@@ -1959,19 +1959,21 @@ button{
 }
 
 .studentsRoutineMiniCard{
-  flex:0 0 248px;
-  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:18px;
   border:1px solid #e5e7eb;
   border-radius:20px;
   background:#fbfbfa;
-  min-height:260px;
-  align-self:start;
+  min-height:0;
   min-width:0;
   width:100%;
 }
 
 .studentsRoutineSectionCard{
   max-width:420px;
+  align-self:stretch;
 }
 
 .studentsRoutineMiniCard h4{
@@ -2011,20 +2013,107 @@ button{
 }
 
 .studentsRoutineShareActionsBelow{
-  margin-top:12px;
+  margin-top:0;
+}
+
+.studentsRoutineContent{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-width:0;
+}
+
+.studentsRoutineMeta{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 
 .studentsRoutineMiniCard strong{
   display:block;
-  margin-bottom:6px;
   font-size:15px;
 }
 
-.studentsRoutineMiniCard pre{
-  margin:12px 0 0;
+.studentsRoutineObjective{
+  margin:0;
+  color:#64748b;
+  line-height:1.45;
+}
+
+.studentsRoutineBody{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.studentsRoutineBodyLabel{
+  color:#718096;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.studentsRoutineScrollArea{
+  max-height:360px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:14px 15px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#fff;
+  scrollbar-width:thin;
+  scrollbar-color:#cbd5e1 #f8fafc;
+}
+
+.studentsRoutineScrollArea::-webkit-scrollbar{
+  width:10px;
+}
+
+.studentsRoutineScrollArea::-webkit-scrollbar-track{
+  background:#f8fafc;
+  border-radius:999px;
+}
+
+.studentsRoutineScrollArea::-webkit-scrollbar-thumb{
+  background:#cbd5e1;
+  border-radius:999px;
+  border:2px solid #f8fafc;
+}
+
+.studentsRoutineScrollArea pre{
+  margin:0;
   white-space:pre-wrap;
+  word-break:normal;
+  overflow-wrap:break-word;
   font-family:Arial, sans-serif;
   color:#111827;
+  line-height:1.55;
+}
+
+.studentsRoutineScrollAreaEmpty{
+  max-height:none;
+}
+
+.studentsRoutineScrollAreaEmpty p{
+  margin:0;
+  color:#64748b;
+}
+
+.studentsRoutineNotesBlock{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.studentsRoutineNotesBlock p{
+  margin:0;
+  padding:12px 14px;
+  border-radius:14px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  color:#475569;
+  line-height:1.5;
 }
 
 .studentsTinyButton{
@@ -2841,6 +2930,11 @@ button{
     padding:14px;
     max-width:none;
     justify-self:stretch;
+  }
+
+  .studentsRoutineScrollArea{
+    max-height:320px;
+    padding:12px 13px;
   }
 
   .studentsDetailActionBar{
