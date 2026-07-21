@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import StudentDetail from './StudentDetail'
 import StudentStatusBadge from './StudentStatusBadge'
 import {
+  getMonthKey,
   getPaymentPeriodLabel,
+  getPreviousMonthKey,
   getStudentPaymentSnapshot,
   normalizeText,
 } from '../lib/student-utils'
@@ -86,28 +88,53 @@ export default function StudentsSection({
   const normalizedSearch = normalizeText(searchTerm)
 
   const rows = useMemo(() => {
-    return alumnos
-      .map((alumno) => {
-        const studentPayments = pagos.filter(
-          (pago) => pago.alumno_id === alumno.id
-        )
-        const paymentSnapshot = getStudentPaymentSnapshot(
-          alumno,
-          pagos,
-          selectedPaymentMonth
-        )
+    const previousMonthKey = getPreviousMonthKey()
+    const alumnosQuePagaronMesAnterior = new Set()
 
-        return {
-          alumno,
-          alta: getStudentStartDate(alumno, studentPayments),
-          paymentSnapshot,
-          searchable: normalizeText([alumno.nombre, alumno.telefono].join(' ')),
-          studentPayments,
-        }
-      })
-      .filter((row) => {
-        return !normalizedSearch || row.searchable.includes(normalizedSearch)
-      })
+    pagos.forEach((pago) => {
+      if (
+        pago?.alumno_id &&
+        getMonthKey(pago.fecha_pago) === previousMonthKey
+      ) {
+        alumnosQuePagaronMesAnterior.add(pago.alumno_id)
+      }
+    })
+
+    const mappedRows = alumnos.map((alumno) => {
+      const studentPayments = pagos.filter(
+        (pago) => pago.alumno_id === alumno.id
+      )
+      const paymentSnapshot = getStudentPaymentSnapshot(
+        alumno,
+        pagos,
+        selectedPaymentMonth
+      )
+
+      return {
+        alumno,
+        alta: getStudentStartDate(alumno, studentPayments),
+        paymentSnapshot,
+        searchable: normalizeText([alumno.nombre, alumno.telefono].join(' ')),
+        studentPayments,
+        paidPreviousMonth: alumnosQuePagaronMesAnterior.has(alumno.id),
+      }
+    })
+
+    const filteredRows = mappedRows.filter((row) => {
+      return !normalizedSearch || row.searchable.includes(normalizedSearch)
+    })
+
+    return [...filteredRows].sort((left, right) => {
+      if (left.paidPreviousMonth !== right.paidPreviousMonth) {
+        return left.paidPreviousMonth ? -1 : 1
+      }
+
+      return (left.alumno.nombre || '').localeCompare(
+        right.alumno.nombre || '',
+        'es',
+        { sensitivity: 'base' }
+      )
+    })
   }, [alumnos, normalizedSearch, pagos, selectedPaymentMonth])
 
   useEffect(() => {
