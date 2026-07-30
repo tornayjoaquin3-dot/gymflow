@@ -15,25 +15,11 @@ import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
 import ExcelImportSection from '../components/ExcelImportSection'
 
-const ROLE_SECTIONS = {
-  socio: ['dashboard', 'alumnos', 'fichaAlumno', 'rutinas', 'costos', 'importar'],
-  profesor: ['alumnos', 'fichaAlumno', 'rutinas'],
-}
-
-function normalizeRole(roleValue) {
-  const normalizedRole = String(roleValue || '').trim().toLowerCase()
-  return normalizedRole === 'profesor' ? 'profesor' : 'socio'
-}
-
-function mapProfileRow(row, fallbackEmail) {
-  if (!row) return null
-
-  return {
-    nombre: row.nombre || row.email || fallbackEmail || 'Usuario',
-    email: row.email || fallbackEmail || '',
-    rol: normalizeRole(row.role || row.rol),
-  }
-}
+import { ROLE_SECTIONS, normalizeRole, isAlumnoRole } from '../lib/roles'
+import { loadUserProfile } from '../lib/profile-service'
+import { signUpAlumno, completeAlumnoSignupFromMetadata } from '../lib/alumno-signup'
+import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
+import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
 
 export default function Home() {
   const [email, setEmail] = useState('')
@@ -57,6 +43,17 @@ export default function Home() {
     getMonthKey()
   )
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  const [authMode, setAuthMode] = useState('login')
+  const [signupInfo, setSignupInfo] = useState('')
+  const [nuevoAlumnoAuth, setNuevoAlumnoAuth] = useState({
+    email: '',
+    password: '',
+    nombre: '',
+    apellido: '',
+    telefono: '',
+    dni: '',
+  })
 
   const [nuevoAlumno, setNuevoAlumno] = useState({
     nombre: '',
@@ -103,54 +100,19 @@ export default function Home() {
     setSelectedAlumnoId(null)
   }
 
-  async function loadUserProfile(client, authUser) {
-    const fallbackEmail = authUser?.email || ''
-
-    const { data: profileByUserId, error: profileByUserIdError } = await client
-      .from('profiles')
-      .select('user_id,email,role,nombre')
-      .eq('user_id', authUser.id)
-      .maybeSingle()
-
-    if (profileByUserId) {
-      return mapProfileRow(profileByUserId, fallbackEmail)
-    }
-
-    const profilesTableAvailable =
-      !profileByUserIdError ||
-      !/relation .*profiles/i.test(profileByUserIdError.message || '')
-
-    if (profilesTableAvailable) {
-      const { data: profileByEmail } = await client
-        .from('profiles')
-        .select('user_id,email,role,nombre')
-        .eq('email', fallbackEmail)
-        .maybeSingle()
-
-      if (profileByEmail) {
-        return mapProfileRow(profileByEmail, fallbackEmail)
-      }
-    }
-
-    const { data: legacyProfile } = await client
-      .from('usuarios')
-      .select('nombre,email,rol')
-      .eq('email', fallbackEmail)
-      .maybeSingle()
-
-    if (legacyProfile) {
-      return mapProfileRow(legacyProfile, fallbackEmail)
-    }
-
-    return null
-  }
-
   async function hydrateSession(authUser) {
     const client = getSupabaseClient()
 
     if (!client || !authUser) return false
 
-    const profileData = await loadUserProfile(client, authUser)
+    let profileData = await loadUserProfile(client, authUser)
+
+    if (!profileData) {
+      // Puede pasar cuando el alumno se registro pero Supabase le pidio
+      // confirmar el email antes de darle sesion: recien ahora, en su
+      // primer login real, terminamos de crear/vincular su perfil.
+      profileData = await completeAlumnoSignupFromMetadata(client, authUser)
+    }
 
     if (!profileData) {
       setError(
@@ -211,6 +173,51 @@ export default function Home() {
       return
     }
     await hydrateSession(data.user)
+    setLoading(false)
+  }
+
+  async function crearCuentaAlumno(event) {
+    event.preventDefault()
+    setLoading(true)
+    setError('')
+    setSignupInfo('')
+
+    const client = getSupabaseClient()
+
+    if (!client) {
+      setLoading(false)
+      return
+    }
+
+    if (!nuevoAlumnoAuth.email.trim() || !nuevoAlumnoAuth.password.trim()) {
+      setError('Email y contrasena son obligatorios.')
+      setLoading(false)
+      return
+    }
+
+    const result = await signUpAlumno(client, nuevoAlumnoAuth)
+
+    if (result?.error) {
+      setError(result.error)
+      setLoading(false)
+      return
+    }
+
+    if (result?.pendingEmailConfirmation) {
+      setSignupInfo(
+        'Cuenta creada. Revisa tu email para confirmarla y despues inicia sesion.'
+      )
+      setAuthMode('login')
+      setLoading(false)
+      return
+    }
+
+    const { data: sessionData } = await client.auth.getSession()
+
+    if (sessionData?.session?.user) {
+      await hydrateSession(sessionData.session.user)
+    }
+
     setLoading(false)
   }
 
@@ -938,6 +945,7 @@ export default function Home() {
 
   const role = normalizeRole(profile?.rol)
   const isProfesor = role === 'profesor'
+  const isAlumno = isAlumnoRole(role)
 
   useEffect(() => {
     const allowedSections = ROLE_SECTIONS[role] || ROLE_SECTIONS.socio
@@ -981,6 +989,86 @@ export default function Home() {
     )
   }
 
+  if (!user && authMode === 'signup') {
+    return (
+      <main className="page">
+        <section className="panel loginPanel">
+          <h1>Crear cuenta de alumno</h1>
+          <p>Completa tus datos. Si el gimnasio ya tiene tu ficha cargada con este telefono, se vincula sola.</p>
+
+          <form onSubmit={crearCuentaAlumno} className="form">
+            <label>Nombre</label>
+            <input
+              value={nuevoAlumnoAuth.nombre}
+              onChange={(event) =>
+                setNuevoAlumnoAuth({ ...nuevoAlumnoAuth, nombre: event.target.value })
+              }
+            />
+
+            <label>Apellido</label>
+            <input
+              value={nuevoAlumnoAuth.apellido}
+              onChange={(event) =>
+                setNuevoAlumnoAuth({ ...nuevoAlumnoAuth, apellido: event.target.value })
+              }
+            />
+
+            <label>Telefono</label>
+            <input
+              value={nuevoAlumnoAuth.telefono}
+              onChange={(event) =>
+                setNuevoAlumnoAuth({ ...nuevoAlumnoAuth, telefono: event.target.value })
+              }
+            />
+
+            <label>DNI (opcional)</label>
+            <input
+              value={nuevoAlumnoAuth.dni}
+              onChange={(event) =>
+                setNuevoAlumnoAuth({ ...nuevoAlumnoAuth, dni: event.target.value })
+              }
+            />
+
+            <label>Email</label>
+            <input
+              type="email"
+              value={nuevoAlumnoAuth.email}
+              onChange={(event) =>
+                setNuevoAlumnoAuth({ ...nuevoAlumnoAuth, email: event.target.value })
+              }
+            />
+
+            <label>Contrasena</label>
+            <input
+              type="password"
+              value={nuevoAlumnoAuth.password}
+              onChange={(event) =>
+                setNuevoAlumnoAuth({ ...nuevoAlumnoAuth, password: event.target.value })
+              }
+            />
+
+            {error && <div className="error">{error}</div>}
+
+            <button disabled={loading}>
+              {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+            </button>
+          </form>
+
+          <button
+            type="button"
+            className="linkButton"
+            onClick={() => {
+              setAuthMode('login')
+              setError('')
+            }}
+          >
+            Ya tengo cuenta, volver a ingresar
+          </button>
+        </section>
+      </main>
+    )
+  }
+
   if (!user) {
     return (
       <main className="page">
@@ -999,12 +1087,53 @@ export default function Home() {
               onChange={(event) => setPassword(event.target.value)}
             />
 
+            {signupInfo && <div className="success">{signupInfo}</div>}
             {error && <div className="error">{error}</div>}
 
             <button disabled={loading}>
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
+
+          <button
+            type="button"
+            className="linkButton"
+            onClick={() => {
+              setAuthMode('signup')
+              setError('')
+              setSignupInfo('')
+            }}
+          >
+            Soy alumno y no tengo cuenta todavia
+          </button>
+        </section>
+      </main>
+    )
+  }
+
+  if (isAlumno) {
+    return (
+      <main className="app">
+        <section className="main">
+          <header className="topbar">
+            <div className="topbarIdentity">
+              <h1>Portal del alumno</h1>
+              <p>
+                {profile?.nombre} · {profile?.email}
+              </p>
+            </div>
+            <div className="topbarActions">
+              <button onClick={logout}>Cerrar sesion</button>
+            </div>
+          </header>
+
+          {error && <div className="error">{error}</div>}
+
+          <AlumnoPerfilSection
+            supabase={supabase}
+            profile={profile}
+            setError={setError}
+          />
         </section>
       </main>
     )
@@ -1057,6 +1186,10 @@ export default function Home() {
 
         {activeSection === 'dashboard' && !isProfesor && (
           <Dashboard alumnos={alumnos} pagos={pagos} costos={costos} />
+        )}
+
+        {activeSection === 'alumnos' && (
+          <PendingAlumnoAccounts supabase={supabase} alumnos={alumnos} />
         )}
 
         {(activeSection === 'alumnos' || activeSection === 'fichaAlumno') && (
