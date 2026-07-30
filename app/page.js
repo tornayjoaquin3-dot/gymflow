@@ -16,10 +16,11 @@ import RoutinesSection from '../components/RoutinesSection'
 import ExcelImportSection from '../components/ExcelImportSection'
 import TurnosSection from '../components/TurnosSection'
 
-import { ROLE_SECTIONS, normalizeRole, isAlumnoRole } from '../lib/roles'
+import { ROLE_SECTIONS, normalizeRole, isAlumnoRole, getDefaultSection } from '../lib/roles'
 import { loadUserProfile } from '../lib/profile-service'
 import { signUpAlumno, completeAlumnoSignupFromMetadata } from '../lib/alumno-signup'
 import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
+import AlumnoTurnosSection from '../components/AlumnoTurnosSection'
 import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
 
 export default function Home() {
@@ -952,7 +953,7 @@ export default function Home() {
     const allowedSections = ROLE_SECTIONS[role] || ROLE_SECTIONS.socio
 
     if (!allowedSections.includes(activeSection)) {
-      setActiveSection('alumnos')
+      setActiveSection(getDefaultSection(role))
     }
   }, [activeSection, role])
 
@@ -1130,11 +1131,32 @@ export default function Home() {
 
           {error && <div className="error">{error}</div>}
 
-          <AlumnoPerfilSection
-            supabase={supabase}
-            profile={profile}
-            setError={setError}
-          />
+          <nav className="alumnoTabs">
+            <button
+              type="button"
+              className={activeSection !== 'turnos' ? 'activeMenu' : ''}
+              onClick={() => setActiveSection('portal')}
+            >
+              Mi perfil
+            </button>
+            <button
+              type="button"
+              className={activeSection === 'turnos' ? 'activeMenu' : ''}
+              onClick={() => setActiveSection('turnos')}
+            >
+              Turnos
+            </button>
+          </nav>
+
+          {activeSection === 'turnos' ? (
+            <AlumnoTurnosSection supabase={supabase} />
+          ) : (
+            <AlumnoPerfilSection
+              supabase={supabase}
+              profile={profile}
+              setError={setError}
+            />
+          )}
         </section>
       </main>
     )

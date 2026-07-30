@@ -1133,13 +1133,45 @@ button{
   grid-template-columns:130px minmax(160px,1fr) 110px 110px minmax(220px,1.2fr);
 }
 
+.misTurnosGrid{
+  grid-template-columns:130px minmax(160px,1fr) 110px minmax(220px,1.2fr);
+}
+
 @media(max-width:900px){
   .franjaForm,
   .franjasTableGrid,
-  .turnosTableGrid{
+  .turnosTableGrid,
+  .misTurnosGrid{
     grid-template-columns:1fr;
   }
 }
+
+.alumnoTabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.alumnoTabs button{
+  padding:12px 18px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:transparent;
+  color:var(--text-muted);
+  font-weight:bold;
+}
+
+.alumnoTabs button.activeMenu{
+  background:var(--surface);
+  color:var(--text);
+  box-shadow:var(--shadow-soft);
+}
+
+.rowNote{
+  color:var(--text-muted);
+  font-size:13px;
+}
+
 .routineForm{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
