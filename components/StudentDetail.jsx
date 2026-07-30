@@ -1,119 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import StudentStatusBadge from './StudentStatusBadge'
+import RoutineDisplay from './RoutineDisplay'
 import {
   buildRoutineShareText,
   getRoutineWhatsappUrl,
 } from '../lib/routine-sharing'
-
-const ROUTINE_TITLE_PATTERNS = [
-  /^dia\s*\d+/i,
-  /^activacion\b/i,
-  /^core\b/i,
-  /^bloque\b/i,
-  /^semana\b/i,
-  /^observaciones\b/i,
-]
-
-function normalizeRoutineLine(line) {
-  return String(line || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-}
-
-function isRoutineHeading(line) {
-  const normalizedLine = normalizeRoutineLine(line)
-  return ROUTINE_TITLE_PATTERNS.some((pattern) => pattern.test(normalizedLine))
-}
-
-function parseExerciseLine(line) {
-  const normalizedLine = String(line || '')
-    .replace(/\t+/g, ' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim()
-
-  const seriesMatch = normalizedLine.match(
-    /(\d+\s*[xX]\s*\d+(?:\s*[xX]\s*\d+)?(?:\s*(?:seg|min|rep|reps|series))?)(?:\s+|$)/i
-  )
-
-  if (!seriesMatch) {
-    return null
-  }
-
-  const series = seriesMatch[1].trim()
-  const beforeSeries = normalizedLine.slice(0, seriesMatch.index).trim()
-  const afterSeries = normalizedLine
-    .slice((seriesMatch.index || 0) + seriesMatch[0].length)
-    .trim()
-  const ejercicio = beforeSeries.replace(/[-:]+$/, '').trim()
-
-  if (!ejercicio) {
-    return null
-  }
-
-  let peso = '-'
-  const weightMatch = afterSeries.match(
-    /((?:c\/)?\s*\d+(?:[.,]\d+)?\s*(?:kg|kgs|k|lb|lbs|%)|(?:carga|peso)\s*:?\s*[^,.;]+)/i
-  )
-
-  if (weightMatch) {
-    peso = weightMatch[1].trim()
-  }
-
-  return { ejercicio, series, peso }
-}
-
-function buildRoutineBlocks(routineText) {
-  try {
-    const lines = String(routineText || '')
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-
-    const blocks = []
-    let exerciseRows = []
-
-    function flushExerciseRows() {
-      if (!exerciseRows.length) return
-      blocks.push({
-        type: 'exerciseTable',
-        rows: exerciseRows,
-      })
-      exerciseRows = []
-    }
-
-    lines.forEach((line) => {
-      if (isRoutineHeading(line)) {
-        flushExerciseRows()
-        blocks.push({
-          type: 'heading',
-          text: line,
-        })
-        return
-      }
-
-      const exerciseLine = parseExerciseLine(line)
-
-      if (exerciseLine) {
-        exerciseRows.push(exerciseLine)
-        return
-      }
-
-      flushExerciseRows()
-      blocks.push({
-        type: 'text',
-        text: line,
-      })
-    })
-
-    flushExerciseRows()
-
-    return Array.isArray(blocks) ? blocks : []
-  } catch (error) {
-    return []
-  }
-}
 
 export default function StudentDetail({
   selectedAlumno,
@@ -132,14 +23,6 @@ export default function StudentDetail({
 }) {
   const [copyFeedback, setCopyFeedback] = useState('')
   const currentRoutine = Array.isArray(rutinasDelAlumno) ? rutinasDelAlumno[0] || null : null
-  const rawRoutineText =
-    typeof currentRoutine?.ejercicios === 'string'
-      ? currentRoutine.ejercicios
-      : currentRoutine?.ejercicios != null
-        ? String(currentRoutine.ejercicios)
-        : ''
-  const routineBlocks = useMemo(() => buildRoutineBlocks(rawRoutineText), [rawRoutineText])
-  const hasStructuredRoutineBlocks = Array.isArray(routineBlocks) && routineBlocks.length > 0
 
   if (!selectedAlumno) {
     return (
@@ -265,67 +148,7 @@ export default function StudentDetail({
                     <span className="studentsRoutineBodyLabel">
                       Detalle de rutina
                     </span>
-                    <div className="studentsRoutineScrollArea">
-                      {hasStructuredRoutineBlocks ? (
-                        <div className="studentsRoutineRichContent">
-                          {routineBlocks.map((block, index) => {
-                            if (block?.type === 'heading') {
-                              return (
-                                <div
-                                  key={`${block.type}-${index}-${block.text || 'heading'}`}
-                                  className="studentsRoutineHeading"
-                                >
-                                  {block.text}
-                                </div>
-                              )
-                            }
-
-                            if (
-                              block?.type === 'exerciseTable' &&
-                              Array.isArray(block.rows)
-                            ) {
-                              return (
-                                <div
-                                  key={`${block.type}-${index}`}
-                                  className="studentsRoutineTableWrap"
-                                >
-                                  <div className="studentsRoutineTableHeader">
-                                    <span>Ejercicio</span>
-                                    <span>Series/Reps</span>
-                                    <span>Peso</span>
-                                  </div>
-                                  <div className="studentsRoutineTableBody">
-                                    {block.rows.map((row, rowIndex) => (
-                                      <div
-                                        key={`${row?.ejercicio || 'row'}-${rowIndex}`}
-                                        className="studentsRoutineTableRow"
-                                      >
-                                        <span>{row?.ejercicio || '-'}</span>
-                                        <strong>{row?.series || '-'}</strong>
-                                        <em>{row?.peso || '-'}</em>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )
-                            }
-
-                            return (
-                              <p
-                                key={`${block?.type || 'text'}-${index}-${block?.text || ''}`}
-                                className="studentsRoutineParagraph"
-                              >
-                                {block?.text || ''}
-                              </p>
-                            )
-                          })}
-                        </div>
-                      ) : rawRoutineText ? (
-                        <pre>{rawRoutineText}</pre>
-                      ) : (
-                        <pre>-</pre>
-                      )}
-                    </div>
+                    <RoutineDisplay ejercicios={currentRoutine.ejercicios} />
                   </div>
 
                   {currentRoutine.observaciones && (

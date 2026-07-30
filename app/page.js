@@ -21,6 +21,7 @@ import { loadUserProfile } from '../lib/profile-service'
 import { signUpAlumno, completeAlumnoSignupFromMetadata } from '../lib/alumno-signup'
 import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
 import AlumnoTurnosSection from '../components/AlumnoTurnosSection'
+import AlumnoRutinaSection from '../components/AlumnoRutinaSection'
 import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
 
 export default function Home() {
@@ -1141,6 +1142,13 @@ export default function Home() {
             </button>
             <button
               type="button"
+              className={activeSection === 'rutina' ? 'activeMenu' : ''}
+              onClick={() => setActiveSection('rutina')}
+            >
+              Mi rutina
+            </button>
+            <button
+              type="button"
               className={activeSection === 'portal' ? 'activeMenu' : ''}
               onClick={() => setActiveSection('portal')}
             >
@@ -1154,6 +1162,8 @@ export default function Home() {
               profile={profile}
               setError={setError}
             />
+          ) : activeSection === 'rutina' ? (
+            <AlumnoRutinaSection supabase={supabase} />
           ) : (
             <AlumnoTurnosSection supabase={supabase} />
           )}
