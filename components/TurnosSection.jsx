@@ -141,6 +141,20 @@ export default function TurnosSection({ supabase }) {
 
     cancelarEdicionFranja()
     await cargarFranjas()
+
+    // Generamos los turnos de este horario al toque: si no, el horario
+    // queda guardado pero invisible para el alumno hasta que alguien
+    // se acuerde de apretar "Generar turnos" aparte.
+    if (payload.activo) {
+      const { data, error: rpcError } = await supabase.rpc('generar_turnos', {
+        p_dias_adelante: Number(diasAdelante) || 7,
+      })
+
+      if (!rpcError) {
+        setMensaje(`Horario guardado. Se generaron ${data} turnos.`)
+        await cargarTurnos()
+      }
+    }
   }
 
   async function alternarActivo(franja) {

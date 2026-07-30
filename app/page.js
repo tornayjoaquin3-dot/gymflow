@@ -1134,28 +1134,28 @@ export default function Home() {
           <nav className="alumnoTabs">
             <button
               type="button"
-              className={activeSection !== 'turnos' ? 'activeMenu' : ''}
-              onClick={() => setActiveSection('portal')}
-            >
-              Mi perfil
-            </button>
-            <button
-              type="button"
               className={activeSection === 'turnos' ? 'activeMenu' : ''}
               onClick={() => setActiveSection('turnos')}
             >
               Turnos
             </button>
+            <button
+              type="button"
+              className={activeSection === 'portal' ? 'activeMenu' : ''}
+              onClick={() => setActiveSection('portal')}
+            >
+              Mi perfil
+            </button>
           </nav>
 
-          {activeSection === 'turnos' ? (
-            <AlumnoTurnosSection supabase={supabase} />
-          ) : (
+          {activeSection === 'portal' ? (
             <AlumnoPerfilSection
               supabase={supabase}
               profile={profile}
               setError={setError}
             />
+          ) : (
+            <AlumnoTurnosSection supabase={supabase} />
           )}
         </section>
       </main>
