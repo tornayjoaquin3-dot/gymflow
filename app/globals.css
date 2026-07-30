@@ -1090,6 +1090,56 @@ button{
     grid-template-columns:1fr;
   }
 }
+
+.franjaForm{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  align-items:center;
+  margin-bottom:24px;
+}
+
+.franjaForm input,
+.franjaForm select{
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:var(--text);
+}
+
+.franjaForm button{
+  border:none;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
+  font-weight:bold;
+  padding:14px;
+}
+
+.franjaActivoLabel{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--text-muted);
+  font-size:14px;
+}
+
+.franjasTableGrid{
+  grid-template-columns:130px minmax(160px,1fr) 90px 110px minmax(220px,1.2fr);
+}
+
+.turnosTableGrid{
+  grid-template-columns:130px minmax(160px,1fr) 110px 110px minmax(220px,1.2fr);
+}
+
+@media(max-width:900px){
+  .franjaForm,
+  .franjasTableGrid,
+  .turnosTableGrid{
+    grid-template-columns:1fr;
+  }
+}
 .routineForm{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));

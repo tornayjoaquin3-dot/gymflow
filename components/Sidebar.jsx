@@ -48,6 +48,13 @@ export default function Sidebar({
           Rutinas
         </button>
 
+        <button
+          className={activeSection === 'turnos' ? 'activeMenu' : ''}
+          onClick={() => handleNavigate('turnos')}
+        >
+          Turnos
+        </button>
+
         {!isProfesor && (
           <>
             <button

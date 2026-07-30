@@ -14,6 +14,7 @@ import StudentsSection from '../components/StudentsSection'
 import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
 import ExcelImportSection from '../components/ExcelImportSection'
+import TurnosSection from '../components/TurnosSection'
 
 import { ROLE_SECTIONS, normalizeRole, isAlumnoRole } from '../lib/roles'
 import { loadUserProfile } from '../lib/profile-service'
@@ -1213,6 +1214,8 @@ export default function Home() {
             onSaveRutina={guardarRutinaAlumno}
           />
         )}
+
+        {activeSection === 'turnos' && <TurnosSection supabase={supabase} />}
 
         {activeSection === 'costos' && !isProfesor && (
           <CostsSection
