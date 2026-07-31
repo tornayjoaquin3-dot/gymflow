@@ -24,6 +24,8 @@ import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
 import AlumnoTurnosSection from '../components/AlumnoTurnosSection'
 import AlumnoRutinaSection from '../components/AlumnoRutinaSection'
 import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
+import ForgotPasswordForm from '../components/ForgotPasswordForm'
+import ResetPasswordForm from '../components/ResetPasswordForm'
 
 export default function Home() {
   const [email, setEmail] = useState('')
@@ -50,6 +52,7 @@ export default function Home() {
 
   const [authMode, setAuthMode] = useState('login')
   const [signupInfo, setSignupInfo] = useState('')
+  const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false)
   const [nuevoAlumnoAuth, setNuevoAlumnoAuth] = useState({
     email: '',
     password: '',
@@ -939,6 +942,15 @@ export default function Home() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY') {
+        // Sesion temporal creada por el link de "olvide mi contrasena" --
+        // no hay que hidratarla como un login normal, hay que dejar elegir
+        // la contrasena nueva primero.
+        setPasswordRecoveryMode(true)
+        setAuthResolved(true)
+        return
+      }
+
       if (session?.user) {
         void hydrateSession(session.user).finally(() => setAuthResolved(true))
       } else {
@@ -995,6 +1007,29 @@ export default function Home() {
           <p>Verificando sesion...</p>
         </section>
       </main>
+    )
+  }
+
+  if (passwordRecoveryMode) {
+    return (
+      <ResetPasswordForm
+        supabase={supabase}
+        onDone={async () => {
+          setPasswordRecoveryMode(false)
+
+          const { data: sessionData } = await supabase.auth.getSession()
+
+          if (sessionData?.session?.user) {
+            await hydrateSession(sessionData.session.user)
+          }
+        }}
+      />
+    )
+  }
+
+  if (!user && authMode === 'forgot') {
+    return (
+      <ForgotPasswordForm supabase={supabase} onBack={() => setAuthMode('login')} />
     )
   }
 
@@ -1114,6 +1149,18 @@ export default function Home() {
             }}
           >
             Soy alumno y no tengo cuenta todavia
+          </button>
+
+          <button
+            type="button"
+            className="linkButton"
+            onClick={() => {
+              setAuthMode('forgot')
+              setError('')
+              setSignupInfo('')
+            }}
+          >
+            Olvidaste tu contrasena?
           </button>
         </section>
       </main>
