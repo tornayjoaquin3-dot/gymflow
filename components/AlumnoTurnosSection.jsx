@@ -102,7 +102,7 @@ export default function AlumnoTurnosSection({ supabase }) {
       return 'No disponible'
     }
 
-    if (turno.cupo_ocupado >= turno.cupo_maximo) {
+    if (!turno.disponible) {
       return 'Turno completo'
     }
 
@@ -182,10 +182,9 @@ export default function AlumnoTurnosSection({ supabase }) {
       <h3>Turnos disponibles</h3>
 
       <div className="dataPanel">
-        <div className="dataTableHeader turnosTableGrid">
+        <div className="dataTableHeader misTurnosGrid">
           <span>Fecha</span>
           <span>Horario</span>
-          <span>Cupo</span>
           <span>Estado</span>
           <span>Acciones</span>
         </div>
@@ -200,15 +199,12 @@ export default function AlumnoTurnosSection({ supabase }) {
               const motivo = motivoNoReservable(turno)
 
               return (
-                <div key={turno.id} className="dataRow dataRowCompact turnosTableGrid">
+                <div key={turno.id} className="dataRow dataRowCompact misTurnosGrid">
                   <span data-label="Fecha">{turno.fecha}</span>
                   <span data-label="Horario">
                     {formatHora(turno.hora_inicio)} - {formatHora(turno.hora_fin)}
                   </span>
-                  <span data-label="Cupo">
-                    {turno.cupo_ocupado} / {turno.cupo_maximo}
-                  </span>
-                  <span data-label="Estado">{turno.estado}</span>
+                  <span data-label="Estado">{turno.estado === 'abierto' ? 'Disponible' : turno.estado}</span>
                   <div className="rowActions rowActionsCompact" data-label="Acciones">
                     {motivo ? (
                       <span className="rowNote">{motivo}</span>
