@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import StudentDetail from './StudentDetail'
 import StudentStatusBadge from './StudentStatusBadge'
+import EjerciciosEditor from './EjerciciosEditor'
 import {
   getMonthKey,
   getPaymentPeriodLabel,
@@ -828,13 +829,12 @@ export default function StudentsSection({
                   })
                 }
               />
-              <textarea
-                placeholder="Ejercicios"
+              <EjerciciosEditor
                 value={routineForm.ejercicios}
-                onChange={(event) =>
+                onChange={(ejercicios) =>
                   setRoutineForm({
                     ...routineForm,
-                    ejercicios: event.target.value,
+                    ejercicios,
                   })
                 }
               />

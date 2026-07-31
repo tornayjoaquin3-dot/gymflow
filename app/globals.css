@@ -1401,6 +1401,99 @@ button{
   margin-bottom:14px;
 }
 
+.ejerciciosEditor{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  grid-column:1 / -1;
+}
+
+.ejerciciosEditorTabs{
+  display:flex;
+  gap:8px;
+}
+
+.ejerciciosEditorTabs button{
+  padding:8px 14px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:transparent;
+  color:var(--text-muted);
+  font-weight:bold;
+  font-size:13px;
+}
+
+.ejerciciosEditorTabs button.activeMenu{
+  background:var(--surface);
+  color:var(--text);
+  box-shadow:var(--shadow-soft);
+}
+
+.ejerciciosEditorDias{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.ejerciciosEditorAviso{
+  color:var(--text-muted);
+  font-size:13px;
+  margin:0;
+}
+
+.ejerciciosEditorDiaCard{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface-soft);
+}
+
+.ejerciciosEditorDiaHeader{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.ejerciciosEditorDiaHeader input{
+  flex:1;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--text);
+  font-weight:bold;
+}
+
+.ejerciciosEditorFilas{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.ejerciciosEditorFila{
+  display:grid;
+  grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) 36px;
+  gap:8px;
+}
+
+.ejerciciosEditorFila input{
+  padding:9px 10px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--text);
+  min-width:0;
+}
+
+@media(max-width:640px){
+  .ejerciciosEditorFila{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
 .routineFormBlock{
   display:flex;
   flex-direction:column;

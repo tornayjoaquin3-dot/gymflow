@@ -4,6 +4,8 @@ import {
   getRoutineWhatsappUrl,
 } from '../lib/routine-sharing'
 import { normalizeText } from '../lib/student-utils'
+import EjerciciosEditor from './EjerciciosEditor'
+import RoutineDisplay from './RoutineDisplay'
 
 function buildRoutineGroupKey(rutina) {
   return [
@@ -289,13 +291,12 @@ export default function RoutinesSection({
           }
         />
 
-        <textarea
-          placeholder="Ejercicios"
+        <EjerciciosEditor
           value={nuevaRutina.ejercicios}
-          onChange={(e) =>
+          onChange={(ejercicios) =>
             setNuevaRutina({
               ...nuevaRutina,
-              ejercicios: e.target.value,
+              ejercicios,
             })
           }
         />
@@ -423,7 +424,7 @@ export default function RoutinesSection({
 
                     <div className="routineExpandedMeta">
                       <span>Ejercicios</span>
-                      <pre>{rutina.ejercicios || '-'}</pre>
+                      <RoutineDisplay ejercicios={rutina.ejercicios} />
                     </div>
 
                     {rutina.observaciones && (

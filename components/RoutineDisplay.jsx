@@ -2,6 +2,23 @@
 
 import { useMemo } from 'react'
 import { buildRoutineBlocks } from '../lib/routine-parser'
+import { parseStructuredRoutine } from '../lib/routine-format'
+
+function blocksFromDias(dias) {
+  const blocks = []
+
+  dias.forEach((dia) => {
+    if (dia.titulo) {
+      blocks.push({ type: 'heading', text: dia.titulo })
+    }
+
+    if (dia.ejercicios.length > 0) {
+      blocks.push({ type: 'exerciseTable', rows: dia.ejercicios })
+    }
+  })
+
+  return blocks
+}
 
 export default function RoutineDisplay({ ejercicios }) {
   const rawRoutineText =
@@ -11,7 +28,16 @@ export default function RoutineDisplay({ ejercicios }) {
         ? String(ejercicios)
         : ''
 
-  const routineBlocks = useMemo(() => buildRoutineBlocks(rawRoutineText), [rawRoutineText])
+  const rutinaEstructurada = useMemo(() => parseStructuredRoutine(rawRoutineText), [rawRoutineText])
+
+  const routineBlocks = useMemo(() => {
+    if (rutinaEstructurada) {
+      return blocksFromDias(rutinaEstructurada.dias)
+    }
+
+    return buildRoutineBlocks(rawRoutineText)
+  }, [rutinaEstructurada, rawRoutineText])
+
   const hasStructuredRoutineBlocks = Array.isArray(routineBlocks) && routineBlocks.length > 0
 
   return (
