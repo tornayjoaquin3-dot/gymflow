@@ -1137,11 +1137,16 @@ button{
   grid-template-columns:130px minmax(160px,1fr) 110px minmax(220px,1.2fr);
 }
 
+.misPagosGrid{
+  grid-template-columns:140px minmax(140px,1fr) 130px;
+}
+
 @media(max-width:900px){
   .franjaForm,
   .franjasTableGrid,
   .turnosTableGrid,
-  .misTurnosGrid{
+  .misTurnosGrid,
+  .misPagosGrid{
     grid-template-columns:1fr;
   }
 }

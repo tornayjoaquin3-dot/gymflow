@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Calendar, Dumbbell, User } from 'lucide-react'
+import { Calendar, Dumbbell, User, Wallet } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import {
   getMonthKey,
@@ -24,6 +24,7 @@ import { signUpAlumno, completeAlumnoSignupFromMetadata } from '../lib/alumno-si
 import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
 import AlumnoTurnosSection from '../components/AlumnoTurnosSection'
 import AlumnoRutinaSection from '../components/AlumnoRutinaSection'
+import AlumnoCuotaSection from '../components/AlumnoCuotaSection'
 import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
 import ForgotPasswordForm from '../components/ForgotPasswordForm'
 import ResetPasswordForm from '../components/ResetPasswordForm'
@@ -1219,6 +1220,14 @@ export default function Home() {
             </button>
             <button
               type="button"
+              className={activeSection === 'cuota' ? 'activeMenu' : ''}
+              onClick={() => setActiveSection('cuota')}
+            >
+              <Wallet size={20} />
+              <span>Mi cuota</span>
+            </button>
+            <button
+              type="button"
               className={activeSection === 'portal' ? 'activeMenu' : ''}
               onClick={() => setActiveSection('portal')}
             >
@@ -1235,6 +1244,8 @@ export default function Home() {
             />
           ) : activeSection === 'rutina' ? (
             <AlumnoRutinaSection supabase={supabase} />
+          ) : activeSection === 'cuota' ? (
+            <AlumnoCuotaSection supabase={supabase} profile={profile} />
           ) : (
             <AlumnoTurnosSection supabase={supabase} />
           )}
