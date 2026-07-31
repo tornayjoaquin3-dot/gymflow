@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { Calendar, Dumbbell, User } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import {
   getMonthKey,
@@ -1116,7 +1117,7 @@ export default function Home() {
 
   if (isAlumno) {
     return (
-      <main className="app">
+      <main className="app alumnoPortal">
         <section className="main">
           <header className="topbar">
             <div className="topbarIdentity">
@@ -1138,21 +1139,24 @@ export default function Home() {
               className={activeSection === 'turnos' ? 'activeMenu' : ''}
               onClick={() => setActiveSection('turnos')}
             >
-              Turnos
+              <Calendar size={20} />
+              <span>Turnos</span>
             </button>
             <button
               type="button"
               className={activeSection === 'rutina' ? 'activeMenu' : ''}
               onClick={() => setActiveSection('rutina')}
             >
-              Mi rutina
+              <Dumbbell size={20} />
+              <span>Mi rutina</span>
             </button>
             <button
               type="button"
               className={activeSection === 'portal' ? 'activeMenu' : ''}
               onClick={() => setActiveSection('portal')}
             >
-              Mi perfil
+              <User size={20} />
+              <span>Mi perfil</span>
             </button>
           </nav>
 

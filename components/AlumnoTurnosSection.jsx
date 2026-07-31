@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { formatHora } from '../lib/turnos-utils'
+import ReservarTurnoFlow from './ReservarTurnoFlow'
 
 const DOS_HORAS_MS = 2 * 60 * 60 * 1000
 
 export default function AlumnoTurnosSection({ supabase }) {
   const [disponibles, setDisponibles] = useState([])
-  const [misReservas, setMisReservas] = useState([])
   const [loadingDisponibles, setLoadingDisponibles] = useState(true)
+  const [misReservas, setMisReservas] = useState([])
   const [loadingMisReservas, setLoadingMisReservas] = useState(true)
   const [error, setError] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [procesandoId, setProcesandoId] = useState('')
+  const [mostrarFlujoReserva, setMostrarFlujoReserva] = useState(false)
+  const [reservando, setReservando] = useState(false)
 
   async function cargarDisponibles() {
     if (!supabase) return
@@ -56,23 +59,25 @@ export default function AlumnoTurnosSection({ supabase }) {
   }, [supabase])
 
   const fechasConReservaActiva = new Set(misReservas.map((reserva) => reserva.fecha))
+  const reservables = disponibles.filter((turno) => turno.estado === 'abierto' && turno.disponible)
 
-  async function reservar(turno) {
+  async function confirmarReserva(turno) {
     setError('')
     setMensaje('')
-    setProcesandoId(turno.id)
+    setReservando(true)
 
     const { error: rpcError } = await supabase.rpc('reservar_turno', {
       p_turno_id: turno.id,
     })
 
-    setProcesandoId('')
+    setReservando(false)
 
     if (rpcError) {
       setError(rpcError.message)
       return
     }
 
+    setMostrarFlujoReserva(false)
     setMensaje('Turno reservado.')
     await Promise.all([cargarDisponibles(), cargarMisReservas()])
   }
@@ -97,22 +102,6 @@ export default function AlumnoTurnosSection({ supabase }) {
     await Promise.all([cargarDisponibles(), cargarMisReservas()])
   }
 
-  function motivoNoReservable(turno) {
-    if (turno.estado !== 'abierto') {
-      return 'No disponible'
-    }
-
-    if (!turno.disponible) {
-      return 'Turno completo'
-    }
-
-    if (fechasConReservaActiva.has(turno.fecha)) {
-      return 'Ya tenes un turno ese dia'
-    }
-
-    return ''
-  }
-
   function faltanMenosDeDosHoras(reserva) {
     const turno = reserva.turnos
 
@@ -126,11 +115,19 @@ export default function AlumnoTurnosSection({ supabase }) {
     <section className="section">
       <div className="sectionHeader">
         <h2>Turnos</h2>
-        <p>Reserva un turno para los proximos 7 dias o cancela uno que ya tengas.</p>
+        <p>Tus proximos turnos y la opcion de reservar uno nuevo.</p>
       </div>
 
       {error && <div className="error">{error}</div>}
       {mensaje && <div className="success">{mensaje}</div>}
+
+      <button
+        type="button"
+        className="reservarTurnoButton"
+        onClick={() => setMostrarFlujoReserva(true)}
+      >
+        + Reservar turno
+      </button>
 
       <h3>Mis turnos</h3>
 
@@ -179,52 +176,16 @@ export default function AlumnoTurnosSection({ supabase }) {
         </div>
       </div>
 
-      <h3>Turnos disponibles</h3>
-
-      <div className="dataPanel">
-        <div className="dataTableHeader misTurnosGrid">
-          <span>Fecha</span>
-          <span>Horario</span>
-          <span>Estado</span>
-          <span>Acciones</span>
-        </div>
-
-        <div className="dataTableBody">
-          {loadingDisponibles ? (
-            <div className="studentsTableEmpty">Cargando turnos...</div>
-          ) : disponibles.length === 0 ? (
-            <div className="studentsTableEmpty">No hay turnos disponibles por ahora.</div>
-          ) : (
-            disponibles.map((turno) => {
-              const motivo = motivoNoReservable(turno)
-
-              return (
-                <div key={turno.id} className="dataRow dataRowCompact misTurnosGrid">
-                  <span data-label="Fecha">{turno.fecha}</span>
-                  <span data-label="Horario">
-                    {formatHora(turno.hora_inicio)} - {formatHora(turno.hora_fin)}
-                  </span>
-                  <span data-label="Estado">{turno.estado === 'abierto' ? 'Disponible' : turno.estado}</span>
-                  <div className="rowActions rowActionsCompact" data-label="Acciones">
-                    {motivo ? (
-                      <span className="rowNote">{motivo}</span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="smallButton smallButtonCompact"
-                        disabled={procesandoId === turno.id}
-                        onClick={() => reservar(turno)}
-                      >
-                        {procesandoId === turno.id ? 'Reservando...' : 'Reservar'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
-      </div>
+      {mostrarFlujoReserva && (
+        <ReservarTurnoFlow
+          disponibles={reservables}
+          cargando={loadingDisponibles}
+          fechasBloqueadas={fechasConReservaActiva}
+          reservando={reservando}
+          onConfirmar={confirmarReserva}
+          onClose={() => setMostrarFlujoReserva(false)}
+        />
+      )}
     </section>
   )
 }
