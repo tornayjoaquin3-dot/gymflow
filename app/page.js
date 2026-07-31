@@ -83,6 +83,7 @@ export default function Home() {
     observaciones: '',
   })
   const [editingRutinaId, setEditingRutinaId] = useState(null)
+  const [ejerciciosEditorResetKey, setEjerciciosEditorResetKey] = useState(0)
 
   function getSupabaseClient() {
     if (!supabase) {
@@ -152,6 +153,10 @@ export default function Home() {
       ejercicios: '',
       observaciones: '',
     })
+    // Fuerza que EjerciciosEditor se monte de nuevo y limpie el armado
+    // "por dia" -- si no, el formulario se vacia pero el editor sigue
+    // mostrando los dias que se habian cargado, obligando a borrarlos a mano.
+    setEjerciciosEditorResetKey((key) => key + 1)
   }
 
   async function login(event) {
@@ -1276,6 +1281,7 @@ export default function Home() {
             editingRutinaId={editingRutinaId}
             editarRutina={editarRutina}
             cancelarEdicionRutina={cancelarEdicionRutina}
+            ejerciciosEditorResetKey={ejerciciosEditorResetKey}
             eliminarRutina={eliminarRutina}
           />
         )}

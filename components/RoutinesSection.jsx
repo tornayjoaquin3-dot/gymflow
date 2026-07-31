@@ -38,6 +38,7 @@ export default function RoutinesSection({
   editarRutina,
   cancelarEdicionRutina,
   eliminarRutina,
+  ejerciciosEditorResetKey,
 }) {
   const [copyFeedbackId, setCopyFeedbackId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -292,6 +293,7 @@ export default function RoutinesSection({
         />
 
         <EjerciciosEditor
+          key={editingRutinaId ? `editar-${editingRutinaId}` : `nueva-${ejerciciosEditorResetKey}`}
           value={nuevaRutina.ejercicios}
           onChange={(ejercicios) =>
             setNuevaRutina({

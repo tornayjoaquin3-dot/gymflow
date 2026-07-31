@@ -7,10 +7,10 @@ import { parseStructuredRoutine } from '../lib/routine-format'
 function blocksFromDias(dias) {
   const blocks = []
 
-  dias.forEach((dia) => {
-    if (dia.titulo) {
-      blocks.push({ type: 'heading', text: dia.titulo })
-    }
+  dias.forEach((dia, index) => {
+    // El dia siempre se muestra, aunque no se haya escrito un titulo --
+    // si no, un recuadro de ejercicios queda sin decir a que dia pertenece.
+    blocks.push({ type: 'heading', text: dia.titulo || `Dia ${index + 1}` })
 
     if (dia.ejercicios.length > 0) {
       blocks.push({ type: 'exerciseTable', rows: dia.ejercicios })
