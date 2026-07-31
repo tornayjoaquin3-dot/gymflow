@@ -18,6 +18,7 @@ import ExcelImportSection from '../components/ExcelImportSection'
 import TurnosSection from '../components/TurnosSection'
 
 import { ROLE_SECTIONS, normalizeRole, isAlumnoRole, getDefaultSection } from '../lib/roles'
+import { validateAndCleanStructuredRoutine } from '../lib/routine-format'
 import { loadUserProfile } from '../lib/profile-service'
 import { signUpAlumno, completeAlumnoSignupFromMetadata } from '../lib/alumno-signup'
 import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
@@ -729,6 +730,13 @@ export default function Home() {
       return
     }
 
+    const rutinaLimpia = validateAndCleanStructuredRoutine(nuevaRutina.ejercicios)
+
+    if (rutinaLimpia.error) {
+      setError(rutinaLimpia.error)
+      return
+    }
+
     const client = getSupabaseClient()
 
     if (!client) return
@@ -747,7 +755,7 @@ export default function Home() {
     const routinePayload = {
       nombre: nuevaRutina.nombre,
       objetivo: nuevaRutina.objetivo,
-      ejercicios: nuevaRutina.ejercicios,
+      ejercicios: rutinaLimpia.ejercicios,
       observaciones: nuevaRutina.observaciones,
     }
 
@@ -846,6 +854,13 @@ export default function Home() {
       return false
     }
 
+    const rutinaLimpia = validateAndCleanStructuredRoutine(payload.ejercicios)
+
+    if (rutinaLimpia.error) {
+      setError(rutinaLimpia.error)
+      return false
+    }
+
     const client = getSupabaseClient()
 
     if (!client) return false
@@ -856,7 +871,7 @@ export default function Home() {
         .update({
           nombre: payload.nombre,
           objetivo: payload.objetivo,
-          ejercicios: payload.ejercicios,
+          ejercicios: rutinaLimpia.ejercicios,
           observaciones: payload.observaciones,
         })
         .eq('id', payload.id)
@@ -871,7 +886,7 @@ export default function Home() {
           alumno_id: payload.alumno_id,
           nombre: payload.nombre,
           objetivo: payload.objetivo,
-          ejercicios: payload.ejercicios,
+          ejercicios: rutinaLimpia.ejercicios,
           observaciones: payload.observaciones,
         },
       ])
