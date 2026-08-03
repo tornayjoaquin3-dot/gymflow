@@ -19,6 +19,7 @@ import TurnosSection from '../components/TurnosSection'
 import AsistenciaSection from '../components/AsistenciaSection'
 
 import { ROLE_SECTIONS, normalizeRole, isAlumnoRole, getDefaultSection } from '../lib/roles'
+import { APP_CONFIG } from '../lib/app-config'
 import { validateAndCleanStructuredRoutine } from '../lib/routine-format'
 import { loadUserProfile } from '../lib/profile-service'
 import { signUpAlumno, completeAlumnoSignupFromMetadata } from '../lib/alumno-signup'
@@ -1020,7 +1021,7 @@ export default function Home() {
     return (
       <main className="page">
         <section className="panel loginPanel">
-          <h1>GymFlow</h1>
+          <h1>{APP_CONFIG.softwareName}</h1>
           <p>Verificando sesion...</p>
         </section>
       </main>
@@ -1134,7 +1135,7 @@ export default function Home() {
     return (
       <main className="page">
         <section className="panel loginPanel">
-          <h1>GymFlow</h1>
+          <h1>{APP_CONFIG.softwareName}</h1>
           <p>Ingresa con tu email y contrasena.</p>
 
           <form onSubmit={login} className="form">

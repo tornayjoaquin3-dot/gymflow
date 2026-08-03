@@ -1,4 +1,4 @@
-# GymFlow Next.js
+# CORE Next.js
 
 Aplicación web para gestión de gimnasio.
 

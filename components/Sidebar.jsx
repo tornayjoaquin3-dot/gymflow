@@ -1,3 +1,5 @@
+import { APP_CONFIG } from '../lib/app-config'
+
 export default function Sidebar({
   isProfesor,
   activeSection,
@@ -13,7 +15,7 @@ export default function Sidebar({
   return (
     <aside className={`sidebar${isOpen ? ' isOpen' : ''}`}>
       <div className="sidebarHeader">
-        <h2>GymFlow</h2>
+        <h2>{APP_CONFIG.softwareName}</h2>
         <button
           type="button"
           className="sidebarCloseButton"
