@@ -70,17 +70,20 @@ button{
   font-size:42px;
 }
 
+.loginPanel .loginOrgTitle{
+  text-transform:uppercase;
+}
+
 .loginPanel p{
   margin:0 0 24px;
   color:var(--text-muted);
 }
 
-.loginPanel .loginOrgName{
+.loginPanel .loginSoftwareTag{
   margin:-6px 0 20px;
-  font-size:14px;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:.05em;
+  font-size:13px;
+  font-weight:500;
+  color:#6b7280;
 }
 
 .form{

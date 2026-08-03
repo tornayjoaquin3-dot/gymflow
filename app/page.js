@@ -1022,13 +1022,8 @@ export default function Home() {
     return (
       <main className="page">
         <section className="panel loginPanel">
-          <h1>{APP_CONFIG.softwareName}</h1>
-          <p
-            className="loginOrgName"
-            style={{ color: APP_CONFIG.organizationSecondaryColor }}
-          >
-            {APP_CONFIG.organizationName}
-          </p>
+          <h1 className="loginOrgTitle">{APP_CONFIG.organizationName}</h1>
+          <p className="loginSoftwareTag">by {APP_CONFIG.softwareName}</p>
           <p>Verificando sesion...</p>
         </section>
       </main>
@@ -1142,13 +1137,8 @@ export default function Home() {
     return (
       <main className="page">
         <section className="panel loginPanel">
-          <h1>{APP_CONFIG.softwareName}</h1>
-          <p
-            className="loginOrgName"
-            style={{ color: APP_CONFIG.organizationSecondaryColor }}
-          >
-            {APP_CONFIG.organizationName}
-          </p>
+          <h1 className="loginOrgTitle">{APP_CONFIG.organizationName}</h1>
+          <p className="loginSoftwareTag">by {APP_CONFIG.softwareName}</p>
           <p>Ingresa con tu email y contrasena.</p>
 
           <form onSubmit={login} className="form">
