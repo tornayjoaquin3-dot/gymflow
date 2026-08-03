@@ -19,8 +19,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_h1ukOWk1AlYhYhAcRt898w_UTQj2LCQ
 
 ## Usuarios demo
 
-Socio: socio@gymflow.com / 123456
-Profesor: profesor@gymflow.com / 123456
+Socio: socio@analitic.com / 123456
+Profesor: profesor@analitic.com / 123456
 
 ## Pendiente
 
