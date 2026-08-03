@@ -1296,9 +1296,9 @@ export default function Home() {
               <span />
             </button>
             <h1>Panel {isProfesor ? 'Profesor' : 'Socio'}</h1>
-            <p>
-              {profile?.nombre} · {profile?.email}
-            </p>
+            <p className="topbarTagline">Centro de entrenamiento</p>
+            <p className="topbarOrgName">{APP_CONFIG.organizationName}</p>
+            <p className="topbarEmail">{profile?.email}</p>
           </div>
 
           <div className="topbarActions">

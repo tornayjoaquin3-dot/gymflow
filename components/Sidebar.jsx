@@ -23,9 +23,13 @@ export default function Sidebar({
               className="sidebarOrgLogo"
             />
           ) : null}
-          <h2 style={{ color: APP_CONFIG.organizationPrimaryColor }}>
+          <h2>{APP_CONFIG.softwareName}</h2>
+          <p
+            className="sidebarOrgName"
+            style={{ color: APP_CONFIG.organizationPrimaryColor }}
+          >
             {APP_CONFIG.organizationName}
-          </h2>
+          </p>
         </div>
         <button
           type="button"

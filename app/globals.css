@@ -222,6 +222,19 @@ button{
   overflow-wrap:break-word;
 }
 
+.sidebarOrgBrand h2{
+  margin-bottom:2px;
+}
+
+.sidebarOrgBrand .sidebarOrgName{
+  margin:0 6px 22px;
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  overflow-wrap:break-word;
+}
+
 .sidebarCloseButton{
   display:none;
   width:40px;
@@ -286,6 +299,32 @@ button{
   margin-top:8px;
   color:var(--text-muted);
   word-break:break-word;
+}
+
+.topbarIdentity .topbarTagline{
+  margin-top:10px;
+  margin-bottom:0;
+  font-size:13px;
+  font-weight:500;
+  color:var(--text-muted);
+}
+
+.topbarIdentity .topbarOrgName{
+  margin-top:2px;
+  margin-bottom:0;
+  font-size:26px;
+  font-weight:700;
+  color:var(--text);
+  text-transform:uppercase;
+  letter-spacing:-0.02em;
+}
+
+.topbarIdentity .topbarEmail{
+  margin-top:4px;
+  margin-bottom:0;
+  font-size:15px;
+  font-weight:400;
+  color:#374151;
 }
 
 .topbar button{
@@ -3269,6 +3308,10 @@ button{
   .topbar p{
     margin-top:6px;
     font-size:13px;
+  }
+
+  .topbarIdentity .topbarOrgName{
+    font-size:21px;
   }
 
   .topbarActions{
