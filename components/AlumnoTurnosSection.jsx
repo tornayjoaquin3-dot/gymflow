@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { formatHora } from '../lib/turnos-utils'
+import { getMonthKey, getStudentPaymentSnapshot } from '../lib/student-utils'
 import ReservarTurnoFlow from './ReservarTurnoFlow'
 
 const DOS_HORAS_MS = 2 * 60 * 60 * 1000
 
-export default function AlumnoTurnosSection({ supabase }) {
+function mesActualCapitalizado() {
+  const mes = new Intl.DateTimeFormat('es-AR', { month: 'long' }).format(new Date())
+  return mes.charAt(0).toUpperCase() + mes.slice(1)
+}
+
+export default function AlumnoTurnosSection({ supabase, profile }) {
   const [disponibles, setDisponibles] = useState([])
   const [loadingDisponibles, setLoadingDisponibles] = useState(true)
   const [misReservas, setMisReservas] = useState([])
   const [loadingMisReservas, setLoadingMisReservas] = useState(true)
+  const [pagos, setPagos] = useState([])
   const [error, setError] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [procesandoId, setProcesandoId] = useState('')
@@ -53,12 +60,25 @@ export default function AlumnoTurnosSection({ supabase }) {
     setLoadingMisReservas(false)
   }
 
+  async function cargarPagos() {
+    if (!supabase) return
+
+    const { data, error: fetchError } = await supabase.from('pagos').select('*')
+
+    if (!fetchError) {
+      setPagos(data || [])
+    }
+  }
+
   useEffect(() => {
     cargarDisponibles()
     cargarMisReservas()
+    cargarPagos()
   }, [supabase])
 
   const fechasConReservaActiva = new Set(misReservas.map((reserva) => reserva.fecha))
+  const estadoCuota = getStudentPaymentSnapshot({ id: profile?.alumnoId }, pagos, getMonthKey())
+  const cuotaAlDia = estadoCuota.filterStatus === 'paid'
   const reservables = disponibles.filter((turno) => turno.estado === 'abierto' && turno.disponible)
 
   async function confirmarReserva(turno) {
@@ -128,6 +148,12 @@ export default function AlumnoTurnosSection({ supabase }) {
       >
         + Reservar turno
       </button>
+
+      <div className={cuotaAlDia ? 'success' : 'error'}>
+        {cuotaAlDia
+          ? `Se encuentra registrado el pago correspondiente al mes de ${mesActualCapitalizado()}.`
+          : `Aun no se registro el pago correspondiente al mes de ${mesActualCapitalizado()}.`}
+      </div>
 
       <h3>Mis turnos</h3>
 

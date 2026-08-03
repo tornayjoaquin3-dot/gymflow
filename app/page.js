@@ -1247,7 +1247,7 @@ export default function Home() {
           ) : activeSection === 'cuota' ? (
             <AlumnoCuotaSection supabase={supabase} profile={profile} />
           ) : (
-            <AlumnoTurnosSection supabase={supabase} />
+            <AlumnoTurnosSection supabase={supabase} profile={profile} />
           )}
         </section>
       </main>
