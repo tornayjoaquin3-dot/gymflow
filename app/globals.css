@@ -1126,7 +1126,51 @@ button{
 }
 
 .franjasTableGrid{
-  grid-template-columns:130px minmax(160px,1fr) 90px 110px minmax(220px,1.2fr);
+  grid-template-columns:minmax(160px,1fr) 90px 110px minmax(220px,1.2fr);
+}
+
+.franjasAccordion{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-bottom:24px;
+}
+
+.franjasAccordionDia{
+  border:1px solid var(--border);
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--surface);
+}
+
+.franjasAccordionHeader{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:14px 18px;
+  border:none;
+  background:var(--surface-soft);
+  color:var(--text);
+  font-weight:bold;
+  font-size:15px;
+  text-align:left;
+}
+
+.franjasAccordionChevron{
+  display:inline-block;
+  color:var(--text-muted);
+  transition:transform 0.2s ease;
+}
+
+.franjasAccordionChevron.isExpanded{
+  transform:rotate(90deg);
+}
+
+.franjasAccordionDia .dataPanel{
+  border:none;
+  border-top:1px solid var(--border);
+  border-radius:0;
 }
 
 .turnosTableGrid{

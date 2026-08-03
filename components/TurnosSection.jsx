@@ -11,6 +11,11 @@ const EMPTY_FRANJA = {
   activo: true,
 }
 
+// Orden de visualizacion del acordeon (lunes a sabado, domingo al final).
+// No tiene relacion con dia_semana=0..6 (esa sigue siendo domingo primero,
+// igual que extract(dow), no se toca).
+const ORDEN_ACORDEON = [1, 2, 3, 4, 5, 6, 0]
+
 export default function TurnosSection({ supabase }) {
   const [franjas, setFranjas] = useState([])
   const [turnos, setTurnos] = useState([])
@@ -25,6 +30,21 @@ export default function TurnosSection({ supabase }) {
 
   const [diasAdelante, setDiasAdelante] = useState(14)
   const [generando, setGenerando] = useState(false)
+
+  // Todos los dias arrancan contraidos.
+  const [diasExpandidos, setDiasExpandidos] = useState(() => new Set())
+
+  function alternarDiaExpandido(dia) {
+    setDiasExpandidos((actual) => {
+      const nuevo = new Set(actual)
+      if (nuevo.has(dia)) {
+        nuevo.delete(dia)
+      } else {
+        nuevo.add(dia)
+      }
+      return nuevo
+    })
+  }
 
   async function cargarFranjas() {
     if (!supabase) return
@@ -233,6 +253,15 @@ export default function TurnosSection({ supabase }) {
     await cargarTurnos()
   }
 
+  // franjas ya llega ordenada por dia_semana y hora_inicio (cargarFranjas),
+  // asi que agrupar preserva el orden cronologico dentro de cada dia.
+  const franjasPorDia = franjas.reduce((acc, franja) => {
+    const dia = franja.dia_semana
+    if (!acc[dia]) acc[dia] = []
+    acc[dia].push(franja)
+    return acc
+  }, {})
+
   return (
     <section className="section">
       <div className="sectionHeader">
@@ -295,57 +324,77 @@ export default function TurnosSection({ supabase }) {
         )}
       </form>
 
-      <div className="dataPanel">
-        <div className="dataTableHeader franjasTableGrid">
-          <span>Dia</span>
-          <span>Horario</span>
-          <span>Cupo</span>
-          <span>Estado</span>
-          <span>Acciones</span>
-        </div>
+      {loadingFranjas ? (
+        <div className="studentsTableEmpty">Cargando horarios...</div>
+      ) : franjas.length === 0 ? (
+        <div className="studentsTableEmpty">Todavia no hay horarios configurados.</div>
+      ) : (
+        <div className="franjasAccordion">
+          {ORDEN_ACORDEON.map((dia) => {
+            const franjasDelDia = franjasPorDia[dia] || []
+            const expandido = diasExpandidos.has(dia)
 
-        <div className="dataTableBody">
-          {loadingFranjas ? (
-            <div className="studentsTableEmpty">Cargando horarios...</div>
-          ) : franjas.length === 0 ? (
-            <div className="studentsTableEmpty">Todavia no hay horarios configurados.</div>
-          ) : (
-            franjas.map((franja) => (
-              <div key={franja.id} className="dataRow dataRowCompact franjasTableGrid">
-                <span data-label="Dia">{DIAS_SEMANA[franja.dia_semana]}</span>
-                <span data-label="Horario">
-                  {formatHora(franja.hora_inicio)} - {formatHora(franja.hora_fin)}
-                </span>
-                <span data-label="Cupo">{franja.cupo_maximo}</span>
-                <span data-label="Estado">{franja.activo ? 'Activo' : 'Inactivo'}</span>
-                <div className="rowActions rowActionsCompact" data-label="Acciones">
-                  <button
-                    type="button"
-                    className="smallButton smallButtonCompact"
-                    onClick={() => alternarActivo(franja)}
-                  >
-                    {franja.activo ? 'Desactivar' : 'Activar'}
-                  </button>
-                  <button
-                    type="button"
-                    className="smallButton smallButtonCompact"
-                    onClick={() => editarFranja(franja)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="smallButton smallButtonCompact dangerButton"
-                    onClick={() => eliminarFranja(franja.id)}
-                  >
-                    Eliminar
-                  </button>
-                </div>
+            return (
+              <div key={dia} className="franjasAccordionDia">
+                <button
+                  type="button"
+                  className="franjasAccordionHeader"
+                  onClick={() => alternarDiaExpandido(dia)}
+                  aria-expanded={expandido}
+                >
+                  <span className={`franjasAccordionChevron${expandido ? ' isExpanded' : ''}`}>
+                    ▶
+                  </span>
+                  <span>{DIAS_SEMANA[dia]}</span>
+                </button>
+
+                {expandido && (
+                  <div className="dataPanel">
+                    {franjasDelDia.length === 0 ? (
+                      <div className="studentsTableEmpty">Sin horarios este dia.</div>
+                    ) : (
+                      <div className="dataTableBody">
+                        {franjasDelDia.map((franja) => (
+                          <div key={franja.id} className="dataRow dataRowCompact franjasTableGrid">
+                            <span data-label="Horario">
+                              {formatHora(franja.hora_inicio)} - {formatHora(franja.hora_fin)}
+                            </span>
+                            <span data-label="Cupo">{franja.cupo_maximo}</span>
+                            <span data-label="Estado">{franja.activo ? 'Activo' : 'Inactivo'}</span>
+                            <div className="rowActions rowActionsCompact" data-label="Acciones">
+                              <button
+                                type="button"
+                                className="smallButton smallButtonCompact"
+                                onClick={() => alternarActivo(franja)}
+                              >
+                                {franja.activo ? 'Desactivar' : 'Activar'}
+                              </button>
+                              <button
+                                type="button"
+                                className="smallButton smallButtonCompact"
+                                onClick={() => editarFranja(franja)}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className="smallButton smallButtonCompact dangerButton"
+                                onClick={() => eliminarFranja(franja.id)}
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            ))
-          )}
+            )
+          })}
         </div>
-      </div>
+      )}
 
       <h3>Proximos turnos</h3>
 
