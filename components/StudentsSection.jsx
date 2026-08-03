@@ -3,6 +3,7 @@ import StudentDetail from './StudentDetail'
 import StudentStatusBadge from './StudentStatusBadge'
 import EjerciciosEditor from './EjerciciosEditor'
 import {
+  formatStudentName,
   getMonthKey,
   getPaymentPeriodLabel,
   getPreviousMonthKey,
@@ -115,7 +116,7 @@ export default function StudentsSection({
         alumno,
         alta: getStudentStartDate(alumno, studentPayments),
         paymentSnapshot,
-        searchable: normalizeText([alumno.nombre, alumno.telefono].join(' ')),
+        searchable: normalizeText([formatStudentName(alumno), alumno.telefono].join(' ')),
         studentPayments,
         paidPreviousMonth: alumnosQuePagaronMesAnterior.has(alumno.id),
       }
@@ -550,7 +551,7 @@ export default function StudentsSection({
                     }}
                   >
                     <div className="studentsNameCell" data-label="Nombre">
-                      <strong>{alumno.nombre}</strong>
+                      <strong>{formatStudentName(alumno)}</strong>
                       {alumno.telefono && <span>{alumno.telefono}</span>}
                     </div>
 
@@ -727,7 +728,7 @@ export default function StudentsSection({
             </div>
 
             <form onSubmit={handleRegisterPago} className="studentsModalForm">
-              <input value={selectedAlumno?.nombre || ''} disabled />
+              <input value={selectedAlumno ? formatStudentName(selectedAlumno) : ''} disabled />
               <div className="studentsModalGridTwo">
                 <input
                   placeholder="Monto"

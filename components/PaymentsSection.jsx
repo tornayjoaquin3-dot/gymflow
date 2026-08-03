@@ -1,3 +1,5 @@
+import { formatStudentName } from '../lib/student-utils'
+
 export default function PaymentsSection({
   alumnos,
   pagos,
@@ -23,7 +25,7 @@ export default function PaymentsSection({
           <option value="">Seleccionar alumno</option>
           {alumnos.map((alumno) => (
             <option key={alumno.id} value={alumno.id}>
-              {alumno.nombre}
+              {formatStudentName(alumno)}
             </option>
           ))}
         </select>
@@ -73,7 +75,7 @@ export default function PaymentsSection({
         ) : (
           pagos.map((pago) => (
             <article className="listCard" key={pago.id}>
-              <h3>{pago.alumnos?.nombre || 'Sin alumno'}</h3>
+              <h3>{pago.alumnos ? formatStudentName(pago.alumnos) : 'Sin alumno'}</h3>
 
               <p className="money">
                 ${Number(pago.monto || 0).toLocaleString('es-AR')}

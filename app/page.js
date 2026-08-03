@@ -280,7 +280,8 @@ export default function Home() {
         `
         *,
         alumnos (
-          nombre
+          nombre,
+          apellido
         )
       `
       )
@@ -314,6 +315,7 @@ export default function Home() {
         *,
         alumnos (
           nombre,
+          apellido,
           telefono
         )
       `

@@ -7,6 +7,7 @@ import {
   formatHora,
 } from '../lib/asistencia-utils'
 import {
+  formatStudentName,
   getMonthKey,
   getStudentPaymentSnapshot,
   normalizePhone,
@@ -22,11 +23,6 @@ function sumarDias(fechaISO, dias) {
   const fecha = new Date(`${fechaISO}T00:00:00`)
   fecha.setDate(fecha.getDate() + dias)
   return fecha.toISOString().slice(0, 10)
-}
-
-function nombreAlumno(alumno) {
-  const partes = [alumno?.nombre, alumno?.apellido].filter(Boolean)
-  return partes.length > 0 ? partes.join(' ') : 'Alumno'
 }
 
 export default function AsistenciaSection({ supabase }) {
@@ -217,7 +213,7 @@ export default function AsistenciaSection({ supabase }) {
 
     const alumnosReservados = reservas.map((reserva) => ({
       alumno_id: reserva.alumno_id,
-      nombre: nombreAlumno(reserva.alumnos),
+      nombre: formatStudentName(reserva.alumnos),
       asistencia: asistenciasPorAlumno.get(reserva.alumno_id) || null,
     }))
 
@@ -225,7 +221,7 @@ export default function AsistenciaSection({ supabase }) {
       .filter((asistencia) => asistencia.estado === 'sin_reserva')
       .map((asistencia) => ({
         alumno_id: asistencia.alumno_id,
-        nombre: nombreAlumno(asistencia.alumnos),
+        nombre: formatStudentName(asistencia.alumnos),
         asistencia,
       }))
 
@@ -328,7 +324,7 @@ export default function AsistenciaSection({ supabase }) {
       error: '',
       sinReserva: [
         ...actual.sinReserva,
-        { alumno_id: alumno.id, nombre: nombreAlumno(creada.alumnos), asistencia: creada },
+        { alumno_id: alumno.id, nombre: formatStudentName(creada.alumnos), asistencia: creada },
       ],
       pagos: [...actual.pagos, ...(pagosAlumno || [])],
     }))
@@ -354,7 +350,7 @@ export default function AsistenciaSection({ supabase }) {
         .filter((alumno) => !idsEnTurno.has(alumno.id))
         .filter((alumno) => {
           if (!busquedaNormalizada && !busquedaTelefono) return true
-          const nombreMatch = normalizeText(nombreAlumno(alumno)).includes(busquedaNormalizada)
+          const nombreMatch = normalizeText(formatStudentName(alumno)).includes(busquedaNormalizada)
           const telefonoMatch =
             busquedaTelefono && normalizePhone(alumno.telefono || '').includes(busquedaTelefono)
           return nombreMatch || telefonoMatch
@@ -523,7 +519,7 @@ export default function AsistenciaSection({ supabase }) {
                           className="asistenciaBuscadorResultado"
                           onClick={() => agregarSinReserva(alumno)}
                         >
-                          {nombreAlumno(alumno)}
+                          {formatStudentName(alumno)}
                         </button>
                       ))
                     )}

@@ -5,6 +5,7 @@ import {
   buildRoutineShareText,
   getRoutineWhatsappUrl,
 } from '../lib/routine-sharing'
+import { formatStudentName } from '../lib/student-utils'
 
 export default function StudentDetail({
   selectedAlumno,
@@ -48,7 +49,7 @@ export default function StudentDetail({
   async function handleCopyRoutine() {
     if (!currentRoutine) return
 
-    const text = buildRoutineShareText(selectedAlumno.nombre, currentRoutine)
+    const text = buildRoutineShareText(formatStudentName(selectedAlumno), currentRoutine)
 
     try {
       await navigator.clipboard.writeText(text)
@@ -64,7 +65,7 @@ export default function StudentDetail({
     if (!currentRoutine) return
 
     const url = getRoutineWhatsappUrl(
-      selectedAlumno.nombre,
+      formatStudentName(selectedAlumno),
       selectedAlumno.telefono,
       currentRoutine
     )
@@ -101,8 +102,8 @@ export default function StudentDetail({
                 />
               </div>
               <div className="studentsNameTextBlock">
-                <strong title={selectedAlumno.nombre}>
-                  {selectedAlumno.nombre}
+                <strong title={formatStudentName(selectedAlumno)}>
+                  {formatStudentName(selectedAlumno)}
                 </strong>
               </div>
             </div>

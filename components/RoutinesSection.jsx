@@ -3,7 +3,7 @@ import {
   buildRoutineShareText,
   getRoutineWhatsappUrl,
 } from '../lib/routine-sharing'
-import { normalizeText } from '../lib/student-utils'
+import { formatStudentName, normalizeText } from '../lib/student-utils'
 import EjerciciosEditor from './EjerciciosEditor'
 
 function buildRoutineGroupKey(rutina) {
@@ -21,7 +21,7 @@ function getAssociatedAlumnoLabel(rutinaGroup) {
   }
 
   if (rutinaGroup.alumnos.length === 1) {
-    return rutinaGroup.alumnos[0].nombre
+    return formatStudentName(rutinaGroup.alumnos[0])
   }
 
   return 'Sin alumno'
@@ -122,7 +122,7 @@ export default function RoutinesSection({
     return alumnos
       .filter((alumno) => !selectedAlumnoIds.includes(alumno.id))
       .filter((alumno) =>
-        normalizeText(alumno.nombre).includes(normalizedSearch)
+        normalizeText(formatStudentName(alumno)).includes(normalizedSearch)
       )
       .slice(0, 8)
   }, [alumnos, selectedAlumnoIds, studentSearchTerm])
@@ -171,6 +171,7 @@ export default function RoutinesSection({
         currentGroup.alumnos.push({
           id: rutina.alumno_id,
           nombre: rutina.alumnos.nombre,
+          apellido: rutina.alumnos.apellido || '',
           telefono: rutina.alumnos.telefono || '',
         })
       }
@@ -453,7 +454,7 @@ export default function RoutinesSection({
                             className="routineSelectorOption"
                             onClick={() => handleSelectAlumno(alumno)}
                           >
-                            {alumno.nombre}
+                            {formatStudentName(alumno)}
                           </button>
                         ))
                       ) : (
@@ -469,7 +470,7 @@ export default function RoutinesSection({
                   <div className="routineSelectedChips">
                     {selectedAlumnos.map((alumno) => (
                       <span key={alumno.id} className="routineChip">
-                        {alumno.nombre}
+                        {formatStudentName(alumno)}
                         <button
                           type="button"
                           onClick={() => handleRemoveAlumno(alumno.id)}

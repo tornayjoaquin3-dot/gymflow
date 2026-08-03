@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { formatStudentName } from '../lib/student-utils'
 
 export default function PendingAlumnoAccounts({ supabase, alumnos }) {
   const [pendientes, setPendientes] = useState([])
@@ -91,7 +92,7 @@ export default function PendingAlumnoAccounts({ supabase, alumnos }) {
               <option value="">Seleccionar alumno</option>
               {alumnos.map((alumno) => (
                 <option key={alumno.id} value={alumno.id}>
-                  {alumno.nombre}
+                  {formatStudentName(alumno)}
                 </option>
               ))}
             </select>
