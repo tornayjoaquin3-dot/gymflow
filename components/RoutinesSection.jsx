@@ -1,11 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   buildRoutineShareText,
   getRoutineWhatsappUrl,
 } from '../lib/routine-sharing'
 import { normalizeText } from '../lib/student-utils'
 import EjerciciosEditor from './EjerciciosEditor'
-import RoutineDisplay from './RoutineDisplay'
 
 function buildRoutineGroupKey(rutina) {
   return [
@@ -28,6 +27,44 @@ function getAssociatedAlumnoLabel(rutinaGroup) {
   return 'Sin alumno'
 }
 
+function formatStudentCount(count) {
+  if (count === 0) return 'Sin alumnos asociados'
+  if (count === 1) return '1 alumno'
+  return `${count} alumnos`
+}
+
+function formatUltimaEdicion(fechaIso) {
+  if (!fechaIso) return null
+
+  const fecha = new Date(fechaIso)
+
+  if (Number.isNaN(fecha.getTime())) return null
+
+  const diffDias = Math.floor((Date.now() - fecha.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDias <= 0) return 'Editada hoy'
+  if (diffDias === 1) return 'Editada ayer'
+  if (diffDias < 30) return `Editada hace ${diffDias} dias`
+
+  const diffMeses = Math.floor(diffDias / 30)
+
+  if (diffMeses < 12) {
+    return `Editada hace ${diffMeses} ${diffMeses === 1 ? 'mes' : 'meses'}`
+  }
+
+  const diffAnios = Math.floor(diffMeses / 12)
+  return `Editada hace ${diffAnios} ${diffAnios === 1 ? 'ano' : 'anos'}`
+}
+
+const EMPTY_FORM_KEYS = ['nombre', 'objetivo', 'ejercicios', 'observaciones']
+
+function isFormEmpty(nuevaRutina) {
+  return (
+    EMPTY_FORM_KEYS.every((key) => !nuevaRutina[key]) &&
+    (nuevaRutina.alumno_ids?.length ?? 0) === 0
+  )
+}
+
 export default function RoutinesSection({
   alumnos,
   rutinas,
@@ -38,12 +75,31 @@ export default function RoutinesSection({
   editarRutina,
   cancelarEdicionRutina,
   eliminarRutina,
+  duplicarRutina,
   ejerciciosEditorResetKey,
 }) {
-  const [copyFeedbackId, setCopyFeedbackId] = useState(null)
+  const [copyFeedback, setCopyFeedback] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [studentSearchTerm, setStudentSearchTerm] = useState('')
-  const [expandedRoutineKey, setExpandedRoutineKey] = useState(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const hasSubmittedNewRoutine = useRef(false)
+
+  // Despues de crear una rutina nueva con exito, page.js vacia nuevaRutina y
+  // limpia editingRutinaId (mismo comportamiento de siempre). Detectamos eso
+  // para volver el panel al estado vacio en vez de dejar el formulario
+  // abierto y en blanco. El flag evita confundir esto con el formulario
+  // recien abierto (tambien arranca vacio).
+  useEffect(() => {
+    if (
+      isCreating &&
+      !editingRutinaId &&
+      isFormEmpty(nuevaRutina) &&
+      hasSubmittedNewRoutine.current
+    ) {
+      hasSubmittedNewRoutine.current = false
+      setIsCreating(false)
+    }
+  }, [isCreating, editingRutinaId, nuevaRutina])
 
   const selectedAlumnoIds = nuevaRutina.alumno_ids?.length
     ? nuevaRutina.alumno_ids
@@ -93,11 +149,16 @@ export default function RoutinesSection({
           observaciones: rutina.observaciones,
           alumnos: [],
           telefono: rutina.alumnos?.telefono || '',
+          creado_en: rutina.creado_en || null,
         })
       }
 
       const currentGroup = groupedMap.get(groupKey)
       currentGroup.ids.push(rutina.id)
+
+      if (rutina.creado_en && (!currentGroup.creado_en || rutina.creado_en > currentGroup.creado_en)) {
+        currentGroup.creado_en = rutina.creado_en
+      }
 
       if (rutina.alumno_id && !currentGroup.alumno_ids.includes(rutina.alumno_id)) {
         currentGroup.alumno_ids.push(rutina.alumno_id)
@@ -127,12 +188,7 @@ export default function RoutinesSection({
 
     return groupedRutinas.filter((rutina) => {
       const searchableText = normalizeText(
-        [
-          rutina.nombre,
-          rutina.objetivo,
-          rutina.ejercicios,
-          rutina.alumnos.map((alumno) => alumno.nombre).join(' '),
-        ]
+        [rutina.nombre, rutina.objetivo, rutina.ejercicios]
           .filter(Boolean)
           .join(' ')
       )
@@ -140,6 +196,13 @@ export default function RoutinesSection({
       return searchableText.includes(normalizedSearch)
     })
   }, [groupedRutinas, searchTerm])
+
+  const selectedGroup = useMemo(() => {
+    if (!editingRutinaId) return null
+    return groupedRutinas.find((rutina) => rutina.ids.includes(editingRutinaId)) || null
+  }, [groupedRutinas, editingRutinaId])
+
+  const isFormOpen = isCreating || Boolean(editingRutinaId)
 
   function updateSelectedAlumnoIds(nextAlumnoIds) {
     setNuevaRutina({
@@ -160,287 +223,292 @@ export default function RoutinesSection({
     )
   }
 
+  function handleSelectRoutine(rutina) {
+    hasSubmittedNewRoutine.current = false
+    setIsCreating(false)
+    setStudentSearchTerm('')
+    editarRutina(rutina)
+  }
+
+  function handleStartNew() {
+    hasSubmittedNewRoutine.current = false
+    cancelarEdicionRutina()
+    setStudentSearchTerm('')
+    setIsCreating(true)
+  }
+
+  function handleCloseForm() {
+    hasSubmittedNewRoutine.current = false
+    cancelarEdicionRutina()
+    setStudentSearchTerm('')
+    setIsCreating(false)
+  }
+
+  function handleSubmit(event) {
+    if (isCreating && !editingRutinaId) {
+      hasSubmittedNewRoutine.current = true
+    }
+    crearRutina(event)
+  }
+
   function clearCopyFeedbackSoon() {
     window.setTimeout(() => {
-      setCopyFeedbackId(null)
+      setCopyFeedback(false)
     }, 1800)
   }
 
-  async function handleCopyRoutine(rutina) {
-    const text = buildRoutineShareText(getAssociatedAlumnoLabel(rutina), rutina)
+  async function handleCopyRoutine() {
+    if (!selectedGroup) return
+
+    const text = buildRoutineShareText(getAssociatedAlumnoLabel(selectedGroup), selectedGroup)
 
     try {
       await navigator.clipboard.writeText(text)
-      setCopyFeedbackId(rutina.key)
+      setCopyFeedback(true)
       clearCopyFeedbackSoon()
     } catch (error) {
-      setCopyFeedbackId(null)
+      setCopyFeedback(false)
     }
   }
 
-  function handleShareRoutine(rutina) {
+  function handleShareRoutine() {
+    if (!selectedGroup) return
+
     const sharedPhone =
-      rutina.alumnos.length === 1 ? rutina.alumnos[0].telefono : ''
+      selectedGroup.alumnos.length === 1 ? selectedGroup.alumnos[0].telefono : ''
     const url = getRoutineWhatsappUrl(
-      getAssociatedAlumnoLabel(rutina),
+      getAssociatedAlumnoLabel(selectedGroup),
       sharedPhone,
-      rutina
+      selectedGroup
     )
 
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
-  function handleToggleRoutine(rutinaKey) {
-    setExpandedRoutineKey((currentKey) =>
-      currentKey === rutinaKey ? null : rutinaKey
-    )
+  function handleDelete() {
+    if (!selectedGroup) return
+    eliminarRutina(selectedGroup.ids)
   }
 
   return (
-    <section className="section">
+    <section className="section routinesSection">
       <div className="sectionHeader">
         <h2>Rutinas</h2>
-        <p>Espacio rapido para crear, duplicar y compartir rutinas.</p>
       </div>
 
-      <div className="studentsSearchBar routineSearchBarTop">
-        <input
-          placeholder="Buscar rutina..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
-      </div>
-
-      <form onSubmit={crearRutina} className="routineForm routineFormCompact">
-        <div className="routineFormBlock routineSelectorBlock">
-          <span>Alumnos</span>
-
-          <div className="routineSelectorField">
+      <div className="routinesLayout">
+        <aside className="routinesListPanel">
+          <div className="studentsSearchBar routineSearchBarTop">
             <input
-              placeholder="Buscar alumno para asociar"
-              value={studentSearchTerm}
-              onChange={(event) => setStudentSearchTerm(event.target.value)}
+              placeholder="Buscar rutina..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
+          </div>
 
-            {shouldShowStudentResults ? (
-              <div className="routineSelectorResults">
-                {filteredAlumnos.length > 0 ? (
-                  filteredAlumnos.map((alumno) => (
-                    <button
-                      key={alumno.id}
-                      type="button"
-                      className="routineSelectorOption"
-                      onClick={() => handleSelectAlumno(alumno)}
-                    >
-                      {alumno.nombre}
+          <div className="routineList">
+            {filteredRutinas.length === 0 ? (
+              <div className="studentsTableEmpty">
+                {searchTerm ? 'No se encontraron rutinas.' : 'Todavia no hay rutinas cargadas.'}
+              </div>
+            ) : (
+              filteredRutinas.map((rutina) => {
+                const isSelected = Boolean(editingRutinaId) && rutina.ids.includes(editingRutinaId)
+                const ultimaEdicion = formatUltimaEdicion(rutina.creado_en)
+
+                return (
+                  <button
+                    key={rutina.key}
+                    type="button"
+                    className={`routineCard${isSelected ? ' isSelected' : ''}`}
+                    onClick={() => handleSelectRoutine(rutina)}
+                  >
+                    <strong>{rutina.nombre || 'Rutina sin nombre'}</strong>
+
+                    {rutina.objetivo && (
+                      <div className="routineCardObjetivo">
+                        <span>Objetivo</span>
+                        <p>{rutina.objetivo}</p>
+                      </div>
+                    )}
+
+                    <div className="routineCardFooter">
+                      <span>{formatStudentCount(rutina.alumnos.length)}</span>
+                      {ultimaEdicion && <span>{ultimaEdicion}</span>}
+                    </div>
+                  </button>
+                )
+              })
+            )}
+          </div>
+
+          <button type="button" className="routineNewButton" onClick={handleStartNew}>
+            + Nueva rutina
+          </button>
+        </aside>
+
+        <div className="routinesDetailPanel">
+          {!isFormOpen ? (
+            <div className="routineEmptyState">
+              <p>Selecciona una rutina para visualizarla o editarla.</p>
+              <button type="button" className="routineSubmitButton" onClick={handleStartNew}>
+                Nueva rutina
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="routineForm">
+              <div className="routineFormTopBar">
+                {editingRutinaId && (
+                  <div className="routineFormTopBarActions">
+                    <button type="button" className="smallButton" onClick={handleShareRoutine}>
+                      Compartir
                     </button>
-                  ))
-                ) : (
-                  <div className="routineSelectorEmpty">
-                    No se encontraron alumnos.
+                    <button type="button" className="smallButton" onClick={handleCopyRoutine}>
+                      Copiar
+                    </button>
+                    {copyFeedback && <span className="routineCopyFeedback">Copiada</span>}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="routineCloseButton"
+                  onClick={handleCloseForm}
+                  aria-label="Cerrar"
+                >
+                  ×
+                </button>
+              </div>
+
+              <label className="routineFormField">
+                <span>Nombre</span>
+                <input
+                  placeholder="Nombre de la rutina"
+                  value={nuevaRutina.nombre}
+                  onChange={(e) =>
+                    setNuevaRutina({
+                      ...nuevaRutina,
+                      nombre: e.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <label className="routineFormField">
+                <span>Objetivo</span>
+                <input
+                  placeholder="Objetivo"
+                  value={nuevaRutina.objetivo}
+                  onChange={(e) =>
+                    setNuevaRutina({
+                      ...nuevaRutina,
+                      objetivo: e.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <EjerciciosEditor
+                key={editingRutinaId ? `editar-${editingRutinaId}` : `nueva-${ejerciciosEditorResetKey}`}
+                value={nuevaRutina.ejercicios}
+                onChange={(ejercicios) =>
+                  setNuevaRutina({
+                    ...nuevaRutina,
+                    ejercicios,
+                  })
+                }
+              />
+
+              <label className="routineFormField">
+                <span>Observaciones</span>
+                <textarea
+                  placeholder="Observaciones"
+                  value={nuevaRutina.observaciones}
+                  onChange={(e) =>
+                    setNuevaRutina({
+                      ...nuevaRutina,
+                      observaciones: e.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <div className="routineFormField">
+                <span>Alumnos asociados</span>
+
+                <div className="routineSelectorField">
+                  <input
+                    placeholder="Buscar alumno"
+                    value={studentSearchTerm}
+                    onChange={(event) => setStudentSearchTerm(event.target.value)}
+                  />
+
+                  {shouldShowStudentResults && (
+                    <div className="routineSelectorResults">
+                      {filteredAlumnos.length > 0 ? (
+                        filteredAlumnos.map((alumno) => (
+                          <button
+                            key={alumno.id}
+                            type="button"
+                            className="routineSelectorOption"
+                            onClick={() => handleSelectAlumno(alumno)}
+                          >
+                            {alumno.nombre}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="routineSelectorEmpty">
+                          No se encontraron alumnos.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {selectedAlumnos.length > 0 && (
+                  <div className="routineSelectedChips">
+                    {selectedAlumnos.map((alumno) => (
+                      <span key={alumno.id} className="routineChip">
+                        {alumno.nombre}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAlumno(alumno.id)}
+                        >
+                          x
+                        </button>
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
-            ) : (
-              <small className="routineHelperText">
-                Busca un alumno para asociarlo a la rutina.
-              </small>
-            )}
-          </div>
 
-          <div className="routineSelectedChips">
-            {selectedAlumnos.length > 0 ? (
-              selectedAlumnos.map((alumno) => (
-                <span key={alumno.id} className="routineChip">
-                  {alumno.nombre}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveAlumno(alumno.id)}
-                  >
-                    x
-                  </button>
-                </span>
-              ))
-            ) : (
-              <small className="routineHelperText">
-                Sin alumnos asociados. Se intentara guardar sin asignacion si tu
-                esquema actual lo permite.
-              </small>
-            )}
-          </div>
-        </div>
-
-        <input
-          placeholder="Nombre rutina"
-          value={nuevaRutina.nombre}
-          onChange={(e) =>
-            setNuevaRutina({
-              ...nuevaRutina,
-              nombre: e.target.value,
-            })
-          }
-        />
-
-        <input
-          placeholder="Objetivo"
-          value={nuevaRutina.objetivo}
-          onChange={(e) =>
-            setNuevaRutina({
-              ...nuevaRutina,
-              objetivo: e.target.value,
-            })
-          }
-        />
-
-        <EjerciciosEditor
-          key={editingRutinaId ? `editar-${editingRutinaId}` : `nueva-${ejerciciosEditorResetKey}`}
-          value={nuevaRutina.ejercicios}
-          onChange={(ejercicios) =>
-            setNuevaRutina({
-              ...nuevaRutina,
-              ejercicios,
-            })
-          }
-        />
-
-        <textarea
-          placeholder="Observaciones"
-          value={nuevaRutina.observaciones}
-          onChange={(e) =>
-            setNuevaRutina({
-              ...nuevaRutina,
-              observaciones: e.target.value,
-            })
-          }
-        />
-
-        <div className="routineFormActions">
-          <button className="routineSubmitButton">
-            {editingRutinaId ? 'Guardar cambios' : 'Crear rutina'}
-          </button>
-
-          {editingRutinaId && (
-            <button
-              type="button"
-              className="smallButton"
-              onClick={cancelarEdicionRutina}
-            >
-              Cancelar edicion
-            </button>
-          )}
-        </div>
-      </form>
-
-      <div className="routineList">
-        {filteredRutinas.length === 0 ? (
-          <div className="empty">Todavia no hay rutinas cargadas.</div>
-        ) : (
-          filteredRutinas.map((rutina) => {
-            const isExpanded = expandedRoutineKey === rutina.key
-
-            return (
-              <article
-                key={rutina.key}
-                className={`routineCard routineRowCard ${
-                  isExpanded ? 'isExpanded' : ''
-                }`}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleToggleRoutine(rutina.key)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    handleToggleRoutine(rutina.key)
-                  }
-                }}
-              >
-                <div className="routineRowSummary">
-                  <div className="routineRowMain">
-                    <strong>{rutina.nombre || 'Rutina sin nombre'}</strong>
-                    <span>{getAssociatedAlumnoLabel(rutina)}</span>
-                    {rutina.objetivo && (
-                      <small>{rutina.objetivo}</small>
-                    )}
-                  </div>
-
-                  <div
-                    className="routineRowActions"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      className="smallButton"
-                      onClick={() => handleToggleRoutine(rutina.key)}
-                    >
-                      {isExpanded ? 'Ocultar' : 'Ver'}
-                    </button>
-                    <button
-                      type="button"
-                      className="smallButton"
-                      onClick={() => editarRutina(rutina)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="routineShareButton routineShareButtonPrimary"
-                      onClick={() => handleShareRoutine(rutina)}
-                    >
-                      Compartir
-                    </button>
-                    <button
-                      type="button"
-                      className="routineShareButton"
-                      onClick={() => handleCopyRoutine(rutina)}
-                    >
-                      Copiar
+              <div className="routineFormActions">
+                {editingRutinaId ? (
+                  <>
+                    <button className="routineSubmitButton">Guardar cambios</button>
+                    <button type="button" className="smallButton" onClick={duplicarRutina}>
+                      Duplicar
                     </button>
                     <button
                       type="button"
                       className="smallButton dangerButton"
-                      onClick={() => eliminarRutina(rutina.ids)}
+                      onClick={handleDelete}
                     >
                       Eliminar
                     </button>
-                  </div>
-                </div>
-
-                {copyFeedbackId === rutina.key && (
-                  <small className="routineCopyFeedback">Rutina copiada</small>
+                  </>
+                ) : (
+                  <>
+                    <button className="routineSubmitButton">Crear rutina</button>
+                    <button type="button" className="smallButton" onClick={handleCloseForm}>
+                      Cancelar
+                    </button>
+                  </>
                 )}
-
-                {isExpanded && (
-                  <div className="routineExpandedContent">
-                    {rutina.alumnos.length > 1 && (
-                      <div className="routineExpandedMeta">
-                        <span>Alumnos asociados</span>
-                        <div className="routineSelectedChips">
-                          {rutina.alumnos.map((alumno) => (
-                            <span key={alumno.id} className="routineChip">
-                              {alumno.nombre}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="routineExpandedMeta">
-                      <span>Ejercicios</span>
-                      <RoutineDisplay ejercicios={rutina.ejercicios} />
-                    </div>
-
-                    {rutina.observaciones && (
-                      <div className="routineExpandedMeta">
-                        <span>Observaciones</span>
-                        <p>{rutina.observaciones}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </article>
-            )
-          })
-        )}
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </section>
   )

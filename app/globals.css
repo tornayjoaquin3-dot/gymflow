@@ -1476,21 +1476,179 @@ button{
   }
 }
 
-.routineForm{
+.routinesLayout{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px;
-  margin-bottom:24px;
-}
-
-.routineFormCompact{
-  grid-template-columns:minmax(260px,1.2fr) repeat(2,minmax(180px,0.9fr));
+  grid-template-columns:minmax(280px, 30%) minmax(0, 1fr);
+  gap:18px;
   align-items:start;
+  min-width:0;
 }
 
-.routineForm input,
-.routineForm select,
-.routineForm textarea{
+.routinesListPanel{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:var(--surface);
+  padding:18px;
+  box-shadow:var(--shadow-soft);
+  min-width:0;
+}
+
+.routineSearchBarTop{
+  margin:0;
+}
+
+.routineList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-height:calc(100vh - 340px);
+  overflow-y:auto;
+}
+
+.routineCard{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface-soft);
+  padding:14px 16px;
+  text-align:left;
+  color:var(--text);
+}
+
+.routineCard strong{
+  font-size:15px;
+}
+
+.routineCard:hover{
+  border-color:var(--border-strong);
+}
+
+.routineCard.isSelected{
+  border-color:var(--primary);
+  background:var(--surface);
+  box-shadow:var(--shadow-soft);
+}
+
+.routineCardObjetivo{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.routineCardObjetivo span{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-soft);
+}
+
+.routineCardObjetivo p{
+  margin:0;
+  color:var(--text-muted);
+  font-size:13px;
+  line-height:1.4;
+}
+
+.routineCardFooter{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  color:var(--text-soft);
+  font-size:12px;
+}
+
+.routineNewButton{
+  width:100%;
+  padding:12px 14px;
+  border:1px dashed var(--border-strong);
+  border-radius:14px;
+  background:transparent;
+  color:var(--text);
+  font-weight:bold;
+}
+
+.routineNewButton:hover{
+  background:var(--surface-soft);
+}
+
+.routinesDetailPanel{
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:var(--surface);
+  padding:24px;
+  min-width:0;
+}
+
+.routineEmptyState{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:16px;
+  min-height:360px;
+  color:var(--text-muted);
+}
+
+.routineForm{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.routineFormTopBar{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+.routineFormTopBarActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-right:auto;
+}
+
+.routineCloseButton{
+  width:32px;
+  height:32px;
+  border:1px solid var(--border);
+  border-radius:50%;
+  background:var(--surface);
+  color:var(--text-muted);
+  font-size:16px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.routineFormField{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.routineFormField > span,
+.routineFieldLabel{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-soft);
+}
+
+.routineFormField input,
+.routineFormField textarea{
   padding:11px 12px;
   border:1px solid var(--border);
   border-radius:14px;
@@ -1498,49 +1656,58 @@ button{
   color:var(--text);
 }
 
-.routineForm textarea{
+.routineFormField textarea{
   min-height:84px;
   resize:vertical;
-}
-
-.routineForm button{
-  border:none;
-  border-radius:14px;
-  background:var(--primary);
-  color:#fff;
-  font-weight:bold;
-}
-
-.routineSearchBarTop{
-  margin-bottom:14px;
 }
 
 .ejerciciosEditor{
   display:flex;
   flex-direction:column;
   gap:10px;
-  grid-column:1 / -1;
 }
 
 .ejerciciosEditorTabs{
   display:flex;
-  gap:8px;
+  gap:20px;
+  margin-bottom:2px;
 }
 
-.ejerciciosEditorTabs button{
-  padding:8px 14px;
-  border:1px solid var(--border);
-  border-radius:14px;
+.ejerciciosEditorTab{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:none;
   background:transparent;
+  padding:0;
   color:var(--text-muted);
-  font-weight:bold;
+  font-weight:600;
   font-size:13px;
 }
 
-.ejerciciosEditorTabs button.activeMenu{
-  background:var(--surface);
+.ejerciciosEditorTab.isSelected{
   color:var(--text);
-  box-shadow:var(--shadow-soft);
+}
+
+.ejerciciosEditorTabDot{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:2px solid var(--border-strong);
+  flex-shrink:0;
+  position:relative;
+}
+
+.ejerciciosEditorTab.isSelected .ejerciciosEditorTabDot{
+  border-color:var(--primary);
+}
+
+.ejerciciosEditorTab.isSelected .ejerciciosEditorTabDot::after{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border-radius:50%;
+  background:var(--primary);
 }
 
 .ejerciciosEditorDias{
@@ -1608,24 +1775,6 @@ button{
   }
 }
 
-.routineFormBlock{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.routineFormBlock span{
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:0.04em;
-  text-transform:uppercase;
-  color:var(--text-soft);
-}
-
-.routineSelectorBlock{
-  grid-row:span 2;
-}
-
 .routineSelectorField{
   position:relative;
 }
@@ -1673,7 +1822,6 @@ button{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  min-height:36px;
 }
 
 .routineChip{
@@ -1698,166 +1846,23 @@ button{
   line-height:1;
 }
 
-.routineHelperText{
-  color:var(--text-muted);
-  font-size:12px;
-  line-height:1.5;
-}
-
 .routineFormActions{
   display:flex;
   align-items:center;
   gap:10px;
   flex-wrap:wrap;
+  padding-top:6px;
+  border-top:1px solid var(--border);
 }
 
 .routineSubmitButton{
   padding:11px 14px;
   min-width:150px;
-}
-
-.routineGrid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:16px;
-}
-
-.routineGridCompact{
-  gap:14px;
-}
-
-.routineList{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.routineCard{
-  background:var(--surface-soft);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:18px;
-}
-
-.routineCardCompact{
-  padding:14px;
-}
-
-.routineRowCard{
-  padding:14px 16px;
-  cursor:pointer;
-}
-
-.routineRowCard.isExpanded{
-  background:#fcfbf8;
-}
-
-.routineCardTop{
-  margin-bottom:10px;
-}
-
-.routineRowSummary{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-}
-
-.routineRowMain{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  min-width:0;
-}
-
-.routineRowMain strong{
-  font-size:16px;
-}
-
-.routineRowMain span,
-.routineExpandedMeta span{
-  color:var(--text-muted);
-  font-size:13px;
-}
-
-.routineRowMain small{
-  color:var(--text-soft);
-  font-size:12px;
-  line-height:1.4;
-}
-
-.routineRowActions{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.routineExpandedContent{
-  margin-top:14px;
-  padding-top:14px;
-  border-top:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.routineExpandedMeta{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.routineExpandedMeta p{
-  margin:0;
-  color:var(--text-muted);
-  line-height:1.5;
-}
-
-.routineCard span{
-  color:var(--text-muted);
-  font-size:13px;
-}
-
-.routineCard h3{
-  margin:6px 0 0;
-  font-size:18px;
-}
-
-.routineCard pre{
-  white-space:pre-wrap;
-  background:var(--surface);
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  font-family:Arial, sans-serif;
-  font-size:13px;
-  line-height:1.5;
-}
-
-.routineActionRow{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
-}
-
-.routineShareButton{
-  border:1px solid rgba(255,255,255,0.14);
-  border-radius:12px;
-  background:#fff;
-  color:#111827;
-  padding:7px 10px;
-  font-size:12px;
-  font-weight:700;
-}
-
-.routineShareButtonPrimary{
-  border-color:#171717;
-  background:#171717;
+  border:none;
+  border-radius:14px;
+  background:var(--primary);
   color:#fff;
+  font-weight:bold;
 }
 
 .routineCopyFeedback{
@@ -3112,6 +3117,10 @@ button{
   .dashboardMetricGrid{
     grid-template-columns:repeat(2, minmax(0, 1fr));
   }
+
+  .routinesLayout{
+    grid-template-columns:minmax(240px, 35%) minmax(0, 1fr);
+  }
 }
 
 @media(max-width:900px){
@@ -3183,20 +3192,12 @@ button{
     grid-template-columns:1fr;
   }
 
-  .routineFormCompact{
+  .routinesLayout{
     grid-template-columns:1fr;
   }
 
-  .routineSelectorBlock{
-    grid-row:auto;
-  }
-
-  .routineRowSummary{
-    flex-direction:column;
-  }
-
-  .routineRowActions{
-    justify-content:flex-start;
+  .routineList{
+    max-height:none;
   }
 
   .dashboardChartHeader{
@@ -3609,8 +3610,6 @@ button{
     margin-bottom:12px;
   }
 
-  .routineForm,
-  .routineFormCompact,
   .costForm,
   .costFilters,
   .studentForm,
@@ -3620,8 +3619,6 @@ button{
     grid-template-columns:1fr;
   }
 
-  .routineForm input,
-  .routineForm textarea,
   .costForm input,
   .costForm select,
   .costFilters input,
@@ -3634,22 +3631,8 @@ button{
     margin-top:8px;
   }
 
-  .routineRowCard{
-    padding:14px;
-  }
-
-  .routineRowSummary{
-    flex-direction:column;
-    gap:12px;
-  }
-
-  .routineRowActions{
-    width:100%;
-    justify-content:flex-start;
-  }
-
-  .routineRowActions button{
-    flex:1 1 calc(50% - 4px);
+  .routinesDetailPanel{
+    padding:18px;
   }
 
   .rowActions,
@@ -3691,8 +3674,7 @@ button{
     padding:14px 12px 24px;
   }
 
-  .studentsHeroActions .studentsButton,
-  .routineRowActions button{
+  .studentsHeroActions .studentsButton{
     flex-basis:100%;
   }
 
@@ -3703,8 +3685,7 @@ button{
 
   .studentsMiniButton,
   .studentsButton,
-  .smallButton,
-  .routineShareButton{
+  .smallButton{
     min-height:40px;
   }
 

@@ -905,6 +905,59 @@ export default function Home() {
     return true
   }
 
+  async function duplicarRutina() {
+    setError('')
+
+    if (!nuevaRutina.nombre.trim()) {
+      setError('Carga el nombre de la rutina.')
+      return
+    }
+
+    const rutinaLimpia = validateAndCleanStructuredRoutine(nuevaRutina.ejercicios)
+
+    if (rutinaLimpia.error) {
+      setError(rutinaLimpia.error)
+      return
+    }
+
+    const client = getSupabaseClient()
+
+    if (!client) return
+
+    const selectedAlumnoIds = [
+      ...new Set(
+        (nuevaRutina.alumno_ids?.length
+          ? nuevaRutina.alumno_ids
+          : nuevaRutina.alumno_id
+            ? [nuevaRutina.alumno_id]
+            : []
+        ).filter(Boolean)
+      ),
+    ]
+
+    const routinePayload = {
+      nombre: `${nuevaRutina.nombre} (copia)`,
+      objetivo: nuevaRutina.objetivo,
+      ejercicios: rutinaLimpia.ejercicios,
+      observaciones: nuevaRutina.observaciones,
+    }
+
+    const insertRows =
+      selectedAlumnoIds.length > 0
+        ? selectedAlumnoIds.map((alumnoId) => ({ alumno_id: alumnoId, ...routinePayload }))
+        : [{ alumno_id: null, ...routinePayload }]
+
+    const { error: duplicateError } = await client.from('rutinas').insert(insertRows)
+
+    if (duplicateError) {
+      setError('No se pudo duplicar la rutina.')
+      return
+    }
+
+    cancelarEdicionRutina()
+    await cargarRutinas()
+  }
+
   async function eliminarRutina(idOrIds) {
     const routineIds = Array.isArray(idOrIds) ? idOrIds : [idOrIds]
     const confirmar = window.confirm(
@@ -1367,6 +1420,7 @@ export default function Home() {
             cancelarEdicionRutina={cancelarEdicionRutina}
             ejerciciosEditorResetKey={ejerciciosEditorResetKey}
             eliminarRutina={eliminarRutina}
+            duplicarRutina={duplicarRutina}
           />
         )}
 

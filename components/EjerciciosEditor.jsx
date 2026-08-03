@@ -74,20 +74,28 @@ export default function EjerciciosEditor({ value, onChange }) {
 
   return (
     <div className="ejerciciosEditor">
-      <div className="ejerciciosEditorTabs">
+      <span className="routineFieldLabel">Formato de rutina</span>
+
+      <div className="ejerciciosEditorTabs" role="radiogroup" aria-label="Formato de rutina">
         <button
           type="button"
-          className={modo === 'texto' ? 'activeMenu' : ''}
+          role="radio"
+          aria-checked={modo === 'texto'}
+          className={`ejerciciosEditorTab${modo === 'texto' ? ' isSelected' : ''}`}
           onClick={() => cambiarModo('texto')}
         >
+          <span className="ejerciciosEditorTabDot" />
           Texto libre
         </button>
         <button
           type="button"
-          className={modo === 'dia' ? 'activeMenu' : ''}
+          role="radio"
+          aria-checked={modo === 'dia'}
+          className={`ejerciciosEditorTab${modo === 'dia' ? ' isSelected' : ''}`}
           onClick={() => cambiarModo('dia')}
         >
-          Por dia
+          <span className="ejerciciosEditorTabDot" />
+          Rutina estructurada
         </button>
       </div>
 
