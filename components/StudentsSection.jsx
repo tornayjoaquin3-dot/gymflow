@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import StudentDetail from './StudentDetail'
-import StudentStatusBadge from './StudentStatusBadge'
+import PendingAlumnoAccounts from './PendingAlumnoAccounts'
 import EjerciciosEditor from './EjerciciosEditor'
 import {
   formatStudentName,
@@ -34,6 +34,22 @@ function getStudentStartDate(alumno, studentPayments) {
   return oldestPayment?.fecha_pago || '-'
 }
 
+// Ejemplo del rediseno: "19/05/26". alta siempre llega como YYYY-MM-DD (o
+// "-" si no hay dato), nunca se toca la fecha real, solo como se muestra.
+function formatShortDate(isoDate) {
+  if (!isoDate || isoDate === '-') return '-'
+
+  const [year, month, day] = isoDate.split('-')
+
+  if (!year || !month || !day) return isoDate
+
+  return `${day}/${month}/${year.slice(2)}`
+}
+
+function getPaymentEmoji(tone) {
+  return tone === 'paid' ? '🟢' : '🔴'
+}
+
 const EMPTY_STUDENT_FORM = {
   nombre: '',
   telefono: '',
@@ -58,6 +74,7 @@ const EMPTY_PAYMENT_FORM = {
 }
 
 export default function StudentsSection({
+  supabase,
   alumnos,
   pagos,
   rutinas,
@@ -71,6 +88,7 @@ export default function StudentsSection({
   setSelectedPaymentMonth,
   paymentMonthOptions,
   onUpdateAlumno,
+  onDuplicateAlumno,
   onMergeDuplicates,
   onRegisterPago,
   onDeletePago,
@@ -84,6 +102,8 @@ export default function StudentsSection({
   const [routineSearchTerm, setRoutineSearchTerm] = useState('')
   const [isMobileViewport, setIsMobileViewport] = useState(false)
   const [isMobileDetailVisible, setIsMobileDetailVisible] = useState(false)
+  const [isPendingDrawerOpen, setIsPendingDrawerOpen] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
   const studentsTableBodyRef = useRef(null)
   const listScrollTopRef = useRef(0)
 
@@ -116,7 +136,9 @@ export default function StudentsSection({
         alumno,
         alta: getStudentStartDate(alumno, studentPayments),
         paymentSnapshot,
-        searchable: normalizeText([formatStudentName(alumno), alumno.telefono].join(' ')),
+        searchable: normalizeText(
+          [formatStudentName(alumno), alumno.telefono, alumno.dni].join(' ')
+        ),
         studentPayments,
         paidPreviousMonth: alumnosQuePagaronMesAnterior.has(alumno.id),
       }
@@ -419,6 +441,15 @@ export default function StudentsSection({
     }
   }
 
+  async function handleDuplicateAlumno(alumno) {
+    if (!alumno || !onDuplicateAlumno) return
+    await onDuplicateAlumno(alumno)
+  }
+
+  function handleExportAlumno() {
+    window.alert('Exportar ficha: disponible proximamente.')
+  }
+
   async function handleMergeDuplicates() {
     if (!onMergeDuplicates) return
 
@@ -464,10 +495,13 @@ export default function StudentsSection({
 
   return (
     <section className="studentsWorkspaceMockup">
-      <div className="studentsHero">
-        <div>
-          <h2>Alumnos</h2>
-          <p>Ficha completa, historial de pagos y rutina.</p>
+      <div className="studentsTopBar">
+        <div className="studentsSearchBar">
+          <input
+            placeholder="Buscar por nombre, telefono o DNI..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
         </div>
 
         <div className="studentsHeroActions">
@@ -483,31 +517,35 @@ export default function StudentsSection({
             className="studentsButton"
             onClick={openPaymentModal}
           >
-            + Pago
-          </button>
-          <button
-            type="button"
-            className="studentsButton"
-            onClick={handleMergeDuplicates}
-          >
-            Unificar duplicados
+            + Registrar pago
           </button>
         </div>
       </div>
 
-      <div className="studentsSearchBar">
-        <input
-          placeholder="Buscar alumno..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
+      <div className="studentsTopBarUtilities">
+        <button
+          type="button"
+          className="studentsUtilityLink"
+          onClick={handleMergeDuplicates}
+        >
+          Unificar duplicados
+        </button>
+
+        {pendingCount > 0 && (
+          <button
+            type="button"
+            className="studentsPendingBell"
+            onClick={() => setIsPendingDrawerOpen(true)}
+          >
+            🔔 Cuentas pendientes ({pendingCount})
+          </button>
+        )}
       </div>
 
       <div className="studentsMockupGrid">
         {shouldShowList && (
         <div className="studentsPanel studentsListPanel">
           <div className="studentsPanelTop">
-            <h3>LISTADO</h3>
             <select
               value={selectedPaymentMonth}
               onChange={(event) => setSelectedPaymentMonth(event.target.value)}
@@ -520,68 +558,57 @@ export default function StudentsSection({
             </select>
           </div>
 
-          <div className="studentsTable">
-            <div className="studentsTableHeader">
-              <span>NOMBRE</span>
-              <span>PAGO MES</span>
-              <span>ALTA</span>
-              <span />
-            </div>
+          <div className="studentsCardList" ref={studentsTableBodyRef}>
+            {rows.length === 0 ? (
+              <div className="studentsTableEmpty">
+                No encontramos alumnos para esa busqueda.
+              </div>
+            ) : (
+              rows.map(({ alumno, alta, paymentSnapshot, studentPayments }) => {
+                const latestPago = [...studentPayments].sort((left, right) => {
+                  const leftTime = new Date(left?.fecha_pago || 0).getTime()
+                  const rightTime = new Date(right?.fecha_pago || 0).getTime()
+                  return rightTime - leftTime
+                })[0]
 
-            <div className="studentsTableBody" ref={studentsTableBodyRef}>
-              {rows.length === 0 ? (
-                <div className="studentsTableEmpty">
-                  No encontramos alumnos para esa busqueda.
-                </div>
-              ) : (
-                rows.map(({ alumno, alta, paymentSnapshot }) => (
-                  <div
+                return (
+                  <button
                     key={alumno.id}
-                    className={`studentsTableRow ${
+                    type="button"
+                    className={`studentCard ${
                       alumno.id === selectedAlumnoId ? 'isSelected' : ''
                     }`}
                     onClick={() => openAlumnoDetail(alumno.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        openAlumnoDetail(alumno.id)
-                      }
-                    }}
                   >
-                    <div className="studentsNameCell" data-label="Nombre">
-                      <strong>{formatStudentName(alumno)}</strong>
-                      {alumno.telefono && <span>{alumno.telefono}</span>}
+                    <strong className="studentCardName">
+                      {formatStudentName(alumno)}
+                    </strong>
+
+                    <div className="studentCardStatus">
+                      <span>
+                        {getPaymentEmoji(paymentSnapshot.badgeTone)} {paymentSnapshot.badgeLabel}
+                      </span>
+                      {paymentSnapshot.helperText && (
+                        <small>{paymentSnapshot.helperText}</small>
+                      )}
                     </div>
 
-                    <div className="studentsStateCell" data-label="Pago mes">
-                      <StudentStatusBadge
-                        label={paymentSnapshot.badgeLabel}
-                        tone={paymentSnapshot.badgeTone}
-                        compact
-                      />
+                    <div className="studentCardMeta">
+                      <div>
+                        <span>Alta</span>
+                        <strong>{formatShortDate(alta)}</strong>
+                      </div>
+                      {latestPago && (
+                        <div>
+                          <span>Ultimo pago</span>
+                          <strong>{latestPago.mes || formatShortDate(latestPago.fecha_pago)}</strong>
+                        </div>
+                      )}
                     </div>
-
-                    <span className="studentsDateCell" data-label="Alta">
-                      {alta}
-                    </span>
-
-                    <button
-                      type="button"
-                      className="studentsRowAction"
-                      data-label="Accion"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        openAlumnoDetail(alumno.id)
-                      }}
-                    >
-                      Ver
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
+                  </button>
+                )
+              })
+            )}
           </div>
         </div>
         )}
@@ -589,6 +616,7 @@ export default function StudentsSection({
         {shouldShowDetail && (
         <StudentDetail
           selectedAlumno={selectedAlumno}
+          alta={selectedRow ? formatShortDate(selectedRow.alta) : ''}
           pagosDelAlumno={pagosDelAlumno}
           rutinasDelAlumno={rutinasDelAlumno}
           currentRoutineMeta={currentRoutineMeta}
@@ -600,11 +628,42 @@ export default function StudentsSection({
           onRegisterPago={openPaymentModal}
           onDeletePago={onDeletePago}
           onDeleteAlumno={handleDeleteAlumno}
+          onDuplicateAlumno={handleDuplicateAlumno}
+          onExportAlumno={handleExportAlumno}
           isMobileDetail={isMobileViewport}
           onBackToList={handleBackToList}
         />
         )}
       </div>
+
+      {isPendingDrawerOpen && (
+        <button
+          type="button"
+          className="studentsDrawerOverlay"
+          onClick={() => setIsPendingDrawerOpen(false)}
+          aria-label="Cerrar panel de cuentas pendientes"
+        />
+      )}
+
+      <aside className={`studentsDrawer${isPendingDrawerOpen ? ' isOpen' : ''}`}>
+        <div className="studentsDrawerHeader">
+          <h3>Cuentas pendientes de vincular</h3>
+          <button
+            type="button"
+            className="studentsDrawerClose"
+            onClick={() => setIsPendingDrawerOpen(false)}
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+        </div>
+
+        <PendingAlumnoAccounts
+          supabase={supabase}
+          alumnos={alumnos}
+          onCountChange={setPendingCount}
+        />
+      </aside>
 
       {activeModal === 'create' && (
         <div className="studentsModalBackdrop" onClick={closeModal}>

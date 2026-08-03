@@ -2156,29 +2156,56 @@ button{
   min-width:0;
 }
 
-.studentsHero{
+.studentsTopBar{
   display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:18px;
+  align-items:center;
+  gap:16px;
+  margin-bottom:14px;
 }
 
-.studentsHero h2{
-  margin:0;
-  font-size:26px;
+.studentsTopBar .studentsSearchBar{
+  flex:1;
+  min-width:0;
+  margin-bottom:0;
 }
 
-.studentsHero p{
-  margin:8px 0 0;
+.studentsTopBarUtilities{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.studentsUtilityLink{
+  border:none;
+  background:transparent;
   color:#64748b;
-  font-size:15px;
+  font-size:13px;
+  font-weight:600;
+  padding:4px;
+}
+
+.studentsUtilityLink:hover{
+  color:#111827;
+  text-decoration:underline;
+}
+
+.studentsPendingBell{
+  border:1px solid #f0ddaf;
+  border-radius:999px;
+  background:#fff7e8;
+  color:#8a6516;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:700;
 }
 
 .studentsHeroActions{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
+  flex-shrink:0;
 }
 
 .studentsButton{
@@ -2220,8 +2247,8 @@ button{
 
 .studentsMockupGrid{
   display:grid;
-  grid-template-columns:minmax(320px, 1.25fr) minmax(360px, 0.95fr);
-  gap:18px;
+  grid-template-columns:minmax(280px, 30%) minmax(0, 1fr);
+  gap:24px;
   align-items:start;
   min-width:0;
 }
@@ -2237,7 +2264,7 @@ button{
   border:1px solid #e5e7eb;
   border-radius:24px;
   background:#fff;
-  padding:20px;
+  padding:22px;
   box-shadow:0 10px 30px rgba(15,23,42,0.04);
   min-width:0;
 }
@@ -2245,7 +2272,7 @@ button{
 .studentsPanelTop{
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-end;
   gap:12px;
   margin-bottom:18px;
 }
@@ -2264,28 +2291,12 @@ button{
   font-size:13px;
 }
 
-.studentsTable,
 .studentsHistoryTable{
   border:1px solid #e5e7eb;
   border-radius:18px;
   overflow:hidden;
 }
 
-.studentsTable{
-  flex:1;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-}
-
-.studentsTableBody{
-  flex:1;
-  min-height:0;
-  overflow-y:auto;
-}
-
-.studentsTableHeader,
-.studentsTableRow,
 .studentsHistoryTableHeader,
 .studentsHistoryTableRow{
   display:grid;
@@ -2294,58 +2305,88 @@ button{
   padding:12px 16px;
 }
 
-.studentsTableHeader{
-  grid-template-columns:minmax(0, 1.7fr) 120px 120px 74px;
-  color:#718096;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.05em;
-  border-bottom:1px solid #eceff3;
-}
-
-.studentsTableRow{
-  grid-template-columns:minmax(0, 1.7fr) 120px 120px 74px;
-  border-top:1px solid #eceff3;
-  cursor:pointer;
-  background:#fff;
-}
-
-.studentsTableRow:first-child{
-  border-top:none;
-}
-
-.studentsTableRow.isSelected,
-.studentsTableRow:hover{
-  background:#fafaf8;
-}
-
-.studentsNameCell{
+.studentsCardList{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:4px;
-  min-width:0;
+  gap:12px;
 }
 
-.studentsNameCell strong{
-  font-size:15px;
-}
-
-.studentsNameCell span,
-.studentsDateCell,
-.studentsDetailEmpty,
-.studentsRoutineMiniCard span,
-.studentsRoutineMiniCard p{
-  color:#64748b;
-}
-
-.studentsStateCell{
+.studentCard{
   display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
+  flex-direction:column;
+  gap:10px;
+  width:100%;
+  text-align:left;
+  padding:16px 18px;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  background:#fbfbfa;
+  color:#111827;
 }
 
-.studentsRowAction,
+.studentCard:hover{
+  border-color:#d6d7da;
+}
+
+.studentCard.isSelected{
+  border-color:#171717;
+  background:#fff;
+  box-shadow:0 10px 30px rgba(15,23,42,0.06);
+}
+
+.studentCardName{
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:0.01em;
+}
+
+.studentCardStatus{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.studentCardStatus > span{
+  font-size:13px;
+  font-weight:700;
+}
+
+.studentCardStatus small{
+  color:#64748b;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.studentCardMeta{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  padding-top:6px;
+  border-top:1px solid #eceff3;
+}
+
+.studentCardMeta > div{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.studentCardMeta span{
+  color:#94a3b8;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+
+.studentCardMeta strong{
+  font-size:13px;
+  color:#334155;
+}
+
 .studentsMiniButton,
 .studentsModalHeader button{
   border:1px solid #d6d7da;
@@ -2355,8 +2396,10 @@ button{
   font-weight:700;
 }
 
-.studentsRowAction{
-  padding:8px 10px;
+.studentsDetailEmpty,
+.studentsRoutineMiniCard span,
+.studentsRoutineMiniCard p{
+  color:#64748b;
 }
 
 .studentsTableEmpty{
@@ -2374,13 +2417,6 @@ button{
   animation:studentsPanelFade 0.2s ease;
 }
 
-.studentsDetailPanelHeading{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:10px;
-}
-
 .studentsBackButton{
   border:1px solid #d6d7da;
   border-radius:14px;
@@ -2390,36 +2426,187 @@ button{
   font-size:13px;
   font-weight:700;
   box-shadow:0 1px 0 rgba(15,23,42,0.03);
+  margin-bottom:18px;
 }
 
-.studentsDetailTop{
+.studentsFichaHeader{
   display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-
-.studentsDetailSummary{
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-  width:100%;
-}
-
-.studentsNameHeader{
-  display:flex;
-  flex-direction:column;
   align-items:flex-start;
-  gap:12px;
-  width:100%;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+  padding-bottom:22px;
+  margin-bottom:24px;
+  border-bottom:1px solid #eceff3;
+}
+
+.studentsFichaHeaderIdentity{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
   min-width:0;
 }
 
-.studentsDetailPrimaryCard{
+.studentsFichaStatusBadge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  width:max-content;
+  padding:7px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:800;
+}
+
+.studentsFichaStatusBadge.isPaid{
+  background:#e8f7f2;
+  color:#047857;
+}
+
+.studentsFichaStatusBadge.isUnpaid{
+  background:#fff0f0;
+  color:#dc2626;
+}
+
+.studentsFichaStatusHelper{
+  color:#64748b;
+  font-size:13px;
+}
+
+.studentsFichaName{
+  margin:6px 0 0;
+  font-size:32px;
+  font-weight:800;
+  line-height:1.12;
+  overflow-wrap:break-word;
+}
+
+.studentsFichaPhone{
+  margin:0;
+  color:#64748b;
+  font-size:15px;
+}
+
+.studentsFichaActions{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  flex-wrap:wrap;
+  flex-shrink:0;
+}
+
+.studentsMoreMenuWrap{
+  position:relative;
+}
+
+.studentsMoreMenuButton{
+  white-space:nowrap;
+}
+
+.studentsMoreMenuPanel{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  z-index:15;
   display:flex;
   flex-direction:column;
-  gap:18px;
-  padding-bottom:4px;
+  min-width:190px;
+  padding:8px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 20px 45px rgba(15,23,42,0.14);
+}
+
+.studentsMoreMenuPanel button{
+  border:none;
+  background:transparent;
+  text-align:left;
+  padding:10px 12px;
+  border-radius:10px;
+  color:#111827;
+  font-size:13px;
+  font-weight:600;
+}
+
+.studentsMoreMenuPanel button:hover{
+  background:#f3f4f6;
+}
+
+.studentsMoreMenuPanel .studentsMoreMenuDanger{
+  color:#dc2626;
+}
+
+.studentsFichaGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:20px;
+}
+
+.studentsDataCard,
+.studentsStatusCard{
+  padding:20px;
+  border:1px solid #e5e7eb;
+  border-radius:20px;
+  background:#fff;
+}
+
+.studentsDataCard h4,
+.studentsStatusCard h4,
+.studentsHistoryBlock h4{
+  margin:0 0 16px;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:#718096;
+}
+
+.studentsStatusGrid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:16px 20px;
+}
+
+.studentsFichaRoutineCard{
+  grid-column:1 / -1;
+  width:auto;
+}
+
+.studentsHistoryBlock{
+  grid-column:1 / -1;
+  padding:20px;
+  border:1px solid #e5e7eb;
+  border-radius:20px;
+  background:#fff;
+}
+
+.studentsHistorySummary{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:16px;
+  margin-bottom:20px;
+  padding-bottom:20px;
   border-bottom:1px solid #eceff3;
+}
+
+.studentsHistorySummaryItem{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.studentsHistorySummaryItem span{
+  color:#94a3b8;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+}
+
+.studentsHistorySummaryItem strong{
+  font-size:20px;
+  font-weight:800;
 }
 
 .studentsInfoStack{
@@ -2444,28 +2631,6 @@ button{
   line-height:1.45;
 }
 
-.studentsNameTextBlock{
-  width:100%;
-}
-
-.studentsNameTextBlock strong{
-  display:block;
-  font-size:28px;
-  font-weight:800;
-  line-height:1.08;
-  white-space:normal;
-  word-break:normal;
-  overflow-wrap:break-word;
-  overflow:visible;
-  text-overflow:clip;
-}
-
-.studentsPaymentBadgeWrap{
-  display:flex;
-  align-items:flex-start;
-  justify-content:flex-start;
-}
-
 .studentsRoutineMiniCard{
   display:flex;
   flex-direction:column;
@@ -2477,11 +2642,6 @@ button{
   min-height:0;
   min-width:0;
   width:100%;
-}
-
-.studentsRoutineSectionCard{
-  max-width:420px;
-  align-self:stretch;
 }
 
 .studentsRoutineMiniCard h4{
@@ -2737,12 +2897,6 @@ button{
   }
 }
 
-.studentsDetailActionBar{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
 .studentsMiniButton{
   padding:10px 12px;
   font-size:13px;
@@ -2752,16 +2906,6 @@ button{
   border-color:#171717;
   background:#171717;
   color:#fff;
-}
-
-.studentsMiniButtonDanger{
-  border-color:#fecaca;
-  color:#dc2626;
-  background:#fff5f5;
-}
-
-.studentsHistoryHeader{
-  margin-bottom:12px;
 }
 
 .studentsHistoryTableHeader{
@@ -2926,28 +3070,70 @@ button{
   justify-content:flex-end;
 }
 
-.studentsWorkspaceMockup .statusStack{
-  gap:0;
+.studentsDrawer{
+  position:fixed;
+  top:0;
+  right:0;
+  width:min(420px, 92vw);
+  height:100vh;
+  background:#fff;
+  border-left:1px solid #e5e7eb;
+  box-shadow:-18px 0 48px rgba(15,23,42,0.18);
+  padding:22px 20px;
+  transform:translateX(100%);
+  transition:transform 0.24s ease;
+  z-index:45;
+  overflow-y:auto;
 }
 
-.studentsWorkspaceMockup .statusStack small{
-  display:none;
+.studentsDrawer.isOpen{
+  transform:translateX(0);
 }
 
-.studentsWorkspaceMockup .statusBadge{
-  padding:4px 8px;
-  font-size:11px;
+.studentsDrawerOverlay{
+  position:fixed;
+  inset:0;
+  z-index:40;
+  padding:0;
+  border:none;
+  background:rgba(15,23,42,0.32);
+}
+
+.studentsDrawerHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.studentsDrawerHeader h3{
+  margin:0;
+  font-size:16px;
+}
+
+.studentsDrawerClose{
+  width:32px;
+  height:32px;
+  border:1px solid #e5e7eb;
+  border-radius:50%;
+  background:#fff;
+  color:#64748b;
+  font-size:16px;
   line-height:1;
 }
 
-.studentsWorkspaceMockup .statusBadge.paid{
-  background:#e8f7f2;
-  color:#047857;
+.pendingDrawerContent{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
 }
 
-.studentsWorkspaceMockup .statusBadge.unpaid{
-  background:#fff0f0;
-  color:#dc2626;
+.pendingDrawerHint{
+  margin:0;
+  color:#64748b;
+  font-size:13px;
+  line-height:1.5;
 }
 
 .dashboardWorkspace{
@@ -3111,7 +3297,7 @@ button{
 
 @media(max-width:1200px){
   .studentsMockupGrid{
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(240px, 35%) minmax(0, 1fr);
   }
 
   .dashboardMetricGrid{
@@ -3124,65 +3310,6 @@ button{
 }
 
 @media(max-width:900px){
-  .studentsHero,
-  .studentsHeroActions,
-  .studentsDetailTop{
-    flex-direction:column;
-    grid-template-columns:1fr;
-  }
-
-  .studentsTableHeader,
-  .studentsTableRow,
-  .studentsHistoryTableHeader,
-  .studentsHistoryTableRow{
-    grid-template-columns:1fr;
-  }
-
-  .studentsMockupGrid > .studentsPanel:first-child{
-    min-height:auto;
-    max-height:none;
-  }
-
-  .studentsTable,
-  .studentsTableBody{
-    display:block;
-    overflow:visible;
-  }
-
-  .studentsInfoRow{
-    grid-template-columns:1fr;
-    gap:8px;
-  }
-
-  .studentsNameValue{
-    width:100%;
-  }
-
-  .studentsNameHeader{
-    gap:8px;
-  }
-
-  .studentsPaymentBadgeWrap{
-    justify-content:flex-start;
-  }
-
-  .studentsNameTextBlock strong{
-    display:-webkit-box;
-    font-size:22px;
-    line-height:1.12;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    -webkit-line-clamp:2;
-    line-clamp:2;
-    -webkit-box-orient:vertical;
-  }
-
-  .studentsRoutineMiniCard{
-    min-height:auto;
-    max-width:none;
-    width:100%;
-  }
-
   .studentsModalGridTwo{
     grid-template-columns:1fr;
   }
@@ -3210,22 +3337,13 @@ button{
   .main{
     padding:24px 24px 32px;
   }
-
-  .studentsMockupGrid{
-    grid-template-columns:1fr;
-  }
-
-  .studentsDetailPanel{
-    position:static;
-    top:auto;
-  }
-
-  .studentsMockupGrid > .studentsPanel:first-child{
-    min-height:auto;
-    max-height:none;
-  }
 }
 
+/* Debajo de 1023px, StudentsSection ya no muestra los dos paneles a la vez
+   -- pasa a "listado o ficha" con boton de volver (isMobileViewport en el
+   componente), patron mobile ya establecido para esta pantalla. Por eso
+   ac solo hace falta que el panel que quede en pantalla ocupe todo el
+   ancho, no repartir columnas. */
 @media(max-width:1023px){
   .studentsMockupGrid{
     grid-template-columns:1fr;
@@ -3336,19 +3454,22 @@ button{
   }
 
   .sectionHeader h2,
-  .studentsHero h2,
   .dashboardHero h2{
     font-size:24px;
   }
 
   .sectionHeader p,
-  .studentsHero p,
   .dashboardHero p{
     font-size:14px;
   }
 
-  .studentsHero{
-    margin-bottom:14px;
+  .studentsTopBar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .studentsTopBarUtilities{
+    justify-content:space-between;
   }
 
   .studentsHeroActions{
@@ -3382,20 +3503,17 @@ button{
     width:100%;
   }
 
-  .studentsTable,
   .studentsHistoryTable{
     border:none;
     background:transparent;
     overflow:visible;
   }
 
-  .studentsTableHeader,
   .studentsHistoryTableHeader,
   .dataTableHeader{
     display:none;
   }
 
-  .studentsTableBody,
   .studentsHistoryTableBody,
   .dataTableBody{
     display:flex;
@@ -3404,7 +3522,6 @@ button{
     overflow:visible;
   }
 
-  .studentsTableRow,
   .studentsHistoryTableRow,
   .dataRow{
     grid-template-columns:1fr;
@@ -3416,19 +3533,16 @@ button{
     align-items:flex-start;
   }
 
-  .studentsTableRow + .studentsTableRow,
   .studentsHistoryTableRow + .studentsHistoryTableRow,
   .dataRow + .dataRow{
     border-top:1px solid var(--border);
   }
 
-  .studentsTableRow > *,
   .studentsHistoryTableRow > *,
   .dataRow > *{
     width:100%;
   }
 
-  .studentsTableRow > [data-label],
   .studentsHistoryTableRow > [data-label],
   .dataRow > [data-label]{
     display:flex;
@@ -3438,7 +3552,6 @@ button{
     min-width:0;
   }
 
-  .studentsTableRow > [data-label]::before,
   .studentsHistoryTableRow > [data-label]::before,
   .dataRow > [data-label]::before{
     content:attr(data-label);
@@ -3448,34 +3561,6 @@ button{
     font-weight:800;
     letter-spacing:0.06em;
     text-transform:uppercase;
-  }
-
-  .studentsNameCell[data-label]{
-    align-items:flex-start;
-    justify-content:flex-start;
-    flex-direction:column;
-  }
-
-  .studentsNameCell[data-label]::before{
-    width:100%;
-    margin-bottom:2px;
-  }
-
-  .studentsNameCell{
-    gap:6px;
-  }
-
-  .studentsNameCell strong{
-    font-size:15px;
-  }
-
-  .studentsStateCell{
-    justify-content:space-between;
-  }
-
-  .studentsRowAction{
-    width:100%;
-    padding:10px 12px;
   }
 
   .studentsHistoryPill[data-label]{
@@ -3489,30 +3574,28 @@ button{
     align-self:flex-end;
   }
 
-  .studentsDetailTop{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:14px;
-  }
-
-  .studentsInfoRow{
-    grid-template-columns:1fr;
-    gap:6px;
-    padding:8px 0;
-  }
-
-  .studentsInfoValue,
-  .studentsNameValue{
-    width:100%;
-  }
-
-  .studentsNameHeader{
+  .studentsFichaHeader{
     flex-direction:column;
     align-items:flex-start;
   }
 
-  .studentsPaymentBadgeWrap{
-    justify-content:flex-start;
+  .studentsFichaName{
+    font-size:24px;
+  }
+
+  .studentsFichaActions{
+    width:100%;
+  }
+
+  .studentsFichaActions .studentsMiniButton,
+  .studentsFichaActions .studentsMoreMenuWrap{
+    flex:1 1 calc(50% - 5px);
+  }
+
+  .studentsFichaGrid,
+  .studentsStatusGrid,
+  .studentsHistorySummary{
+    grid-template-columns:1fr;
   }
 
   .studentsRoutineMiniCard{
@@ -3543,13 +3626,7 @@ button{
     font-size:11px;
   }
 
-  .studentsDetailActionBar{
-    display:grid;
-    grid-template-columns:repeat(2, minmax(0, 1fr));
-  }
-
   .studentsMiniButton{
-    width:100%;
     margin:0;
   }
 
@@ -3678,19 +3755,15 @@ button{
     flex-basis:100%;
   }
 
-  .studentsDetailActionBar{
-    display:grid;
-    grid-template-columns:1fr;
+  .studentsFichaActions .studentsMiniButton,
+  .studentsFichaActions .studentsMoreMenuWrap{
+    flex-basis:100%;
   }
 
   .studentsMiniButton,
   .studentsButton,
   .smallButton{
     min-height:40px;
-  }
-
-  .studentsRowAction{
-    justify-content:center;
   }
 }
 

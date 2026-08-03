@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { formatStudentName } from '../lib/student-utils'
 
-export default function PendingAlumnoAccounts({ supabase, alumnos }) {
+export default function PendingAlumnoAccounts({ supabase, alumnos, onCountChange }) {
   const [pendientes, setPendientes] = useState([])
   const [loading, setLoading] = useState(true)
   const [seleccion, setSeleccion] = useState({})
@@ -34,6 +34,12 @@ export default function PendingAlumnoAccounts({ supabase, alumnos }) {
   useEffect(() => {
     cargarPendientes()
   }, [supabase])
+
+  useEffect(() => {
+    if (!loading) {
+      onCountChange?.(pendientes.length)
+    }
+  }, [loading, pendientes, onCountChange])
 
   async function vincular(userId) {
     const alumnoId = seleccion[userId]
@@ -66,14 +72,11 @@ export default function PendingAlumnoAccounts({ supabase, alumnos }) {
   }
 
   return (
-    <section className="section">
-      <div className="sectionHeader">
-        <h2>Cuentas de alumno pendientes de vincular</h2>
-        <p>
-          Se registraron pero no encontramos una ficha con su telefono.
-          Elegi manualmente a que alumno corresponden.
-        </p>
-      </div>
+    <div className="pendingDrawerContent">
+      <p className="pendingDrawerHint">
+        Se registraron pero no encontramos una ficha con su telefono.
+        Elegi manualmente a que alumno corresponden.
+      </p>
 
       {mensaje && <div className="error">{mensaje}</div>}
 
@@ -107,6 +110,6 @@ export default function PendingAlumnoAccounts({ supabase, alumnos }) {
           </article>
         ))}
       </div>
-    </section>
+    </div>
   )
 }

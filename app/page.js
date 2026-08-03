@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Dumbbell, User, Wallet } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import {
+  formatStudentName,
   getMonthKey,
   getPaymentMonthOptions,
   normalizeText,
@@ -27,7 +28,6 @@ import AlumnoPerfilSection from '../components/AlumnoPerfilSection'
 import AlumnoTurnosSection from '../components/AlumnoTurnosSection'
 import AlumnoRutinaSection from '../components/AlumnoRutinaSection'
 import AlumnoCuotaSection from '../components/AlumnoCuotaSection'
-import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
 import Footer from '../components/Footer'
 import ForgotPasswordForm from '../components/ForgotPasswordForm'
 import ResetPasswordForm from '../components/ResetPasswordForm'
@@ -398,6 +398,40 @@ export default function Home() {
     }
 
     await cargarAlumnos()
+    return true
+  }
+
+  async function duplicarAlumno(alumno) {
+    setError('')
+
+    const client = getSupabaseClient()
+
+    if (!client) return false
+
+    const { data, error: duplicateError } = await client
+      .from('alumnos')
+      .insert([
+        {
+          nombre: `${formatStudentName(alumno)} (copia)`,
+          telefono: alumno.telefono,
+          observaciones: alumno.observaciones,
+          estado: 'activo',
+        },
+      ])
+      .select()
+      .single()
+
+    if (duplicateError) {
+      setError('No se pudo duplicar el alumno.')
+      return false
+    }
+
+    await cargarAlumnos()
+
+    if (data?.id) {
+      setSelectedAlumnoId(data.id)
+    }
+
     return true
   }
 
@@ -1367,12 +1401,9 @@ export default function Home() {
           <Dashboard alumnos={alumnos} pagos={pagos} costos={costos} />
         )}
 
-        {activeSection === 'alumnos' && (
-          <PendingAlumnoAccounts supabase={supabase} alumnos={alumnos} />
-        )}
-
         {(activeSection === 'alumnos' || activeSection === 'fichaAlumno') && (
           <StudentsSection
+            supabase={supabase}
             alumnos={alumnos}
             pagos={pagos}
             rutinas={rutinas}
@@ -1386,6 +1417,7 @@ export default function Home() {
             setSelectedPaymentMonth={setSelectedPaymentMonth}
             paymentMonthOptions={paymentMonthOptions}
             onUpdateAlumno={actualizarAlumno}
+            onDuplicateAlumno={duplicarAlumno}
             onMergeDuplicates={unificarAlumnosDuplicados}
             onRegisterPago={registrarPagoAlumno}
             onDeletePago={eliminarPago}
