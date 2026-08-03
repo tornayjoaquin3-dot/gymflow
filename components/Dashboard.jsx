@@ -16,6 +16,7 @@ import {
   getMonthKey,
   getMonthLabel,
 } from '../lib/student-utils'
+import { APP_CONFIG } from '../lib/app-config'
 
 function formatCurrency(value) {
   return `$${Number(value || 0).toLocaleString('es-AR')}`
@@ -139,6 +140,9 @@ export default function Dashboard({ alumnos, pagos, costos }) {
     <section className="dashboardWorkspace">
       <div className="dashboardHero">
         <div>
+          <p className="dashboardWelcome">
+            Bienvenido a {APP_CONFIG.organizationName}
+          </p>
           <h2>Dashboard</h2>
           <p>Lectura rapida del rendimiento mensual y acumulado.</p>
         </div>

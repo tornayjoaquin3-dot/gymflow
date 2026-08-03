@@ -28,6 +28,7 @@ import AlumnoTurnosSection from '../components/AlumnoTurnosSection'
 import AlumnoRutinaSection from '../components/AlumnoRutinaSection'
 import AlumnoCuotaSection from '../components/AlumnoCuotaSection'
 import PendingAlumnoAccounts from '../components/PendingAlumnoAccounts'
+import Footer from '../components/Footer'
 import ForgotPasswordForm from '../components/ForgotPasswordForm'
 import ResetPasswordForm from '../components/ResetPasswordForm'
 
@@ -1022,6 +1023,12 @@ export default function Home() {
       <main className="page">
         <section className="panel loginPanel">
           <h1>{APP_CONFIG.softwareName}</h1>
+          <p
+            className="loginOrgName"
+            style={{ color: APP_CONFIG.organizationSecondaryColor }}
+          >
+            {APP_CONFIG.organizationName}
+          </p>
           <p>Verificando sesion...</p>
         </section>
       </main>
@@ -1136,6 +1143,12 @@ export default function Home() {
       <main className="page">
         <section className="panel loginPanel">
           <h1>{APP_CONFIG.softwareName}</h1>
+          <p
+            className="loginOrgName"
+            style={{ color: APP_CONFIG.organizationSecondaryColor }}
+          >
+            {APP_CONFIG.organizationName}
+          </p>
           <p>Ingresa con tu email y contrasena.</p>
 
           <form onSubmit={login} className="form">
@@ -1181,6 +1194,8 @@ export default function Home() {
             Olvidaste tu contrasena?
           </button>
         </section>
+
+        <Footer />
       </main>
     )
   }
@@ -1251,6 +1266,8 @@ export default function Home() {
           ) : (
             <AlumnoTurnosSection supabase={supabase} profile={profile} />
           )}
+
+          <Footer />
         </section>
       </main>
     )
@@ -1373,6 +1390,8 @@ export default function Home() {
             }}
           />
         )}
+
+        <Footer />
       </section>
     </main>
   )

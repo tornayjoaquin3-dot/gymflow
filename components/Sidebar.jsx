@@ -15,7 +15,18 @@ export default function Sidebar({
   return (
     <aside className={`sidebar${isOpen ? ' isOpen' : ''}`}>
       <div className="sidebarHeader">
-        <h2>{APP_CONFIG.softwareName}</h2>
+        <div className="sidebarOrgBrand">
+          {APP_CONFIG.organizationLogo ? (
+            <img
+              src={APP_CONFIG.organizationLogo}
+              alt={APP_CONFIG.organizationName}
+              className="sidebarOrgLogo"
+            />
+          ) : null}
+          <h2 style={{ color: APP_CONFIG.organizationPrimaryColor }}>
+            {APP_CONFIG.organizationName}
+          </h2>
+        </div>
         <button
           type="button"
           className="sidebarCloseButton"

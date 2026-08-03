@@ -49,6 +49,7 @@ button{
 .page{
   min-height:100vh;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
   padding:24px;
@@ -72,6 +73,14 @@ button{
 .loginPanel p{
   margin:0 0 24px;
   color:var(--text-muted);
+}
+
+.loginPanel .loginOrgName{
+  margin:-6px 0 20px;
+  font-size:14px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.05em;
 }
 
 .form{
@@ -190,10 +199,24 @@ button{
   gap:12px;
 }
 
+.sidebarOrgBrand{
+  min-width:0;
+}
+
+.sidebarOrgLogo{
+  display:block;
+  height:32px;
+  width:auto;
+  max-width:100%;
+  margin:4px 6px 6px;
+  object-fit:contain;
+}
+
 .sidebar h2{
   margin:4px 6px 22px;
   font-size:32px;
   letter-spacing:-0.04em;
+  overflow-wrap:break-word;
 }
 
 .sidebarCloseButton{
@@ -2901,6 +2924,15 @@ button{
   font-size:15px;
 }
 
+.dashboardHero .dashboardWelcome{
+  margin:0 0 6px;
+  font-size:13px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:#94a3b8;
+}
+
 .dashboardFilterRow{
   display:flex;
   flex-wrap:wrap;
@@ -3756,4 +3788,20 @@ button{
   .asistenciaStats{
     grid-template-columns:repeat(2,1fr);
   }
+}
+
+.appFooter{
+  margin-top:24px;
+  padding:16px 0 4px;
+  text-align:center;
+}
+
+.appFooter span{
+  font-size:12px;
+  color:var(--text-soft);
+}
+
+.page .appFooter{
+  margin-top:16px;
+  padding:0;
 }
