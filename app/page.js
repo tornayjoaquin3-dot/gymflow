@@ -16,6 +16,7 @@ import CostsSection from '../components/CostsSection'
 import RoutinesSection from '../components/RoutinesSection'
 import ExcelImportSection from '../components/ExcelImportSection'
 import TurnosSection from '../components/TurnosSection'
+import AsistenciaSection from '../components/AsistenciaSection'
 
 import { ROLE_SECTIONS, normalizeRole, isAlumnoRole, getDefaultSection } from '../lib/roles'
 import { validateAndCleanStructuredRoutine } from '../lib/routine-format'
@@ -1330,6 +1331,8 @@ export default function Home() {
         )}
 
         {activeSection === 'turnos' && <TurnosSection supabase={supabase} />}
+
+        {activeSection === 'asistencia' && <AsistenciaSection supabase={supabase} />}
 
         {activeSection === 'costos' && !isProfesor && (
           <CostsSection

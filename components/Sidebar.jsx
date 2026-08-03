@@ -55,6 +55,13 @@ export default function Sidebar({
           Turnos
         </button>
 
+        <button
+          className={activeSection === 'asistencia' ? 'activeMenu' : ''}
+          onClick={() => handleNavigate('asistencia')}
+        >
+          Asistencia
+        </button>
+
         {!isProfesor && (
           <>
             <button
