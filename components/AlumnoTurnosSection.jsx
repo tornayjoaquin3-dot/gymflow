@@ -12,6 +12,11 @@ function mesActualCapitalizado() {
   return mes.charAt(0).toUpperCase() + mes.slice(1)
 }
 
+function getInicioTurno(turno) {
+  if (!turno) return null
+  return new Date(`${turno.fecha}T${turno.hora_inicio}`)
+}
+
 export default function AlumnoTurnosSection({ supabase, profile }) {
   const [disponibles, setDisponibles] = useState([])
   const [loadingDisponibles, setLoadingDisponibles] = useState(true)
@@ -76,10 +81,21 @@ export default function AlumnoTurnosSection({ supabase, profile }) {
     cargarPagos()
   }, [supabase])
 
+  // El limite diario de reserva mira TODAS las reservas activas (pasadas o
+  // no) porque asi lo hace cumplir reservar_turno en la base -- filtrar
+  // esto a "solo futuras" desincronizaria al picker de esa regla real.
   const fechasConReservaActiva = new Set(misReservas.map((reserva) => reserva.fecha))
   const estadoCuota = getStudentPaymentSnapshot({ id: profile?.alumnoId }, pagos, getMonthKey())
   const cuotaAlDia = estadoCuota.filterStatus === 'paid'
   const reservables = disponibles.filter((turno) => turno.estado === 'abierto' && turno.disponible)
+
+  // Solo lo que se muestra en "Mis turnos" se filtra a futuro -- no se
+  // borra ni se actualiza nada en la base, el historial sigue existiendo.
+  const ahora = Date.now()
+  const misReservasFuturas = misReservas.filter((reserva) => {
+    const inicio = getInicioTurno(reserva.turnos)
+    return inicio && inicio.getTime() >= ahora
+  })
 
   async function confirmarReserva(turno) {
     setError('')
@@ -123,11 +139,10 @@ export default function AlumnoTurnosSection({ supabase, profile }) {
   }
 
   function faltanMenosDeDosHoras(reserva) {
-    const turno = reserva.turnos
+    const inicio = getInicioTurno(reserva.turnos)
 
-    if (!turno) return false
+    if (!inicio) return false
 
-    const inicio = new Date(`${turno.fecha}T${turno.hora_inicio}`)
     return inicio.getTime() - Date.now() < DOS_HORAS_MS
   }
 
@@ -168,10 +183,10 @@ export default function AlumnoTurnosSection({ supabase, profile }) {
         <div className="dataTableBody">
           {loadingMisReservas ? (
             <div className="studentsTableEmpty">Cargando tus turnos...</div>
-          ) : misReservas.length === 0 ? (
+          ) : misReservasFuturas.length === 0 ? (
             <div className="studentsTableEmpty">Todavia no tenes turnos reservados.</div>
           ) : (
-            misReservas.map((reserva) => {
+            misReservasFuturas.map((reserva) => {
               const bloqueadoPorTiempo = faltanMenosDeDosHoras(reserva)
 
               return (
