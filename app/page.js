@@ -57,6 +57,7 @@ export default function Home() {
 
   const [authMode, setAuthMode] = useState('login')
   const [signupInfo, setSignupInfo] = useState('')
+  const [welcomeToast, setWelcomeToast] = useState('')
   const [passwordRecoveryMode, setPasswordRecoveryMode] = useState(false)
   const [nuevoAlumnoAuth, setNuevoAlumnoAuth] = useState({
     email: '',
@@ -232,7 +233,15 @@ export default function Home() {
     const { data: sessionData } = await client.auth.getSession()
 
     if (sessionData?.session?.user) {
-      await hydrateSession(sessionData.session.user)
+      const hydrated = await hydrateSession(sessionData.session.user)
+
+      if (hydrated) {
+        setAuthMode('login')
+        setWelcomeToast(
+          `¡Bienvenido a ${APP_CONFIG.organizationName.toUpperCase()}! Tu cuenta fue creada correctamente.`
+        )
+        window.setTimeout(() => setWelcomeToast(''), 4000)
+      }
     }
 
     setLoading(false)
@@ -1282,6 +1291,8 @@ export default function Home() {
   if (isAlumno) {
     return (
       <main className="app alumnoPortal">
+        {welcomeToast && <div className="welcomeToast">{welcomeToast}</div>}
+
         <section className="main">
           <header className="topbar">
             <div className="topbarIdentity">

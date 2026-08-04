@@ -157,6 +157,36 @@ button{
   font-size:14px;
 }
 
+.welcomeToast{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:60;
+  max-width:min(420px, calc(100vw - 32px));
+  padding:14px 20px;
+  border-radius:16px;
+  background:var(--primary);
+  color:#fff;
+  font-size:14px;
+  font-weight:600;
+  line-height:1.4;
+  text-align:center;
+  box-shadow:var(--shadow);
+  animation:welcomeToastIn 0.25s ease;
+}
+
+@keyframes welcomeToastIn{
+  from{
+    opacity:0;
+    transform:translate(-50%, -8px);
+  }
+  to{
+    opacity:1;
+    transform:translate(-50%, 0);
+  }
+}
+
 .linkButton{
   margin-top:16px;
   background:none;
