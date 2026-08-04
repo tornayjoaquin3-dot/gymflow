@@ -237,10 +237,22 @@ export default function Home() {
 
       if (hydrated) {
         setAuthMode('login')
-        setWelcomeToast(
-          `¡Bienvenido a ${APP_CONFIG.organizationName.toUpperCase()}! Tu cuenta fue creada correctamente.`
-        )
-        window.setTimeout(() => setWelcomeToast(''), 4000)
+
+        if (result?.profile?.alumnoId) {
+          setWelcomeToast(
+            `¡Bienvenido a ${APP_CONFIG.organizationName.toUpperCase()}! Tu cuenta fue creada correctamente.`
+          )
+          window.setTimeout(() => setWelcomeToast(''), 4000)
+        } else {
+          // Encontramos mas de una ficha posible (ej. telefono repetido) y
+          // no vinculamos solos para no arriesgar pegarlo a la persona
+          // equivocada -- el staff lo resuelve a mano desde
+          // PendingAlumnoAccounts.jsx.
+          setWelcomeToast(
+            'No pudimos vincular automaticamente tu cuenta. El gimnasio finalizara la asociacion.'
+          )
+          window.setTimeout(() => setWelcomeToast(''), 6000)
+        }
       }
     }
 
